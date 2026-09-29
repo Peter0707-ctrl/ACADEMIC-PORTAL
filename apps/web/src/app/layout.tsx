@@ -15,11 +15,7 @@ export const metadata: Metadata = {
     'A secure, multi-tenant cloud platform for managing students, examinations, report cards, fees, and parent communication across schools, colleges, and universities.',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={ubuntu.variable}>
       <body className={`min-h-screen bg-background text-slate antialiased ${ubuntu.className}`}>
