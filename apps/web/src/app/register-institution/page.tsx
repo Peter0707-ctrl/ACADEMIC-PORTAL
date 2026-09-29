@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { School, Building2, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
 
 type Step = 1 | 2 | 3;
 
 export default function RegisterInstitutionPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -20,6 +23,7 @@ export default function RegisterInstitutionPage() {
     district: 'Arusha City',
     email: 'admissions@staugustine.ac.tz',
     phone: '+255 754 000 111',
+    motto: 'Leadership through Knowledge & Integrity',
     academicSystem: 'TERMS',
     enableRanking: true,
     requireFinancialClearanceForResults: false,
@@ -45,7 +49,7 @@ export default function RegisterInstitutionPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/30">
-              U
+              <School className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-white text-base tracking-tight leading-none">
@@ -75,11 +79,19 @@ export default function RegisterInstitutionPage() {
             <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-6">
               ✓
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Institution Registered Successfully!</h2>
-            <p className="text-slate-400 max-w-lg mx-auto text-sm mb-8 leading-relaxed">
-              <strong className="text-slate-200">{formData.name}</strong> ({formData.code}) has been set up with dedicated school records.
-              Your institution configuration, grading scales, and administrator access are active.
+            <h2 className="text-2xl font-bold text-white mb-2">School Portal Generated Successfully!</h2>
+            <p className="text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">
+              <strong className="text-slate-200">{formData.name}</strong> ({formData.code}) has been initialized.
+              Your institution now has its own dedicated branded web portal with your logo, announcements, and portal access.
             </p>
+
+            <div className="p-4 bg-blue-950/40 border border-blue-500/30 rounded-xl max-w-md mx-auto mb-8 text-center">
+              <span className="text-xs text-blue-400 uppercase tracking-widest block font-mono">Your School's Dedicated Web Address</span>
+              <span className="text-lg font-mono font-bold text-white mt-1 block">
+                localhost:3000/portal/{formData.code.toLowerCase()}
+              </span>
+              <span className="text-[11px] text-slate-400 mt-1 block">Share this link directly with your students, parents, and teachers.</span>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-xl mx-auto text-left mb-8 text-xs">
               <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
@@ -98,16 +110,17 @@ export default function RegisterInstitutionPage() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/login"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-600/30"
+                href={`/portal/${formData.code.toLowerCase()}`}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
               >
-                Access Administration Center →
+                <span>Launch Your School Portal Now</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/"
+                href="/login"
                 className="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-medium text-sm transition-all"
               >
-                Return to Home
+                Go to Sign In
               </Link>
             </div>
           </div>
@@ -122,7 +135,7 @@ export default function RegisterInstitutionPage() {
                 Register Educational Institution
               </h1>
               <p className="text-sm text-slate-400 mt-1">
-                Configure your school or university portal. Academic calendar, grading criteria, and approval chains can be modified anytime in school settings.
+                Configure your school or university portal. Academic calendar, grading criteria, and branding will be set up automatically.
               </p>
             </div>
 
@@ -146,7 +159,7 @@ export default function RegisterInstitutionPage() {
                 </div>
                 <div>
                   <div className="text-xs font-semibold leading-none">Institution Identity</div>
-                  <div className="text-[10px] text-slate-500 mt-1">Name, country & type</div>
+                  <div className="text-[10px] text-slate-500 mt-1">Name, country & motto</div>
                 </div>
               </button>
 
@@ -259,7 +272,7 @@ export default function RegisterInstitutionPage() {
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Institution Code / Acronym
+                        Institution Code / Acronym (Used for URL: /portal/code)
                       </label>
                       <input
                         type="text"
@@ -268,6 +281,20 @@ export default function RegisterInstitutionPage() {
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono uppercase text-blue-400 focus:outline-none focus:border-blue-500"
                         placeholder="e.g. SAIA"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                        School Motto / Slogan
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.motto}
+                        onChange={(e) => setFormData({ ...formData, motto: e.target.value })}
+                        required
+                        className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                        placeholder="e.g. Leadership through Knowledge"
                       />
                     </div>
 
@@ -282,6 +309,19 @@ export default function RegisterInstitutionPage() {
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
                         placeholder="admissions@domain.ac.tz"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                        Contact Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        required
+                        className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
                       />
                     </div>
 
@@ -505,7 +545,7 @@ export default function RegisterInstitutionPage() {
                   <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 text-xs text-slate-300 space-y-2">
                     <div className="font-semibold text-blue-400">Institutional Activation Checklist:</div>
                     <ul className="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
-                      <li>Dedicated school database records will be initialized.</li>
+                      <li>Dedicated school website & portal will be deployed at <code>/portal/{formData.code.toLowerCase()}</code>.</li>
                       <li>Standard user roles (Administration, Teachers, Students, Parents) will be enabled.</li>
                       <li>Full security audit logging active from initial registration.</li>
                     </ul>
@@ -524,7 +564,7 @@ export default function RegisterInstitutionPage() {
                       disabled={isSubmitting}
                       className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50"
                     >
-                      {isSubmitting ? 'Registering Institution...' : 'Complete Institution Setup'}
+                      {isSubmitting ? 'Deploying School Portal...' : 'Deploy School Website & Portal'}
                     </button>
                   </div>
                 </div>

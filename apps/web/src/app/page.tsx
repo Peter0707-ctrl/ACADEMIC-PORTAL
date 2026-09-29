@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -23,9 +23,57 @@ import {
   Award,
   ChevronRight,
   ExternalLink,
+  Search,
+  MapPin,
   Calendar,
-  ClipboardCheck,
 } from 'lucide-react';
+
+// Typewriter Dynamic Words
+const TYPEWRITER_PHRASES = [
+  'Secondary Schools',
+  'Universities & Colleges',
+  'Advanced High Schools',
+  'Primary Schools',
+  'Vocational Institutes',
+];
+
+function TypewriterHeading() {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [currentText, setCurrentText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentPhrase = TYPEWRITER_PHRASES[phraseIndex];
+    const typingSpeed = isDeleting ? 45 : 85;
+
+    const timer = setTimeout(() => {
+      if (!isDeleting) {
+        if (currentText.length < currentPhrase.length) {
+          setCurrentText(currentPhrase.slice(0, currentText.length + 1));
+        } else {
+          // Pause when word is completely typed
+          setTimeout(() => setIsDeleting(true), 2000);
+        }
+      } else {
+        if (currentText.length > 0) {
+          setCurrentText(currentPhrase.slice(0, currentText.length - 1));
+        } else {
+          setIsDeleting(false);
+          setPhraseIndex((prev) => (prev + 1) % TYPEWRITER_PHRASES.length);
+        }
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [currentText, isDeleting, phraseIndex]);
+
+  return (
+    <span className="text-gradient-blue inline-block min-w-[280px] sm:min-w-[380px] text-left">
+      {currentText}
+      <span className="text-cyan-400 font-light animate-pulse ml-1">|</span>
+    </span>
+  );
+}
 
 // Institutional Academic Models
 interface InstitutionTierConfig {
@@ -121,6 +169,40 @@ const INSTITUTION_TIERS: InstitutionTierConfig[] = [
   },
 ];
 
+// Sample Live School Portals for Direct Access
+const FEATURED_SCHOOL_PORTALS = [
+  {
+    name: 'Kilimanjaro Secondary School',
+    code: 'KSS',
+    slug: 'kss',
+    type: 'Secondary (Form 1–4)',
+    location: 'Moshi, Kilimanjaro',
+    motto: 'Strive for Academic Excellence',
+    accentColor: 'from-blue-600 to-indigo-600',
+    verifiedStudents: 1420,
+  },
+  {
+    name: 'Lake Victoria Institute of Technology',
+    code: 'LVIT',
+    slug: 'lvit',
+    type: 'University & Diploma Institute',
+    location: 'Mwanza City, Tanzania',
+    motto: 'Innovation, Technology & Integrity',
+    accentColor: 'from-cyan-600 to-blue-700',
+    verifiedStudents: 3850,
+  },
+  {
+    name: 'St. Augustine International Academy',
+    code: 'SAIA',
+    slug: 'saia',
+    type: 'International Secondary & Primary',
+    location: 'Arusha, Tanzania',
+    motto: 'Leadership through Knowledge',
+    accentColor: 'from-purple-600 to-indigo-700',
+    verifiedStudents: 980,
+  },
+];
+
 // Regional Localization Specifications
 const REGIONAL_FRAMEWORKS = [
   {
@@ -158,6 +240,13 @@ const REGIONAL_FRAMEWORKS = [
 export default function HomePage() {
   const [selectedTierId, setSelectedTierId] = useState<string>('secondary');
   const activeTier = INSTITUTION_TIERS.find((t) => t.id === selectedTierId) || INSTITUTION_TIERS[0];
+  const [portalSearch, setPortalSearch] = useState('');
+
+  const filteredPortals = FEATURED_SCHOOL_PORTALS.filter((p) =>
+    p.name.toLowerCase().includes(portalSearch.toLowerCase()) ||
+    p.code.toLowerCase().includes(portalSearch.toLowerCase()) ||
+    p.location.toLowerCase().includes(portalSearch.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
@@ -187,8 +276,9 @@ export default function HomePage() {
 
             {/* Quick Links */}
             <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
-              <a href="#features" className="hover:text-white transition-colors">
-                Key Features
+              <a href="#portals-finder" className="text-blue-400 hover:text-blue-300 transition-colors font-semibold flex items-center gap-1.5">
+                <School className="w-4 h-4" />
+                <span>School Portals</span>
               </a>
               <a href="#tiers" className="hover:text-white transition-colors">
                 Academic Levels
@@ -197,10 +287,10 @@ export default function HomePage() {
                 How It Works
               </a>
               <a href="#portals" className="hover:text-white transition-colors">
-                Portals
+                Role Workspaces
               </a>
               <a href="#regions" className="hover:text-white transition-colors">
-                Regional Coverage
+                Regional Standards
               </a>
             </nav>
 
@@ -223,53 +313,66 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* 2. HERO SECTION WITH IMAGE SHOWCASE */}
-        <section className="relative overflow-hidden pt-12 pb-20">
-          {/* Subtle Background Radial Glows */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
-          <div className="absolute top-1/3 left-1/4 w-[400px] h-[300px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+        {/* 2. HERO SECTION WITH CINEMATIC CAMPUS IMAGE BACKGROUND & TYPEWRITER TEXT */}
+        <section className="relative overflow-hidden pt-16 pb-24 border-b border-slate-800/80">
+          {/* Real Campus Background Image with Deep Overlay */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/images/hero-campus-bg.jpg"
+              alt="Aerial photograph of academic campus"
+              fill
+              className="object-cover object-center opacity-30 filter brightness-[0.7] contrast-125 scale-105"
+              priority
+            />
+            {/* Cinematic Gradient Overlays to keep text 100% readable */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#090d16]/95 via-[#090d16]/85 to-[#090d16]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/30 via-transparent to-transparent" />
+          </div>
 
           <div className="max-w-7xl mx-auto px-6 relative z-10">
             {/* Hero Text */}
             <div className="text-center max-w-4xl mx-auto space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-950/70 border border-blue-500/30 text-blue-300 text-xs font-medium">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-blue-300 text-xs font-medium backdrop-blur-md shadow-lg">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span>Enterprise Multi-Tenant Educational Architecture</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.1]">
+              {/* Dynamic Typewriter Headline */}
+              <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.15]">
                 Complete Academic Management for{' '}
-                <span className="text-gradient-blue">Modern Institutions</span>
+                <div className="mt-1 sm:mt-2">
+                  <TypewriterHeading />
+                </div>
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto font-normal leading-relaxed">
-                A centralized, multi-tenant academic system designed to manage admissions, continuous assessments, examination grading, position rankings, and verified parent communication.
+              <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed drop-shadow-md">
+                A centralized, secure academic platform designed to manage student admissions, continuous assessments, examination grading, position rankings, and verified parent communication.
               </p>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-                <Link
-                  href="/register-institution"
+                <a
+                  href="#portals-finder"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition-all shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 group"
                 >
-                  <Building2 className="w-4 h-4 text-blue-200" />
-                  <span>Onboard Your Institution</span>
+                  <School className="w-4 h-4 text-blue-200" />
+                  <span>Access Your School Portal</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </a>
 
                 <Link
-                  href="/admissions/apply"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-slate-700 hover:border-slate-500 hover:bg-slate-800/60 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                  href="/register-institution"
+                  className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-slate-700 hover:border-slate-500 hover:bg-slate-800/80 backdrop-blur-md text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
                 >
-                  <UserCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Student Online Application</span>
+                  <Building2 className="w-4 h-4 text-emerald-400" />
+                  <span>Register New Institution</span>
                 </Link>
 
                 <Link
                   href="/login"
-                  className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-slate-800 hover:bg-slate-900/60 text-slate-300 font-medium text-sm transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-slate-800 hover:bg-slate-900/80 backdrop-blur-md text-slate-300 font-medium text-sm transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Portal Sign In</span>
+                  <span>Staff / Student Login</span>
                 </Link>
               </div>
 
@@ -327,8 +430,91 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* 3. DIRECT INSTITUTION PORTALS FINDER (User's request: Registered schools have their own dedicated website) */}
+        <section id="portals-finder" className="py-16 bg-[#0b101d] border-b border-slate-800">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+              <div>
+                <span className="text-xs uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                  Dedicated School Portals
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-white mt-3 tracking-tight">
+                  Access Your Institution's Branded Portal
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
+                  Every registered school operates on its own dedicated portal featuring their official logo, motto, news, student results, and online admissions.
+                </p>
+              </div>
+
+              {/* Search Box */}
+              <div className="relative w-full md:w-80">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={portalSearch}
+                  onChange={(e) => setPortalSearch(e.target.value)}
+                  placeholder="Search school name or code..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#090d16] border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* School Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {filteredPortals.map((school) => (
+                <div
+                  key={school.code}
+                  className="glass-card rounded-2xl p-6 border border-slate-800 hover:border-blue-500/50 transition-all flex flex-col justify-between group shadow-xl"
+                >
+                  <div>
+                    <div className="flex items-start justify-between mb-4">
+                      {/* School Crest Emblem */}
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-800 to-slate-900 border border-slate-700 flex items-center justify-center font-bold text-white shadow-md relative overflow-hidden group-hover:scale-105 transition-transform">
+                        <div className="w-8 h-8 rounded-full border border-amber-400/40 flex items-center justify-center bg-blue-950/60">
+                          <School className="w-4 h-4 text-amber-300" />
+                        </div>
+                      </div>
+
+                      <span className="px-2.5 py-1 rounded-md bg-blue-950/50 border border-blue-500/30 text-blue-300 font-mono text-[10px] font-bold">
+                        {school.code}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-bold text-white group-hover:text-blue-300 transition-colors leading-snug">
+                      {school.name}
+                    </h3>
+                    <div className="text-xs text-blue-400 font-medium mt-1">{school.type}</div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-2">
+                      <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <span>{school.location}</span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 italic mt-3 border-t border-slate-800/80 pt-2">
+                      "{school.motto}"
+                    </p>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+                    <span className="text-[10px] text-emerald-400 font-mono">
+                      ✓ {school.verifiedStudents.toLocaleString()} Enrolled
+                    </span>
+                    <Link
+                      href={`/portal/${school.slug}`}
+                      className="px-3.5 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 text-blue-200 hover:text-white font-semibold text-xs transition-all flex items-center gap-1.5"
+                    >
+                      <span>Open School Portal</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* 4. REAL-WORLD IMPACT (Modern Campus Environment) */}
-        <section id="features" className="py-16 border-t border-slate-800/80 bg-[#0b101d]/60">
+        <section className="py-16 border-b border-slate-800/80 bg-[#090d16]">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Image Container */}
@@ -385,7 +571,7 @@ export default function HomePage() {
         </section>
 
         {/* 5. INTERACTIVE INSTITUTION TIERS (Configurable Architecture Demo) */}
-        <section id="tiers" className="py-20 border-t border-slate-800/80">
+        <section id="tiers" className="py-20 border-b border-slate-800/80">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <span className="text-xs uppercase font-mono tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
@@ -525,7 +711,7 @@ export default function HomePage() {
         </section>
 
         {/* 6. SYSTEM LIFECYCLE (Steps 1 to 6) */}
-        <section id="workflow" className="py-20 border-t border-slate-800/80 bg-[#0b101d]/60">
+        <section id="workflow" className="py-20 border-b border-slate-800/80 bg-[#0b101d]/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -610,7 +796,7 @@ export default function HomePage() {
         </section>
 
         {/* 7. DEDICATED ROLE PORTALS */}
-        <section id="portals" className="py-20 border-t border-slate-800/80">
+        <section id="portals" className="py-20 border-b border-slate-800/80">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs uppercase font-mono tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
@@ -705,7 +891,7 @@ export default function HomePage() {
         </section>
 
         {/* 8. REGIONAL COUNTRY COVERAGE */}
-        <section id="regions" className="py-16 border-t border-slate-800/80 bg-[#0e1424]/60">
+        <section id="regions" className="py-16 bg-[#0e1424]/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <span className="text-xs uppercase font-mono tracking-widest text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
