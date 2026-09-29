@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Universal Ed | Mfumo wa Usimamizi wa Shule na Vyuo',
-  description: 'Programu ya kisasa ya kidijitali kwa usimamizi wa shule, kadi za ripoti, ada na mawasiliano ya wazazi.',
+  title: 'Universal Education Management Platform | Academic Digital OS',
+  description: 'Multi-tenant, country-agnostic education management platform for primary schools, secondary schools, colleges, and universities.',
 };
 
 export default function RootLayout({
@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="sw">
-      <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">
+    <html lang="en">
+      <body className="min-h-screen bg-background text-slate antialiased">
         {children}
       </body>
     </html>

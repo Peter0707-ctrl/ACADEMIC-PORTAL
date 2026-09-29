@@ -362,7 +362,7 @@ export default function AdmissionsApplyPage() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-        Universal Ed Tanzania • Mfumo wa Udahili Mtandaoni
+        Universal Education Management Platform • Jamhuri ya Muungano wa Tanzania
       </footer>
     </div>
   );

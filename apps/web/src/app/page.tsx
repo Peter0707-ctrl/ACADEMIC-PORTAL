@@ -196,31 +196,31 @@ const FEATURED_SCHOOLS: SchoolPortal[] = [
     centerNumber: 'LVIT-TZ',
   },
   {
-    slug: 'udom-portal',
-    name: 'Chuo Kikuu cha Dodoma (UDOM)',
-    category: 'Chuo Kikuu',
+    slug: 'apex-college',
+    name: 'Apex Institute of Business & Technology',
+    category: 'Chuo cha Kati & Stashahada',
     region: 'Dodoma Mjini',
-    motto: 'Embracing Knowledge for Societal Transformation',
-    studentsCount: 28500,
-    centerNumber: 'UDOM-TZ',
+    motto: 'Embracing Knowledge and Innovation',
+    studentsCount: 1850,
+    centerNumber: 'APEX-TZ',
   },
   {
-    slug: 'feza-boys',
-    name: "Feza Boys' High School",
+    slug: 'horizon-high',
+    name: "Horizon Academy High School",
     category: 'Sekondari (Kidato cha 1 - 6)',
     region: 'Kinondoni, Dar es Salaam',
     motto: 'In Pursuit of Academic Excellence',
     studentsCount: 780,
-    centerNumber: 'FEZA-TZ',
+    centerNumber: 'HAH-TZ',
   },
   {
-    slug: 'st-francis',
-    name: "St. Francis Girls' Secondary School",
+    slug: 'highland-girls',
+    name: "Highland Girls Secondary School",
     category: 'Sekondari (Kidato cha 1 - 4)',
     region: 'Mbeya Mjini',
     motto: 'Ora et Labora • Sali na Utende',
     studentsCount: 540,
-    centerNumber: 'STF-TZ',
+    centerNumber: 'HGS-TZ',
   },
 ];
 
@@ -469,8 +469,8 @@ export default function LandingPage() {
                 {/* Photo of Campus Building */}
                 <div className="relative h-80 sm:h-96 w-full">
                   <Image
-                    src="/images/tz-udom-campus.jpg"
-                    alt="Chuo Kikuu cha Dodoma - Majengo ya Kisasa ya Elimu Tanzania"
+                    src="/images/ai-campus-hero.jpg"
+                    alt="Mandhari ya Kisasa ya Kampasi ya Kidijitali ya Elimu"
                     fill
                     className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                     priority
@@ -485,10 +485,10 @@ export default function LandingPage() {
                     <span>Taasisi za Elimu Tanzania</span>
                   </div>
                   <h3 className="text-lg font-bold drop-shadow-md">
-                    Majengo ya Kisasa ya Elimu
+                    Kampasi ya Kisasa ya Kidijitali
                   </h3>
                   <p className="text-xs text-slate-200 drop-shadow-sm">
-                    Inatumiwa na shule na vyuo katika mikoa yote ya Tanzania
+                    Inayotumiwa na shule na vyuo vya kisasa kusimamia taaluma mtandaoni
                   </p>
                 </div>
 

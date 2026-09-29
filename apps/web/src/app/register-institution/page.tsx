@@ -579,7 +579,7 @@ export default function RegisterInstitutionPage() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-        Universal Ed Tanzania • Usajili wa Shule na Vyuo
+        Universal Education Management Platform • Jamhuri ya Muungano wa Tanzania
       </footer>
     </div>
   );
