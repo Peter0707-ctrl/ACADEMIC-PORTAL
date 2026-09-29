@@ -40,13 +40,13 @@ import {
   Zap,
 } from 'lucide-react';
 
-// Maandishi Yanayojiandika Yenyewe (Typewriter)
+// Typewriter Heading Phrases
 const TYPEWRITER_PHRASES = [
-  'Shule za Sekondari',
-  'Shule za Msingi na Awali',
-  'Vyuo vya Kati na Ufundi',
-  'Vyuo Vikuu na Vyuo Vishiriki',
-  'Taasisi Zote za Elimu Tanzania',
+  'Secondary & High Schools',
+  'Primary & Nursery Schools',
+  'Colleges & Technical Institutes',
+  'Universities & Higher Learning',
+  'Educational Institutions Worldwide',
 ];
 
 function TypewriterHeading({ className = 'text-cyan-300 font-extrabold inline-block min-w-[260px] sm:min-w-[420px] text-center' }: { className?: string }) {
@@ -86,100 +86,100 @@ function TypewriterHeading({ className = 'text-cyan-300 font-extrabold inline-bl
   );
 }
 
-// Picha 10 za Mandhari ya Kielimu (Slideshow ya Background)
+// 10 Curated Generic Educational Background Slides
 const HERO_SLIDES = [
-  { src: '/images/slide-1.jpg', label: 'Wanafunzi wakisoma na kujadiliana chuoni' },
-  { src: '/images/slide-2.jpg', label: 'Majengo ya kisasa ya kampasi ya kitaaluma' },
-  { src: '/images/slide-3.jpg', label: 'Mihadhara na mafunzo darasani' },
-  { src: '/images/slide-4.jpg', label: 'Matumizi ya kompyuta na teknolojia ya kisasa' },
-  { src: '/images/slide-5.jpg', label: 'Maktaba ya kisasa ya utafiti na kujisomea' },
-  { src: '/images/slide-6.jpg', label: 'Maabara za sayansi na majaribio ya vitendo' },
-  { src: '/images/slide-7.jpg', label: 'Mahafali na mafanikio ya wahitimu' },
-  { src: '/images/slide-8.jpg', label: 'Walimu na ufundishaji mahiri darasani' },
-  { src: '/images/slide-9.jpg', label: 'Mijadala ya wanafunzi na miradi ya elimu' },
-  { src: '/images/slide-10.jpg', label: 'Miundombinu imara ya elimu ya kisasa' },
+  { src: '/images/slide-1.jpg', label: 'Collaborative Student Learning & Group Study' },
+  { src: '/images/slide-2.jpg', label: 'Modern Academic Campus Architecture' },
+  { src: '/images/slide-3.jpg', label: 'Interactive Classrooms & Modern Lectures' },
+  { src: '/images/slide-4.jpg', label: 'Digital Learning & Computer Laboratories' },
+  { src: '/images/slide-5.jpg', label: 'Comprehensive Library & Research Facilities' },
+  { src: '/images/slide-6.jpg', label: 'Science Laboratories & Practical Experiments' },
+  { src: '/images/slide-7.jpg', label: 'Graduation Ceremony & Academic Excellence' },
+  { src: '/images/slide-8.jpg', label: 'Dedicated Educators & Inspiring Teaching' },
+  { src: '/images/slide-9.jpg', label: 'Student Seminars & Innovation Projects' },
+  { src: '/images/slide-10.jpg', label: 'World-Class Educational Infrastructure' },
 ];
 
-// Vipengele Muhimu vya Mfumo
+// Core Platform Features
 const PLATFORM_FEATURES = [
   {
     icon: Users,
     color: 'bg-blue-50 text-blue-700 border-blue-200',
-    title: 'Usajili & Taarifa za Wanafunzi (Student SIS)',
-    desc: 'Hifadhi kumbukumbu kamili za wanafunzi, wasifu wao, madarasa, namba za usajili, na taarifa za mawasiliano ya wazazi katika mfumo mmoja salama wa wingu.',
+    title: 'Student Information System (SIS)',
+    desc: 'Manage complete student records, bios, enrollments, student ID generation, classes, and guardian contact details in one secure multi-tenant cloud database.',
   },
   {
     icon: FileSpreadsheet,
     color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    title: 'Alama za Mitihani & Kadi za Ripoti (Report Cards)',
-    desc: 'Walimu huingiza alama mtandaoni au kwa kupakia faili la Excel. Mfumo huhesabu wastani, madaraja (A, B, C, D, F) na kuzalisha kadi za ripoti za PDF kiotomatiki.',
+    title: 'Examinations & Automated Report Cards',
+    desc: 'Teachers enter scores online or bulk upload via Excel. The system automatically computes averages, ranks, grade scales (A-F / GPA), and produces verifiable PDF report cards.',
   },
   {
     icon: CreditCard,
     color: 'bg-purple-50 text-purple-700 border-purple-200',
-    title: 'Usimamizi wa Ada & Risiti za Malipo (Fees & Billing)',
-    desc: 'Fuatilia makusanyo ya ada, toa stakabadhi za kielektroniki, fuatilia madeni ya ada ya kila mwanafunzi na pata ripoti za kifedha kwa kila muhula au mwaka.',
+    title: 'Fees, Billing & Electronic Receipts',
+    desc: 'Track fee collections, issue instant digital receipts, monitor student balances, and generate real-time institutional financial audits per term, semester, or year.',
   },
   {
     icon: Smartphone,
     color: 'bg-amber-50 text-amber-700 border-amber-200',
-    title: 'Mawasiliano na Wazazi kwa SMS & Portal',
-    desc: 'Tuma matokeo ya mitihani, risiti za malipo, na matangazo ya shule moja kwa moja kwa wazazi kupitia ujumbe mfupi wa SMS au portal yao ya mtandaoni.',
+    title: 'Parent Engagement via SMS & Web Portal',
+    desc: 'Deliver exam results, payment receipts, attendance notifications, and emergency announcements straight to parents via automated SMS and a dedicated mobile portal.',
   },
   {
     icon: Calendar,
     color: 'bg-rose-50 text-rose-700 border-rose-200',
-    title: 'Ufuatiliaji wa Mahudhurio ya Kila Siku',
-    desc: 'Rekodi mahudhurio ya wanafunzi na walimu kwa darasa kila siku, tambua utoro mapema na toa takwimu sahihi za mahudhurio ya shule nzima.',
+    title: 'Daily Attendance & Absence Tracking',
+    desc: 'Record daily attendance per classroom for students and staff, spot chronic absenteeism early, and generate institution-wide attendance analytics.',
   },
   {
     icon: Globe2,
     color: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-    title: 'Tovuti Binafsi ya Kila Shule (Dedicated Portal)',
-    desc: 'Kila shule ikisajiliwa inapata anwani na ukurasa wake rasmi mtandaoni wenye nembo yake, matangazo, fomu za kujiunga na viingilio vya walimu na wanafunzi.',
+    title: 'Dedicated White-Label Institution Portal',
+    desc: 'Every registered institution receives its own branded web presence featuring custom logos, notices, admission application forms, and authenticated staff/student access.',
   },
 ];
 
-// Hatua 3 za Kuanza Kutumia
+// 3 Onboarding Steps
 const ONBOARDING_STEPS = [
   {
     step: '01',
-    title: 'Sajili Shule Yako',
-    desc: 'Jaza jina la shule, ngazi ya masomo (Msingi, Sekondari, Chuo), eneo ilipo na mawasiliano ya utawala. Inachukua dakika 3 pekee.',
+    title: 'Register Your Institution',
+    desc: 'Provide your institution name, academic tier (Primary, Secondary, College, University), location, and administrator credentials. Takes under 3 minutes.',
   },
   {
     step: '02',
-    title: 'Weka Madarasa na Wanafunzi',
-    desc: 'Sajili mikondo ya madarasa, walimu wa masomo na pakia majina ya wanafunzi kwa urahisi kupitia faili la Excel au moja kwa moja.',
+    title: 'Configure Classes & Enroll Students',
+    desc: 'Create class streams, assign faculty to subjects, and effortlessly bulk-import student records via standard Excel spreadsheets or direct entry.',
   },
   {
     step: '03',
-    title: 'Anza Kutoa Ripoti na Kusimamia',
-    desc: 'Walimu wanaingiza alama, mfumo unatoa ripoti, unafuatilia ada na wazazi wanapokea matokeo kwenye simu zao popote walipo.',
+    title: 'Assess, Manage & Publish Results',
+    desc: 'Teachers enter assessment scores, the platform computes grades and class ranks, tracks fee compliance, and parents receive live report cards on their devices.',
   },
 ];
 
-// Ngazi za Taasisi Zinazohudumiwa
+// Multi-Tier Institution Support
 const SUPPORTED_LEVELS = [
   {
-    title: 'Shule za Awali & Msingi (Primary)',
-    desc: 'Kadi za ripoti zenye picha ya mtoto, tathmini ya tabia na mwenendo, mahudhurio ya kila siku na ujumbe wa matokeo kwa wazazi.',
+    title: 'Primary & Nursery Schools',
+    desc: 'Photo-enabled report cards, conduct & behavioral evaluations, daily attendance monitoring, and instant SMS alerts to guardians.',
     badge: 'Nursery & Primary',
   },
   {
-    title: 'Shule za Sekondari (O-Level & A-Level)',
-    desc: 'Uwekaji wa alama za majaribio na mitihani ya muhula, uhesabuji wa pointi, madaraja na nafasi darasani, na usimamizi wa ada.',
-    badge: 'Form 1 hadi Form 6',
+    title: 'Secondary Schools (O-Level & A-Level)',
+    desc: 'Midterm and final examinations, automated grade point calculations, subject rankings, division calculations, and fee clearance tracking.',
+    badge: 'Form 1 to Form 6 / High School',
   },
   {
-    title: 'Vyuo vya Kati & Ufundi (Colleges)',
-    desc: 'Mfumo wa semesta, ufuatiliaji wa mafunzo kwa vitendo (practical workshops), tathmini ya stadi na utoaji wa vyeti vya masomo.',
+    title: 'Vocational & Technical Colleges',
+    desc: 'Semester-based modular grading, practical workshop tracking, skill competency assessments, and accredited transcript issuance.',
     badge: 'Diploma & Certificates',
   },
   {
-    title: 'Vyuo Vikuu (Higher Learning)',
-    desc: 'Usajili wa kozi (course registration), uhesabuji wa GPA za semesta na jumla (cumulative GPA), vitivo na idara za masomo.',
-    badge: 'Universities',
+    title: 'Universities & Higher Learning',
+    desc: 'Course registration, credit unit calculations, semester and cumulative GPA tracking, faculties, departments, and multi-tier approval workflows.',
+    badge: 'Higher Education & Universities',
   },
 ];
 
@@ -213,28 +213,28 @@ export default function LandingPage() {
                   UNIVERSAL<span className="text-blue-700">ED</span>
                 </span>
                 <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200 uppercase">
-                  Tanzania
+                  Enterprise
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                Mfumo wa Kisasa wa Usimamizi wa Shule na Vyuo
+                Next-Generation Education Management Platform
               </p>
             </div>
           </Link>
 
           {/* Navigation Links */}
           <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-700">
-            <a href="#vipengele" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
+            <a href="#features" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-blue-600" />
-              Vipengele vya Mfumo
+              Features
             </a>
-            <a href="#jinsi-inavyofanya-kazi" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
+            <a href="#how-it-works" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
               <Zap className="w-4 h-4 text-emerald-600" />
-              Jinsi Inavyofanya Kazi
+              How It Works
             </a>
-            <a href="#aina-za-shule" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
+            <a href="#institutions" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
               <School className="w-4 h-4 text-purple-600" />
-              Aina za Taasisi
+              Institutions
             </a>
           </nav>
 
@@ -244,13 +244,13 @@ export default function LandingPage() {
               href="/auth/login"
               className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 rounded-lg hover:bg-slate-100 transition-colors"
             >
-              Ingia Mfumo
+              Sign In
             </Link>
             <Link
               href="/register-institution"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold shadow-md shadow-blue-700/25 transition-all hover:shadow-lg hover:-translate-y-0.5"
             >
-              <span>Sajili Shule Yako</span>
+              <span>Register Institution</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -287,14 +287,14 @@ export default function LandingPage() {
         <button
           onClick={prevSlide}
           className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-          aria-label="Picha Iliyopita"
+          aria-label="Previous Slide"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={nextSlide}
           className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-          aria-label="Picha Inayofuata"
+          aria-label="Next Slide"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
@@ -304,12 +304,12 @@ export default function LandingPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs sm:text-sm font-semibold shadow-lg">
             <Sparkles className="w-4 h-4 text-cyan-400" />
-            <span>Programu Kamili ya Kidijitali ya Shule na Vyuo</span>
+            <span>Complete Cloud Operating System for Education</span>
           </div>
 
           {/* Dynamic Typewriter Heading */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.18] drop-shadow-lg max-w-4xl">
-            Usimamizi wa Kisasa wa Elimu kwa{' '}
+            Modern Education Management for{' '}
             <div className="mt-2 text-cyan-300 drop-shadow-md">
               <TypewriterHeading />
             </div>
@@ -317,9 +317,9 @@ export default function LandingPage() {
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg lg:text-xl text-slate-100 max-w-3xl font-normal leading-relaxed drop-shadow-md">
-            Rahisisha uendeshaji wa shule au chuo chako kwa mfumo mmoja jumuishi: usajili wa wanafunzi,
-            uwekaji wa alama na kadi za ripoti, makusanyo ya ada na risiti, ufuatiliaji wa mahudhurio,
-            na kutoa tovuti (portal) binafsi kwa kila shule.
+            Streamline your school, college, or university operations with one unified platform: student enrollment,
+            examination marks, automated report cards, fee billing and electronic receipts, daily attendance,
+            and custom white-label portals for every institution.
           </p>
 
           {/* Action Buttons */}
@@ -329,7 +329,7 @@ export default function LandingPage() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-xl shadow-blue-600/40 transition-all text-base hover:-translate-y-0.5"
             >
               <Building2 className="w-5 h-5" />
-              <span>Sajili Shule Yako Sasa</span>
+              <span>Register Your Institution</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
 
@@ -338,7 +338,7 @@ export default function LandingPage() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-bold border border-white/30 shadow-lg transition-all text-base hover:-translate-y-0.5"
             >
               <Lock className="w-5 h-5 text-white/90" />
-              <span>Ingia Kwenye Akaunti</span>
+              <span>Sign In to Portal</span>
             </Link>
           </div>
 
@@ -346,19 +346,19 @@ export default function LandingPage() {
           <div className="pt-3 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs sm:text-sm text-slate-100 font-medium">
             <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              Kadi za Ripoti za Papo Hapo
+              Instant PDF Report Cards
             </span>
             <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-              SMS & WhatsApp kwa Wazazi
+              SMS & Portal Alerts for Parents
             </span>
             <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-purple-400" />
-              Tovuti Binafsi ya Kila Shule
+              Dedicated Portal for Every School
             </span>
             <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-amber-400" />
-              Usimamizi wa Ada na Risiti
+              Complete Fee & Billing Management
             </span>
           </div>
 
@@ -372,30 +372,30 @@ export default function LandingPage() {
                   className={`h-2.5 rounded-full transition-all duration-300 ${
                     currentSlide === idx ? 'w-8 bg-cyan-400' : 'w-2.5 bg-white/40 hover:bg-white/80'
                   }`}
-                  aria-label={`Onyesha picha ${idx + 1}`}
+                  aria-label={`Show slide ${idx + 1}`}
                 />
               ))}
             </div>
             <div className="text-xs text-white/80 font-medium drop-shadow">
-              Picha ya <span className="font-bold text-cyan-300">{currentSlide + 1} ya {HERO_SLIDES.length}</span>: {HERO_SLIDES[currentSlide].label}
+              Background Slide <span className="font-bold text-cyan-300">{currentSlide + 1} of {HERO_SLIDES.length}</span>: {HERO_SLIDES[currentSlide].label}
             </div>
           </div>
         </div>
       </section>
 
       {/* 3. PLATFORM CORE MODULES / FEATURES */}
-      <section id="vipengele" className="py-20 bg-white border-b border-slate-200">
+      <section id="features" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">
               <Layers className="w-3.5 h-3.5" />
-              <span>Vipengele vya Mfumo</span>
+              <span>Core Capabilities</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Kila Kitu Unachohitaji Kusimamia Shule Yako
+              Everything You Need to Power Your Institution
             </h2>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              Mfumo mmoja kamili unaounganisha uongozi wa shule, walimu, wanafunzi na wazazi katika mazingira rahisi na ya kisasa.
+              A robust, enterprise-grade software suite uniting institution leadership, faculty, students, and parents in one seamless cloud environment.
             </p>
           </div>
 
@@ -425,19 +425,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. HOW IT WORKS (HATUA 3 ZA KUANZA) */}
-      <section id="jinsi-inavyofanya-kazi" className="py-20 bg-slate-50 border-b border-slate-200">
+      {/* 4. HOW IT WORKS (3 SIMPLE STEPS) */}
+      <section id="how-it-works" className="py-20 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
               <Zap className="w-3.5 h-3.5" />
-              <span>Rahisi Kutumia</span>
+              <span>Effortless Onboarding</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Anza Kutumia kwa Hatua 3 Rahisi
+              Launch in 3 Simple Steps
             </h2>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              Huna haja ya vifaa vya gharama au seva ofisini. Unachohitaji ni simu au kompyuta iliyounganishwa na mtandao.
+              No expensive on-premise hardware or servers required. All you need is an internet connection on any computer, tablet, or smartphone.
             </p>
           </div>
 
@@ -467,26 +467,26 @@ export default function LandingPage() {
               href="/register-institution"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm shadow-md shadow-blue-700/25 transition-all hover:shadow-lg hover:-translate-y-0.5"
             >
-              <span>Sajili Shule Yako Sasa (Bure Kuanza)</span>
+              <span>Register Your Institution (Get Started Free)</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 5. AINA ZA TAASISI (INSTITUTIONS SUPPORTED) */}
-      <section id="aina-za-shule" className="py-20 bg-white border-b border-slate-200">
+      {/* 5. INSTITUTIONS SUPPORTED */}
+      <section id="institutions" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wider">
               <School className="w-3.5 h-3.5" />
-              <span>Inafaa Shule Zote</span>
+              <span>Multi-Tier Architecture</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Inajirekebisha Kulingana na Ngazi ya Taasisi Yako
+              Engineered to Adapt to Any Educational Level
             </h2>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              Mfumo una miundo tofauti inayokidhi mahitaji ya shule za awali, msingi, sekondari, vyuo vya kati na vyuo vikuu.
+              Configurable workflows tailor-made for primary schools, secondary academies, technical institutes, and higher education universities.
             </p>
           </div>
 
@@ -512,7 +512,7 @@ export default function LandingPage() {
                   href="/register-institution"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-800 transition-colors"
                 >
-                  <span>Anza Usajili wa Ngazi Hii</span>
+                  <span>Register Under This Tier</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -527,17 +527,17 @@ export default function LandingPage() {
           <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="space-y-3 text-center md:text-left">
               <h3 className="text-2xl sm:text-3xl font-black">
-                Je, uko tayari kurahisisha uendeshaji wa shule yako?
+                Ready to Modernize Your Institution&apos;s Operations?
               </h3>
               <p className="text-blue-100 text-sm sm:text-base max-w-2xl leading-relaxed">
-                Jiunge na shule na vyuo vingine vinavyotumia Universal Ed kupunguza gharama za karatasi, kuondoa makosa ya kikokotoo, na kuwapa wazazi huduma bora ya kielektroniki.
+                Join leading schools, colleges, and educational academies utilizing Universal Ed to eliminate manual paperwork, prevent calculation errors, and deliver world-class digital services to students and parents.
               </p>
             </div>
             <Link
               href="/register-institution"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-blue-900 font-extrabold text-sm shadow-md hover:bg-blue-50 transition-all shrink-0 hover:scale-105"
             >
-              <span>Sajili Shule Yako Bure Leo</span>
+              <span>Register Your Institution Today</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -556,51 +556,51 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <span className="text-lg font-black text-white">UNIVERSAL ED</span>
-                  <p className="text-[11px] text-slate-400">Mfumo wa Kisasa wa Elimu</p>
+                  <p className="text-[11px] text-slate-400">Education Operating System</p>
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-                Programu jumuishi ya kidijitali inayosaidia shule na vyuo kusimamia wanafunzi,
-                mitihani, alama, kadi za ripoti, ada na mawasiliano ya wazazi.
+                An all-in-one multi-tenant cloud platform empowering schools and universities to manage students,
+                examinations, automated report cards, fee billing, and real-time parent engagement.
               </p>
               <div className="text-xs text-slate-400 space-y-1">
-                <p>📍 Dar es Salaam, Tanzania</p>
-                <p>📞 Simu: +255 754 000 000 / +255 684 000 000</p>
-                <p>✉️ Barua Pepe: info@universaled.co.tz</p>
+                <p>📍 Dar es Salaam, Tanzania • Global Cloud</p>
+                <p>📞 Phone: +255 754 000 000 / +255 684 000 000</p>
+                <p>✉️ Email: sales@universaled.co.tz</p>
               </div>
             </div>
 
-            {/* Col 2: Huduma */}
+            {/* Col 2: Features */}
             <div className="space-y-3">
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Vipengele</h4>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Features</h4>
               <ul className="space-y-2 text-xs text-slate-400">
-                <li><a href="#vipengele" className="hover:text-white transition-colors">Usajili wa Wanafunzi</a></li>
-                <li><a href="#vipengele" className="hover:text-white transition-colors">Kadi za Ripoti za Mitihani</a></li>
-                <li><a href="#vipengele" className="hover:text-white transition-colors">Usimamizi wa Ada</a></li>
-                <li><a href="#vipengele" className="hover:text-white transition-colors">Ufuatiliaji wa Mahudhurio</a></li>
-                <li><a href="#vipengele" className="hover:text-white transition-colors">Mawasiliano na Wazazi</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Student Information System</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Automated Report Cards</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Fee & Billing Management</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Attendance Tracking</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Parent SMS & Portal</a></li>
               </ul>
             </div>
 
-            {/* Col 3: Taasisi */}
+            {/* Col 3: Institutions */}
             <div className="space-y-3">
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Aina za Taasisi</h4>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Institutions</h4>
               <ul className="space-y-2 text-xs text-slate-400">
-                <li><a href="#aina-za-shule" className="hover:text-white transition-colors">Shule za Msingi & Awali</a></li>
-                <li><a href="#aina-za-shule" className="hover:text-white transition-colors">Shule za Sekondari</a></li>
-                <li><a href="#aina-za-shule" className="hover:text-white transition-colors">Vyuo vya Kati & Ufundi</a></li>
-                <li><a href="#aina-za-shule" className="hover:text-white transition-colors">Vyuo Vikuu</a></li>
-                <li><Link href="/register-institution" className="text-blue-400 hover:text-blue-300 font-semibold">+ Sajili Taasisi Yako</Link></li>
+                <li><a href="#institutions" className="hover:text-white transition-colors">Primary & Nursery Schools</a></li>
+                <li><a href="#institutions" className="hover:text-white transition-colors">Secondary Schools</a></li>
+                <li><a href="#institutions" className="hover:text-white transition-colors">Colleges & Vocational Centers</a></li>
+                <li><a href="#institutions" className="hover:text-white transition-colors">Universities & Higher Learning</a></li>
+                <li><Link href="/register-institution" className="text-blue-400 hover:text-blue-300 font-semibold">+ Register Your Institution</Link></li>
               </ul>
             </div>
 
-            {/* Col 4: Huduma za Haraka */}
+            {/* Col 4: Quick Portals */}
             <div className="space-y-3">
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Viingilio</h4>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Access Portals</h4>
               <ul className="space-y-2 text-xs text-slate-400">
-                <li><Link href="/auth/login" className="hover:text-white transition-colors">Ingia Kwenye Akaunti</Link></li>
-                <li><Link href="/register-institution" className="hover:text-white transition-colors">Sajili Shule Mpya</Link></li>
-                <li><Link href="/admissions/apply" className="hover:text-white transition-colors">Fomu ya Udahili Mtandaoni</Link></li>
+                <li><Link href="/auth/login" className="hover:text-white transition-colors">Sign In to Account</Link></li>
+                <li><Link href="/register-institution" className="hover:text-white transition-colors">Register New School</Link></li>
+                <li><Link href="/admissions/apply" className="hover:text-white transition-colors">Online Admission Form</Link></li>
               </ul>
             </div>
           </div>
@@ -608,12 +608,12 @@ export default function LandingPage() {
           {/* Bottom Copyright */}
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>
-              © {new Date().getFullYear()} Universal Ed Tanzania. Haki zote zimehifadhiwa.
+              © {new Date().getFullYear()} Universal Ed. All rights reserved. Commercial Multi-Tenant Education Platform.
             </p>
             <div className="flex items-center gap-4">
-              <span>Programu ya Kidijitali ya Elimu</span>
+              <span>Cloud Education Platform</span>
               <span>•</span>
-              <span>Inayotumika Tanzania</span>
+              <span>Enterprise Ready</span>
             </div>
           </div>
         </div>
