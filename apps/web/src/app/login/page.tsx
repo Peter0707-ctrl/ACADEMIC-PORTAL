@@ -1,32 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { School, Lock, Mail, ArrowRight, ShieldCheck, Sparkles, BookOpen, GraduationCap, Users } from 'lucide-react';
+import { School, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'TEACHER' | 'ADMIN' | 'STUDENT' | 'PARENT'>('TEACHER');
   const [email, setEmail] = useState('teacher.physics@kilimanjarosec.edu');
   const [password, setPassword] = useState('Password123!');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const handleTabChange = (role: 'TEACHER' | 'ADMIN' | 'STUDENT' | 'PARENT') => {
-    setActiveTab(role);
-    setError(null);
-    if (role === 'TEACHER') {
-      setEmail('teacher.physics@kilimanjarosec.edu');
-    } else if (role === 'ADMIN') {
-      setEmail('headmaster@kilimanjarosec.edu');
-    } else if (role === 'STUDENT') {
-      setEmail('stu-2026-0001@kilimanjarosec.edu');
-    } else if (role === 'PARENT') {
-      setEmail('parent.shirima@kilimanjarosec.edu');
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,88 +18,86 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      if (activeTab === 'TEACHER') {
-        router.push('/teacher');
-      } else if (activeTab === 'ADMIN') {
-        router.push('/admin');
-      } else if (activeTab === 'STUDENT') {
-        router.push('/student');
-      } else if (activeTab === 'PARENT') {
-        router.push('/parent');
+      const res = await api.auth.login({ email, pass: password });
+      if (res?.accessToken) {
+        localStorage.setItem('auth_token', res.accessToken);
+        localStorage.setItem('tenant_id', res.user.tenantId || '');
+        localStorage.setItem('user_roles', JSON.stringify(res.user.roles || []));
+
+        // Route to respective portal
+        const roles: string[] = res.user.roles || [];
+        if (roles.includes('TEACHER')) {
+          router.push('/teacher');
+        } else if (roles.includes('HEADMASTER_PRINCIPAL') || roles.includes('ACADEMIC_MASTER')) {
+          router.push('/academic');
+        } else if (roles.includes('STUDENT')) {
+          router.push('/student');
+        } else if (roles.includes('PARENT_GUARDIAN')) {
+          router.push('/parent');
+        } else {
+          router.push('/teacher');
+        }
       }
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
+  const setDemoRole = (roleEmail: string, redirectPath: string) => {
+    setEmail(roleEmail);
+    setPassword('Password123!');
+  };
+
   return (
-    <div className="min-h-screen bg-[#090d16] bg-radial-glow flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-100">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white mx-auto shadow-xl shadow-blue-500/25 mb-4">
-          <School className="w-8 h-8" />
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white mx-auto shadow-sm">
+          <School className="w-7 h-7" />
         </div>
-        <h2 className="text-3xl font-black text-white tracking-tight">Institutional Sign In</h2>
-        <p className="mt-1 text-xs text-slate-400">
+        <h2 className="mt-4 text-center text-2xl font-bold tracking-tight text-slate-900">
+          Sign In to Your Institution
+        </h2>
+        <p className="mt-1 text-center text-xs text-slate-500">
           Universal Academic Digital Operating System
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        {/* Role Tab Selector */}
-        <div className="p-1 rounded-2xl bg-[#0e1424] border border-slate-800 mb-6 flex text-xs font-bold">
-          {[
-            { id: 'TEACHER', label: 'Teacher', icon: BookOpen },
-            { id: 'ADMIN', label: 'Principal', icon: ShieldCheck },
-            { id: 'STUDENT', label: 'Student', icon: GraduationCap },
-            { id: 'PARENT', label: 'Parent', icon: Users },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => handleTabChange(tab.id as any)}
-                className={`flex-1 py-2.5 rounded-xl flex items-center justify-center space-x-1.5 transition-all ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-6 shadow-sm border border-slate-200 rounded-2xl sm:px-10">
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+              {error}
+            </div>
+          )}
 
-        {/* Login Form Box */}
-        <div className="glass-card rounded-2xl p-8 border border-slate-800 shadow-2xl space-y-6">
-          <form className="space-y-4" onSubmit={handleLogin}>
+          <form className="space-y-5" onSubmit={handleLogin}>
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                {activeTab === 'STUDENT' ? 'Student ID or Email' : 'Institutional Email'}
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Institutional Email
               </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="mt-1 relative rounded-lg shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
-                  type="text"
+                  type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="name@institution.edu"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
                 Password
               </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="mt-1 relative rounded-lg shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -123,7 +105,8 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="••••••••"
                 />
               </div>
             </div>
@@ -131,18 +114,54 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-blue-600/25 flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
+              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
             >
-              <span>Sign In as {activeTab}</span>
-              <ArrowRight className="w-4 h-4 ml-1" />
+              {loading ? 'Authenticating...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-400">
-            <span>New educational institution? </span>
-            <Link href="/register-institution" className="text-blue-400 font-bold hover:underline">
-              Register & Setup School
-            </Link>
+          {/* One-Click Demo Role Switcher */}
+          <div className="mt-8 pt-6 border-t border-slate-200">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+              One-Click Demo Roles
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setDemoRole('teacher.physics@kilimanjarosec.edu', '/teacher')}
+                className="p-2 border border-slate-200 rounded-lg text-left hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              >
+                <span className="font-semibold block text-slate-800">Teacher</span>
+                <span className="text-slate-500 text-[10px]">Physics Master</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoRole('headmaster@kilimanjarosec.edu', '/academic')}
+                className="p-2 border border-slate-200 rounded-lg text-left hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              >
+                <span className="font-semibold block text-slate-800">Headmaster</span>
+                <span className="text-slate-500 text-[10px]">Approver</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoRole('stu-2026-0001@kilimanjarosec.edu', '/student')}
+                className="p-2 border border-slate-200 rounded-lg text-left hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              >
+                <span className="font-semibold block text-slate-800">Student</span>
+                <span className="text-slate-500 text-[10px]">Form 1 Student</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDemoRole('superadmin@platform.edu', '/teacher')}
+                className="p-2 border border-slate-200 rounded-lg text-left hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              >
+                <span className="font-semibold block text-slate-800">Super Admin</span>
+                <span className="text-slate-500 text-[10px]">Platform Global</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
