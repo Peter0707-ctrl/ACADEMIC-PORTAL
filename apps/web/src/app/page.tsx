@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   Lock,
   ArrowRight,
-  Sparkles,
   BarChart3,
   Layers,
   Globe2,
@@ -24,9 +23,11 @@ import {
   Award,
   ChevronRight,
   ExternalLink,
+  Calendar,
+  ClipboardCheck,
 } from 'lucide-react';
 
-// Dynamic Tier Configurations
+// Institutional Academic Models
 interface InstitutionTierConfig {
   id: string;
   name: string;
@@ -47,46 +48,46 @@ const INSTITUTION_TIERS: InstitutionTierConfig[] = [
     id: 'secondary',
     name: 'Secondary School',
     category: 'Ordinary Level (Form 1–4)',
-    badge: 'Term Based • Ranking',
+    badge: 'Term System • Class Merit Ranking',
     description:
-      'Configured for national secondary curriculums. Enforces term cycles, automatic position ranking (1st, 2nd, 2nd, 4th ties), and teacher mark-entry verification.',
+      'Engineered for national secondary curricula. Manages term schedules, automated student position calculation with competition tie handling, and comprehensive subject mark entry.',
     academicDivision: 'Terms',
-    gradingSystem: 'NECTA Standard (A: 75-100, B: 65-74, C: 45-64, D: 30-44, F: 0-29)',
+    gradingSystem: 'NECTA Standards (A: 75–100, B: 65–74, C: 45–64, D: 30–44, F: 0–29)',
     rankingEnabled: true,
     financialClearanceGate: false,
-    rolesAvailable: ['Headmaster', 'Academic Master', 'Teacher', 'Student', 'Parent', 'Accountant'],
-    workflowApprovers: ['Subject Teacher (Draft)', 'Academic Master (Review)', 'Headmaster (Final Approval & Publish)'],
-    keyHighlight: 'Automated division calculation and parent SMS notifications on published date.',
+    rolesAvailable: ['Headmaster', 'Academic Master', 'Teacher', 'Student', 'Parent', 'Bursar'],
+    workflowApprovers: ['Subject Teacher (Draft)', 'Academic Master (Review)', 'Headmaster (Final Approval & Release)'],
+    keyHighlight: 'Automated division assignment and verified parent SMS alerts upon official release date.',
   },
   {
     id: 'university',
     name: 'University & Higher Learning',
-    category: 'Tertiary Degree Programs',
-    badge: 'Semester • GPA / CGPA',
+    category: 'Tertiary Degree & Post-Graduate Programs',
+    badge: 'Semester Credits • GPA / CGPA',
     description:
-      'Designed for multi-faculty academic structures. Uses course credit hours, GPA/CGPA grading rules, Senate publication workflows, and mandatory bursar financial clearance.',
+      'Built for complex multi-faculty academic structures. Supports modular course credits, GPA/CGPA computation, departmental moderation, Senate approvals, and student fee clearance enforcement.',
     academicDivision: 'Semesters',
     gradingSystem: 'University 5.0 Scale (A: 5.0, B+: 4.0, B: 3.0, C: 2.0, D: 1.0, E: 0.0)',
     rankingEnabled: false,
     financialClearanceGate: true,
-    rolesAvailable: ['Vice Chancellor', 'Dean', 'Registrar', 'HOD', 'Lecturer', 'Student', 'Bursar'],
-    workflowApprovers: ['Lecturer (Course Marks)', 'HOD (Moderation)', 'Dean / Senate (Clearance & Release)'],
-    keyHighlight: 'Financial clearance lock: Students with outstanding tuition fees cannot download exam slips or transcripts.',
+    rolesAvailable: ['Vice Chancellor', 'Dean', 'Registrar', 'Head of Department', 'Lecturer', 'Student', 'Bursar'],
+    workflowApprovers: ['Lecturer (Course Marks)', 'Head of Department (Moderation)', 'Dean & Senate (Formal Release)'],
+    keyHighlight: 'Financial clearance lock: Students with outstanding balances cannot download exam permits or official transcripts.',
   },
   {
     id: 'primary',
     name: 'Primary School',
-    category: 'Standard 1–7 Basic Education',
-    badge: 'Standard Competencies',
+    category: 'Standard 1–7 Foundation Education',
+    badge: 'Continuous Assessment',
     description:
-      'Simplified class stream management, continuous assessment tracking, foundational numeracy/literacy metrics, and direct guardian mobile access.',
+      'Streamlined class stream administration, continuous assessment tracking, foundational literacy/numeracy metrics, and direct parent communication.',
     academicDivision: 'Terms',
     gradingSystem: 'Primary Standard 5-Tier (A: Bora Sana, B: Nzuri, C: Wastani, D: Dhaifu, E: Hafifu)',
     rankingEnabled: true,
     financialClearanceGate: false,
     rolesAvailable: ['Headteacher', 'Class Teacher', 'Subject Teacher', 'Parent / Guardian'],
     workflowApprovers: ['Class Teacher (Entry)', 'Headteacher (Publish)'],
-    keyHighlight: 'Guardian phone integration for direct student progress updates.',
+    keyHighlight: 'Direct guardian mobile integration for continuous student performance monitoring.',
   },
   {
     id: 'advanced',
@@ -94,63 +95,63 @@ const INSTITUTION_TIERS: InstitutionTierConfig[] = [
     category: 'Form 5 & 6 (A-Level)',
     badge: 'Combinations & Points',
     description:
-      'Specialized subject combinations (e.g. PCM, PCB, HGL, ECA, EGM). Principal points calculation and national exam readiness analytics.',
+      'Configured for specialized subject combinations (e.g. PCM, PCB, HGL, ECA, EGM). Features principal point calculations and university entry eligibility tracking.',
     academicDivision: 'Terms',
     gradingSystem: 'Advanced Level Points (A: 1 pt, B: 2 pts, C: 3 pts, D: 4 pts, E: 5 pts, S: 6 pts, F: 7 pts)',
     rankingEnabled: true,
     financialClearanceGate: false,
     rolesAvailable: ['Headmaster', 'Academic Master', 'Senior Master', 'Teacher', 'Student', 'Parent'],
     workflowApprovers: ['Teacher', 'Academic Master', 'Headmaster'],
-    keyHighlight: 'Points & division forecasting for university admissions eligibility.',
+    keyHighlight: 'Division and points forecasting aligned with national university admission requirements.',
   },
   {
     id: 'vocational',
-    name: 'Vocational & Training Institutes',
-    category: 'VETA / Technical Colleges',
-    badge: 'Competency Modules',
+    name: 'Vocational & Technical Institutes',
+    category: 'VETA & Technical Training',
+    badge: 'Competency-Based Modules',
     description:
-      'Modular semester assessment for vocational trades, practical workshop assessments, competency-based education and training (CBET), and internship tracking.',
+      'Tailored for vocational trades, workshop practical assessments, competency-based education and training (CBET), and apprenticeship tracking.',
     academicDivision: 'Semesters',
     gradingSystem: 'Competency Based (Competent / Not Yet Competent / Modular Credits)',
     rankingEnabled: false,
     financialClearanceGate: true,
-    rolesAvailable: ['Principal', 'Workshop Instructor', 'Apprentice / Student', 'Industry Liaison'],
-    workflowApprovers: ['Instructor (Workshop Practical)', 'Academic Dean (Certification)'],
-    keyHighlight: 'Practical skills assessment logs and apprenticeship evaluation tracking.',
+    rolesAvailable: ['Principal', 'Workshop Instructor', 'Apprentice / Student', 'Industry Liaison Officer'],
+    workflowApprovers: ['Instructor (Workshop Evaluation)', 'Academic Dean (Certification)'],
+    keyHighlight: 'Practical workshop logs and industry apprenticeship verification records.',
   },
 ];
 
-// Country Adaptation Registry
-const COUNTRY_LOCALIZATIONS = [
+// Regional Localization Specifications
+const REGIONAL_FRAMEWORKS = [
   {
     country: 'Tanzania',
-    regulators: 'NECTA • TCU • NACTVET',
+    framework: 'NECTA • TCU • NACTVET',
     currency: 'TZS',
-    sampleExam: 'PSLE, CSEE, ACSEE, TCU Degree',
+    examTypes: 'PSLE, CSEE, ACSEE, TCU Degree',
   },
   {
     country: 'Kenya',
-    regulators: 'KNEC • CBC • CUE',
+    framework: 'KNEC • CBC • CUE',
     currency: 'KES',
-    sampleExam: 'KCPE, KCSE, CBC Assessment',
+    examTypes: 'KPSEA, KCSE, CBC Assessment',
   },
   {
     country: 'Uganda',
-    regulators: 'UNEB • NCHE',
+    framework: 'UNEB • NCHE',
     currency: 'UGX',
-    sampleExam: 'PLE, UCE, UACE',
+    examTypes: 'PLE, UCE, UACE',
   },
   {
     country: 'Rwanda',
-    regulators: 'NESA • HEC',
+    framework: 'NESA • HEC',
     currency: 'RWF',
-    sampleExam: 'National Exam, Advanced Level',
+    examTypes: 'National Examinations, Advanced Level',
   },
   {
     country: 'Zambia',
-    regulators: 'ECZ • HEA',
+    framework: 'ECZ • HEA',
     currency: 'ZMW',
-    sampleExam: 'Grade 7, Grade 9, Grade 12 ECZ',
+    examTypes: 'Grade 7, Grade 9, Grade 12 ECZ',
   },
 ];
 
@@ -162,12 +163,9 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
       {/* 1. TOP ANNOUNCEMENT & NAVIGATION */}
       <div>
-        <div className="bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-blue-900/40 border-b border-blue-500/20 px-4 py-2 text-center text-xs text-blue-300 font-medium flex items-center justify-center gap-2">
-          <Sparkles className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
-          <span>Universal Digital OS: Country-Agnostic, Multi-Tenant Architecture for Schools & Universities across East Africa</span>
-          <span className="hidden md:inline-block bg-blue-500/20 text-blue-300 text-[10px] px-2 py-0.5 rounded-full font-mono border border-blue-500/30">
-            v1.0 Production Ready
-          </span>
+        <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-blue-950 border-b border-blue-500/20 px-4 py-2 text-center text-xs text-blue-200 font-medium flex items-center justify-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+          <span>Unified Academic Management Platform — Supporting Primary, Secondary, Colleges & Universities across East Africa</span>
         </div>
 
         <header className="glass-nav sticky top-0 z-50 transition-all">
@@ -182,27 +180,27 @@ export default function HomePage() {
                   UNIVERSAL ED
                 </span>
                 <span className="text-[11px] text-blue-400 font-mono tracking-wider uppercase mt-1">
-                  Academic Platform OS
+                  Academic Platform
                 </span>
               </div>
             </Link>
 
             {/* Quick Links */}
             <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
-              <a href="#architecture" className="hover:text-white transition-colors">
-                Architecture
+              <a href="#features" className="hover:text-white transition-colors">
+                Key Features
               </a>
               <a href="#tiers" className="hover:text-white transition-colors">
-                Institution Types
+                Academic Levels
               </a>
-              <a href="#lifecycle" className="hover:text-white transition-colors">
-                System Lifecycle
+              <a href="#workflow" className="hover:text-white transition-colors">
+                How It Works
               </a>
               <a href="#portals" className="hover:text-white transition-colors">
-                Role Portals
+                Portals
               </a>
-              <a href="#countries" className="hover:text-white transition-colors">
-                Countries
+              <a href="#regions" className="hover:text-white transition-colors">
+                Regional Coverage
               </a>
             </nav>
 
@@ -218,14 +216,14 @@ export default function HomePage() {
                 href="/register-institution"
                 className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2"
               >
-                <span>Register School</span>
+                <span>Register Institution</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
         </header>
 
-        {/* 2. HERO SECTION WITH IMAGE MOCKUP */}
+        {/* 2. HERO SECTION WITH IMAGE SHOWCASE */}
         <section className="relative overflow-hidden pt-12 pb-20">
           {/* Subtle Background Radial Glows */}
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
@@ -234,18 +232,18 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6 relative z-10">
             {/* Hero Text */}
             <div className="text-center max-w-4xl mx-auto space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-950/60 border border-blue-500/30 text-blue-300 text-xs font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>Zero Hardcoded Business Rules • 100% Configurable Engine</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-950/70 border border-blue-500/30 text-blue-300 text-xs font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Enterprise Multi-Tenant Educational Architecture</span>
               </div>
 
               <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.1]">
-                One Digital Operating System for{' '}
-                <span className="text-gradient-blue">Every Educational Institution</span>
+                Complete Academic Management for{' '}
+                <span className="text-gradient-blue">Modern Institutions</span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto font-normal leading-relaxed">
-                Whether you manage a Primary School, a 4-year Secondary School, or a multi-faculty University with semesters and GPA, Universal Ed adapts dynamically to your grading, approvals, and fees.
+                A centralized, multi-tenant academic system designed to manage admissions, continuous assessments, examination grading, position rankings, and verified parent communication.
               </p>
 
               {/* Action Buttons */}
@@ -271,23 +269,23 @@ export default function HomePage() {
                   href="/login"
                   className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-slate-800 hover:bg-slate-900/60 text-slate-300 font-medium text-sm transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Role Portals Demo</span>
+                  <span>Portal Sign In</span>
                 </Link>
               </div>
 
-              {/* Verified Platform Badges */}
+              {/* Core System Standards */}
               <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-medium">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  Strict Multi-Tenant Isolation
+                  Strict Tenant Isolation
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Lock className="w-4 h-4 text-blue-400" />
-                  Tamper-Resistant Audit Log
+                  Immutable Audit Records
                 </span>
                 <span className="flex items-center gap-1.5">
                   <FileSpreadsheet className="w-4 h-4 text-purple-400" />
-                  14-Point Excel Marks Validation
+                  14-Point Spreadsheet Validation
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-amber-400" />
@@ -296,24 +294,24 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* 3. HERO IMAGE SHOWCASE (Generated High-Resolution 3D Dashboard Mockup) */}
+            {/* 3. HERO IMAGE SHOWCASE (Production Dashboard UI) */}
             <div className="mt-14 relative rounded-3xl p-2 sm:p-4 bg-gradient-to-b from-blue-500/20 via-slate-800/40 to-transparent border border-white/10 shadow-2xl glow-blue">
               <div className="relative rounded-2xl overflow-hidden bg-[#0e1424] border border-white/5">
                 <Image
                   src="/images/hero-dashboard.jpg"
-                  alt="Universal Education Management Platform 3D Analytics Dashboard"
+                  alt="Academic Analytics Dashboard and Student Performance Tracking Interface"
                   width={1920}
                   height={1080}
                   className="w-full h-auto object-cover transform hover:scale-[1.01] transition-transform duration-700"
                   priority
                 />
 
-                {/* Overlaid Floating Info Badges */}
+                {/* Overlaid Institutional Status Badges */}
                 <div className="absolute top-4 left-4 sm:top-6 sm:left-6 glass-card rounded-xl p-3 border border-white/15 hidden sm:flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-400" />
                   <div>
-                    <div className="text-[11px] font-bold text-white leading-none">Automated Ranking Engine</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Ties: 1st, 2nd, 2nd, 4th (Olympic Standard)</div>
+                    <div className="text-[11px] font-bold text-white leading-none">Class Ranking Engine</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Tie Handling: 1st, 2nd, 2nd, 4th (Standard Competition)</div>
                   </div>
                 </div>
 
@@ -321,7 +319,7 @@ export default function HomePage() {
                   <ShieldCheck className="w-4 h-4 text-blue-400" />
                   <div>
                     <div className="text-[11px] font-bold text-white leading-none">Financial Clearance Gate</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Enforces Bursar fee clearance before report cards</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Enforces Bursar fee clearance before report card generation</div>
                   </div>
                 </div>
               </div>
@@ -329,15 +327,15 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 4. REAL-WORLD IMPACT (Modern African Campus & Students Image) */}
-        <section className="py-16 border-t border-slate-800/80 bg-[#0b101d]/60">
+        {/* 4. REAL-WORLD IMPACT (Modern Campus Environment) */}
+        <section id="features" className="py-16 border-t border-slate-800/80 bg-[#0b101d]/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Image Container */}
               <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl order-2 lg:order-1">
                 <Image
                   src="/images/students-campus.jpg"
-                  alt="Students and Teachers collaborating with digital education technology"
+                  alt="Secondary school and university students learning with digital academic tools"
                   width={1600}
                   height={900}
                   className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
@@ -345,10 +343,10 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#090d16] via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-6 left-6 right-6 p-4 glass-card rounded-2xl border border-white/10">
                   <span className="text-xs font-mono uppercase tracking-widest text-blue-400 block mb-1">
-                    Student 360° Empowerment
+                    Student 360° Academic Records
                   </span>
                   <p className="text-xs text-slate-200">
-                    Empowering students, verified parents, and educators across Tanzania, Kenya, Uganda, Rwanda, and Zambia with instant digital report cards and transparent academic history.
+                    Equipping students, verified guardians, and school administrators across Tanzania, Kenya, Uganda, Rwanda, and Zambia with reliable, tamper-free academic records.
                   </p>
                 </div>
               </div>
@@ -356,28 +354,28 @@ export default function HomePage() {
               {/* Text Highlights */}
               <div className="space-y-6 order-1 lg:order-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-                  <span>Built for Scale & Integrity</span>
+                  <span>Engineered for Reliability & Data Security</span>
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-snug">
-                  Transforming School Operations with Unbreakable Security
+                  Streamlined Academic Administration for Modern Institutions
                 </h2>
                 <p className="text-slate-400 text-sm leading-relaxed">
-                  Traditional school software hardcodes fixed assumptions that break when applied to different institutions. Universal Ed isolates every school into its own tenant while enabling complete customization of grading schemes, terms, roles, and fee rules.
+                  Different institutions operate under distinct national policies, grading standards, and calendar structures. Universal Ed provides an agile, multi-tenant framework where every school configures its own academic rules without custom coding.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
                     <CheckCircle2 className="w-5 h-5 text-emerald-400 mb-2" />
-                    <div className="font-bold text-white text-sm">Parent Verification</div>
+                    <div className="font-bold text-white text-sm">Verified Parent Linking</div>
                     <p className="text-xs text-slate-400 mt-1">
-                      Parents access only verified children. No unauthorized student attachment.
+                      Guardians access only verified children profiles. No cross-student data leakage.
                     </p>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 mb-2" />
-                    <div className="font-bold text-white text-sm">Audited Corrections</div>
+                    <div className="font-bold text-white text-sm">Audited Grade Adjustments</div>
                     <p className="text-xs text-slate-400 mt-1">
-                      Post-publication grade corrections require audited workflow reasons and approval.
+                      Post-publication grade corrections follow a strictly logged review and authorization trail.
                     </p>
                   </div>
                 </div>
@@ -391,13 +389,13 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <span className="text-xs uppercase font-mono tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                Rule 2 of Architecture: Never Hard-Code Rules
+                Institutional Customization
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-white mt-3 tracking-tight">
                 One Platform. Any Educational Level.
               </h2>
               <p className="text-sm text-slate-400 mt-2">
-                Click any institution type below to inspect how the underlying academic engine, grading scales, approval chains, and fee gates reconfigure in real-time.
+                Select an institution type below to preview how grading schemes, academic terms, and approval workflows adapt dynamically.
               </p>
             </div>
 
@@ -445,7 +443,7 @@ export default function HomePage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
                       <span className="text-slate-500 block mb-1 font-mono uppercase text-[10px]">
-                        Academic Calendar Division
+                        Academic Calendar Structure
                       </span>
                       <span className="text-white font-semibold text-sm">
                         {activeTier.academicDivision}-Based System
@@ -454,7 +452,7 @@ export default function HomePage() {
 
                     <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
                       <span className="text-slate-500 block mb-1 font-mono uppercase text-[10px]">
-                        Ranking & Position Engine
+                        Position & Merit Calculation
                       </span>
                       <span className={activeTier.rankingEnabled ? 'text-emerald-400 font-semibold text-sm' : 'text-slate-400 font-semibold text-sm'}>
                         {activeTier.rankingEnabled ? '✓ Enabled (Standard Competition Ties)' : '✕ Disabled (Cumulative GPA)'}
@@ -463,7 +461,7 @@ export default function HomePage() {
 
                     <div className="sm:col-span-2 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
                       <span className="text-slate-500 block mb-1 font-mono uppercase text-[10px]">
-                        Grading Model & Boundaries
+                        Grading Framework
                       </span>
                       <span className="text-blue-300 font-mono font-medium">{activeTier.gradingSystem}</span>
                     </div>
@@ -472,7 +470,7 @@ export default function HomePage() {
                   {/* Workflow Approval Sequence */}
                   <div>
                     <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-2">
-                      Approval & Publication Pipeline:
+                      Formal Examination Release Workflow:
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
                       {activeTier.workflowApprovers.map((step, idx) => (
@@ -493,7 +491,7 @@ export default function HomePage() {
                 <div className="p-6 rounded-2xl bg-[#090d16] border border-slate-800 flex flex-col justify-between space-y-6">
                   <div>
                     <div className="text-xs font-mono uppercase tracking-widest text-slate-500 mb-2">
-                      Available Composable Roles
+                      Configured Stakeholder Roles
                     </div>
                     <div className="flex flex-wrap gap-1.5 mb-6">
                       {activeTier.rolesAvailable.map((role, idx) => (
@@ -507,7 +505,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="text-xs font-mono uppercase tracking-widest text-slate-500 mb-2">
-                      Institutional Highlight
+                      Academic Operational Highlight
                     </div>
                     <p className="text-xs text-slate-300 bg-slate-900/60 p-3 rounded-xl border border-slate-800 leading-relaxed">
                       {activeTier.keyHighlight}
@@ -518,7 +516,7 @@ export default function HomePage() {
                     href="/register-institution"
                     className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs text-center transition-all shadow-md shadow-blue-600/30 block"
                   >
-                    Configure {activeTier.name} Tenant →
+                    Setup {activeTier.name} Portal →
                   </Link>
                 </div>
               </div>
@@ -526,18 +524,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 6. END-TO-END LIFECYCLE (Steps 1 to 6) */}
-        <section id="lifecycle" className="py-20 border-t border-slate-800/80 bg-[#0b101d]/60">
+        {/* 6. SYSTEM LIFECYCLE (Steps 1 to 6) */}
+        <section id="workflow" className="py-20 border-t border-slate-800/80 bg-[#0b101d]/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
                 End-to-End Operational Lifecycle
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-white mt-3 tracking-tight">
-                From Registration to Alumni
+                From Admission to Graduation
               </h2>
               <p className="text-sm text-slate-400 mt-2">
-                A seamless flow where data is never duplicated and official records are permanently preserved.
+                A connected lifecycle where student data remains intact across academic years and permanent historical records.
               </p>
             </div>
 
@@ -549,7 +547,7 @@ export default function HomePage() {
                 </div>
                 <h3 className="font-bold text-white text-base mb-1">Institution Onboarding</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Select institution level (Primary to University). Set grading scales, term/semester structure, and ranking rules.
+                  Setup institution profile, academic structure, grade boundaries, fee policies, and administration accounts.
                 </p>
               </div>
 
@@ -558,9 +556,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold flex items-center justify-center text-sm mb-4">
                   02
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Public Admissions</h3>
+                <h3 className="font-bold text-white text-base mb-1">Online Admissions</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Applicants submit documents and tracking numbers. Upon board review and acceptance, an active student record is created without duplicate entries.
+                  Prospective students submit online applications with document attachments. Accepted applicants transition automatically to active student records.
                 </p>
               </div>
 
@@ -569,9 +567,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 font-bold flex items-center justify-center text-sm mb-4">
                   03
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Academic Structure & CA</h3>
+                <h3 className="font-bold text-white text-base mb-1">Academic Structure & Attendance</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Assign subjects, teachers, and student class rosters. Track daily attendance and configure Continuous Assessment weightings.
+                  Assign subjects, teachers, and class streams. Record daily or period attendance and track syllabus milestones.
                 </p>
               </div>
 
@@ -580,9 +578,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center text-sm mb-4">
                   04
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Excel 14-Point Validation</h3>
+                <h3 className="font-bold text-white text-base mb-1">14-Point Marks Validation</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Teachers enter marks or upload structured Excel sheets. 14 critical validation checks catch missing candidates, negative marks, and formula errors.
+                  Teachers enter marks online or upload standardized spreadsheets. Automated validation blocks invalid scores, empty required rows, and formula discrepancies.
                 </p>
               </div>
 
@@ -591,9 +589,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold flex items-center justify-center text-sm mb-4">
                   05
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Approval & Scheduled Publish</h3>
+                <h3 className="font-bold text-white text-base mb-1">Verification & Scheduled Release</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Academic Master reviews, Headmaster/Dean approves. Results calculate ranks and publish on a designated scheduled release date.
+                  Academic officers review department marks, the Headmaster or Dean approves, and results are scheduled for unified publication.
                 </p>
               </div>
 
@@ -602,27 +600,27 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 font-bold flex items-center justify-center text-sm mb-4">
                   06
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">360° Student & Parent Portals</h3>
+                <h3 className="font-bold text-white text-base mb-1">Student & Guardian Access</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Students and verified guardians view report cards, subject rankings, and payment receipts. Enforced financial clearance protects tuition revenue.
+                  Students and parents access term report cards, division summaries, and fee clearance receipts via dedicated secure portals.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 7. DEDICATED ROLE PORTALS DIRECT ACCESS */}
+        {/* 7. DEDICATED ROLE PORTALS */}
         <section id="portals" className="py-20 border-t border-slate-800/80">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs uppercase font-mono tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                Isolated Role Environments
+                Role-Based Architecture
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-white mt-3 tracking-tight">
-                Specialized Portals. Zero Role Clutter.
+                Dedicated Workspaces for Every Stakeholder
               </h2>
               <p className="text-sm text-slate-400 mt-2">
-                Every stakeholder works within a dedicated, distraction-free dashboard tailored with distinct permissions.
+                Clear separation of concerns: Administrators, teachers, students, and parents access customized dashboards matching their responsibilities.
               </p>
             </div>
 
@@ -633,16 +631,16 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/30 text-blue-400 flex items-center justify-center mb-4">
                     <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">Principal / Admin</h3>
+                  <h3 className="font-bold text-white text-base mb-1">Administration Command</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Whole-school KPI analytics, final exam approval, publication schedules, and AI performance alerts.
+                    Institutional KPI metrics, examination publication controls, staff assignments, and audit trails.
                   </p>
                 </div>
                 <Link
                   href="/admin"
                   className="px-4 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 text-blue-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Enter Principal Center →
+                  Open Admin Center →
                 </Link>
               </div>
 
@@ -652,16 +650,16 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-xl bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mb-4">
                     <BookOpen className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">Teacher Workspace</h3>
+                  <h3 className="font-bold text-white text-base mb-1">Faculty & Teachers</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Continuous assessment recording, Excel mark-sheets download, drag-and-drop validation, and submission.
+                    Continuous assessment entries, standardized mark sheet downloads, spreadsheet validation, and submission.
                   </p>
                 </div>
                 <Link
                   href="/teacher"
                   className="px-4 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Enter Teacher Portal →
+                  Open Teacher Portal →
                 </Link>
               </div>
 
@@ -671,16 +669,16 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-xl bg-purple-600/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mb-4">
                     <GraduationCap className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">Student 360°</h3>
+                  <h3 className="font-bold text-white text-base mb-1">Student 360° Portal</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Official term report cards, division metrics, attendance history, and fee clearance receipts.
+                    Term report cards, subject ranking positions, cumulative averages, and financial clearance receipts.
                   </p>
                 </div>
                 <Link
                   href="/student"
                   className="px-4 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600 border border-purple-500/30 text-purple-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Enter Student Portal →
+                  Open Student Portal →
                 </Link>
               </div>
 
@@ -692,40 +690,40 @@ export default function HomePage() {
                   </div>
                   <h3 className="font-bold text-white text-base mb-1">Guardian Portal</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Verified parent-child linking, multi-child switcher, tuition payment invoices, and performance graphs.
+                    Multi-child switcher, terminal exam reports, attendance tracking, and school fee payment records.
                   </p>
                 </div>
                 <Link
                   href="/parent"
                   className="px-4 py-2.5 rounded-xl bg-amber-600/20 hover:bg-amber-600 border border-amber-500/30 text-amber-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Enter Parent Portal →
+                  Open Parent Portal →
                 </Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 8. REGIONAL COUNTRY AGNOSTIC COVERAGE */}
-        <section id="countries" className="py-16 border-t border-slate-800/80 bg-[#0e1424]/60">
+        {/* 8. REGIONAL COUNTRY COVERAGE */}
+        <section id="regions" className="py-16 border-t border-slate-800/80 bg-[#0e1424]/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <span className="text-xs uppercase font-mono tracking-widest text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
-                Country-Agnostic Engine
+                East Africa Region
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-3 tracking-tight">
-                East Africa Ready • Globally Adaptable
+                Designed for National Curricula Standards
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-xs">
-              {COUNTRY_LOCALIZATIONS.map((loc, idx) => (
+              {REGIONAL_FRAMEWORKS.map((loc, idx) => (
                 <div key={idx} className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
                   <div className="font-bold text-white text-sm flex items-center gap-1.5 mb-1">
                     <Globe2 className="w-3.5 h-3.5 text-blue-400" />
                     <span>{loc.country}</span>
                   </div>
-                  <div className="text-blue-400 font-mono text-[11px] mb-2">{loc.regulators}</div>
+                  <div className="text-blue-400 font-mono text-[11px] mb-2">{loc.framework}</div>
                   <div className="text-slate-400 text-[11px]">
                     <span className="text-slate-500 block">Currency:</span>
                     <span className="text-slate-300 font-mono">{loc.currency}</span>
@@ -749,60 +747,60 @@ export default function HomePage() {
                 </div>
                 <div>
                   <span className="font-black text-white text-base tracking-tight block">
-                    UNIVERSAL ED PLATFORM
+                    UNIVERSAL ED
                   </span>
                   <span className="text-[10px] text-blue-400 font-mono uppercase tracking-wider block">
-                    Digital Institutional Operating System
+                    Academic Management System
                   </span>
                 </div>
               </div>
 
               <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-                A unified, multi-tenant digital operating system designed for Primary Schools, Secondary Schools, Advanced High Schools, Vocational Institutes, Colleges, and Universities across East Africa.
+                A unified, secure academic management platform designed for Primary Schools, Secondary Schools, High Schools, Vocational Institutes, Colleges, and Universities across East Africa.
               </p>
 
               {/* Status Indicator */}
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>System Status: <strong>All Clusters Operational (99.98%)</strong></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>System Status: <strong>Operational (99.98% Service Uptime)</strong></span>
               </div>
             </div>
 
             {/* Col 2: Solutions by Level */}
             <div className="space-y-3">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Institution Solutions</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Institution Types</h4>
               <ul className="space-y-2 text-slate-400 text-xs">
                 <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Primary Schools (Std 1–7)</a></li>
                 <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Secondary Schools (Form 1–4)</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Advanced Level (Form 5–6)</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Vocational & VETA Institutes</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Diploma Colleges</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Universities & Faculties</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Advanced High Schools (Form 5–6)</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Vocational & Technical Training</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Colleges & Polytechnics</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Universities & Degree Programs</a></li>
               </ul>
             </div>
 
             {/* Col 3: Core Platform Engines */}
             <div className="space-y-3">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Platform Engines</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Platform Features</h4>
               <ul className="space-y-2 text-slate-400 text-xs">
-                <li><Link href="/register-institution" className="hover:text-blue-400 transition-colors">Multi-Tenant Onboarding</Link></li>
+                <li><Link href="/register-institution" className="hover:text-blue-400 transition-colors">Institution Onboarding</Link></li>
                 <li><Link href="/admissions/apply" className="hover:text-blue-400 transition-colors">Student Online Admissions</Link></li>
-                <li><a href="#lifecycle" className="hover:text-blue-400 transition-colors">Standard Competition Ranking</a></li>
-                <li><a href="#lifecycle" className="hover:text-blue-400 transition-colors">Excel 14-Point Validation</a></li>
-                <li><a href="#lifecycle" className="hover:text-blue-400 transition-colors">Financial Clearance Gate</a></li>
-                <li><a href="#lifecycle" className="hover:text-blue-400 transition-colors">Tamper-Resistant Audit Log</a></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Standard Competition Ranking</a></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Spreadsheet Validation Engine</a></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Financial Clearance Controls</a></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Security Audit Logging</a></li>
               </ul>
             </div>
 
             {/* Col 4: Ecosystem & Roles */}
             <div className="space-y-3">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Portals & Workspaces</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Stakeholder Portals</h4>
               <ul className="space-y-2 text-slate-400 text-xs">
-                <li><Link href="/admin" className="hover:text-blue-400 transition-colors">Principal Command Center</Link></li>
-                <li><Link href="/teacher" className="hover:text-blue-400 transition-colors">Teacher Assessment Workspace</Link></li>
+                <li><Link href="/admin" className="hover:text-blue-400 transition-colors">Headmaster & Administration</Link></li>
+                <li><Link href="/teacher" className="hover:text-blue-400 transition-colors">Teacher & Marks Entry</Link></li>
                 <li><Link href="/student" className="hover:text-blue-400 transition-colors">Student 360° Portal</Link></li>
-                <li><Link href="/parent" className="hover:text-blue-400 transition-colors">Verified Guardian Portal</Link></li>
-                <li><Link href="/login" className="hover:text-blue-400 transition-colors">Role Selector Sign In</Link></li>
+                <li><Link href="/parent" className="hover:text-blue-400 transition-colors">Parent & Guardian Portal</Link></li>
+                <li><Link href="/login" className="hover:text-blue-400 transition-colors">Sign In Portal</Link></li>
               </ul>
             </div>
           </div>
@@ -815,14 +813,14 @@ export default function HomePage() {
                 © 2026 Universal Education Management Platform. All rights reserved.
               </p>
               <p className="text-[11px] text-slate-600 mt-0.5">
-                Designed & Engineered for High-Security Educational Multi-Tenancy across Africa.
+                Built for High-Security Educational Institutions across East Africa.
               </p>
             </div>
 
             {/* Compliance & Regulatory Links */}
             <div className="flex flex-wrap items-center gap-6 text-[11px]">
               <span className="hover:text-slate-400 cursor-pointer transition-colors">
-                Data Privacy & Sovereignty
+                Data Protection & Privacy
               </span>
               <span className="hover:text-slate-400 cursor-pointer transition-colors">
                 Terms of Service
@@ -831,7 +829,7 @@ export default function HomePage() {
                 Security Architecture
               </span>
               <span className="hover:text-slate-400 cursor-pointer transition-colors">
-                East Africa Region (TZ, KE, UG, RW, ZM)
+                Tanzania • Kenya • Uganda • Rwanda • Zambia
               </span>
             </div>
           </div>
