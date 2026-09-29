@@ -1,0 +1,29 @@
+{
+  "name": "academic-portal-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Universal Education Management Platform",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace=@academic/api run start:dev",
+    "dev:web": "npm --workspace=@academic/web run dev",
+    "build:packages": "npm --workspace=@academic/shared run build",
+    "build:api": "npm --workspace=@academic/api run build",
+    "build:web": "npm --workspace=@academic/web run build",
+    "build": "npm run build:packages && npm run build:api && npm run build:web",
+    "test": "npm --workspace=@academic/shared run test && npm --workspace=@academic/api run test",
+    "test:e2e": "npm --workspace=@academic/api run test:e2e"
+  },
+  "keywords": [
+    "education-management",
+    "multi-tenant",
+    "academic-portal",
+    "nestjs",
+    "nextjs"
+  ],
+  "author": "Academic Portal Team",
+  "license": "UNLICENSED"
+}
