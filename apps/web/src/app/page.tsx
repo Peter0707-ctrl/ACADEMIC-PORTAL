@@ -196,31 +196,31 @@ const FEATURED_SCHOOLS: SchoolPortal[] = [
     centerNumber: 'LVIT-TZ',
   },
   {
-    slug: 'apex-college',
-    name: 'Apex Institute of Business & Technology',
-    category: 'Chuo cha Kati & Stashahada',
+    slug: 'udom-portal',
+    name: 'Chuo Kikuu cha Dodoma (UDOM)',
+    category: 'Chuo Kikuu',
     region: 'Dodoma Mjini',
-    motto: 'Embracing Knowledge and Innovation',
-    studentsCount: 1850,
-    centerNumber: 'APEX-TZ',
+    motto: 'Embracing Knowledge for Societal Transformation',
+    studentsCount: 28500,
+    centerNumber: 'UDOM-TZ',
   },
   {
-    slug: 'horizon-high',
-    name: "Horizon Academy High School",
+    slug: 'feza-boys',
+    name: "Feza Boys' High School",
     category: 'Sekondari (Kidato cha 1 - 6)',
     region: 'Kinondoni, Dar es Salaam',
     motto: 'In Pursuit of Academic Excellence',
     studentsCount: 780,
-    centerNumber: 'HAH-TZ',
+    centerNumber: 'FEZA-TZ',
   },
   {
-    slug: 'highland-girls',
-    name: "Highland Girls Secondary School",
+    slug: 'st-francis',
+    name: "St. Francis Girls' Secondary School",
     category: 'Sekondari (Kidato cha 1 - 4)',
     region: 'Mbeya Mjini',
     motto: 'Ora et Labora • Sali na Utende',
     studentsCount: 540,
-    centerNumber: 'HGS-TZ',
+    centerNumber: 'STF-TZ',
   },
 ];
 
@@ -356,10 +356,6 @@ export default function LandingPage() {
               <BookOpen className="w-4 h-4 text-amber-600" />
               Ngazi za Taasisi
             </a>
-            <a href="#huduma-na-ada" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-purple-600" />
-              Gharama (TZS)
-            </a>
           </nav>
 
           {/* Action Buttons */}
@@ -469,8 +465,8 @@ export default function LandingPage() {
                 {/* Photo of Campus Building */}
                 <div className="relative h-80 sm:h-96 w-full">
                   <Image
-                    src="/images/ai-campus-hero.jpg"
-                    alt="Mandhari ya Kisasa ya Kampasi ya Kidijitali ya Elimu"
+                    src="/images/tz-udom-campus.jpg"
+                    alt="Chuo Kikuu cha Dodoma - Majengo ya Kisasa ya Elimu Tanzania"
                     fill
                     className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                     priority
@@ -485,10 +481,10 @@ export default function LandingPage() {
                     <span>Taasisi za Elimu Tanzania</span>
                   </div>
                   <h3 className="text-lg font-bold drop-shadow-md">
-                    Kampasi ya Kisasa ya Kidijitali
+                    Majengo ya Kisasa ya Elimu
                   </h3>
                   <p className="text-xs text-slate-200 drop-shadow-sm">
-                    Inayotumiwa na shule na vyuo vya kisasa kusimamia taaluma mtandaoni
+                    Inatumiwa na shule na vyuo katika mikoa yote ya Tanzania
                   </p>
                 </div>
 
@@ -937,107 +933,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 7. GHARAMA KWA SHILINGI YA TANZANIA (TZS PRICING) */}
-      <section id="huduma-na-ada" className="py-16 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-              <DollarSign className="w-3.5 h-3.5" />
-              <span>Gharama za Kifurushi (TZS)</span>
-            </div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-              Gharama Nafuu Zenye Uwazi Kamili
-            </h2>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              Hakuna ada za siri wala gharama za kigeni. Chagua kifurushi kinachofaa ukubwa wa shule yako.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Primary School Plan */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
-              <div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                  Shule za Msingi & Awali
-                </span>
-                <h3 className="text-xl font-black text-slate-900 mb-3">Msingi Starter</h3>
-                <div className="mb-4">
-                  <span className="text-3xl font-black text-slate-900">TZS 150,000</span>
-                  <span className="text-xs text-slate-500 block mt-0.5">kwa Muhula</span>
-                </div>
-                <ul className="space-y-2.5 text-xs text-slate-600 mb-6">
-                  <li className="flex items-center gap-2">✓ Tovuti Binafsi ya Shule (Portal)</li>
-                  <li className="flex items-center gap-2">✓ Ripoti za Maendeleo ya Masomo</li>
-                  <li className="flex items-center gap-2">✓ SMS za Matokeo kwa Wazazi</li>
-                  <li className="flex items-center gap-2">✓ Mfumo wa Mahudhurio</li>
-                </ul>
-              </div>
-              <Link
-                href="/register-institution"
-                className="w-full py-3 rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 font-bold text-xs text-center transition-colors shadow-xs"
-              >
-                Chagua Kifurushi Hiki
-              </Link>
-            </div>
-
-            {/* Secondary School Plan (Featured) */}
-            <div className="bg-white rounded-2xl border-2 border-blue-600 p-8 flex flex-col justify-between shadow-xl relative">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-700 text-white text-[11px] font-black uppercase px-4 py-1 rounded-full shadow-md">
-                Inayopendekezwa Zaidi
-              </div>
-              <div>
-                <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-1">
-                  Sekondari (Kidato 1 - 6)
-                </span>
-                <h3 className="text-xl font-black text-slate-900 mb-3">Sekondari Pro</h3>
-                <div className="mb-4">
-                  <span className="text-3xl font-black text-slate-900">TZS 280,000</span>
-                  <span className="text-xs text-slate-500 block mt-0.5">kwa Muhula (Wanafunzi hadi 1,200)</span>
-                </div>
-                <ul className="space-y-2.5 text-xs text-slate-600 mb-6">
-                  <li className="flex items-center gap-2 font-bold text-slate-800">✓ Kila Kitu Kwenye Kifurushi cha Msingi</li>
-                  <li className="flex items-center gap-2">✓ Uhesabuji wa Pointi na Madaraja kiotomatiki</li>
-                  <li className="flex items-center gap-2">✓ Marksheets za Mitihani ya Muhula</li>
-                  <li className="flex items-center gap-2">✓ Malipo ya Ada na Stakabadhi</li>
-                  <li className="flex items-center gap-2">✓ Akaunti za Walimu na Utawala</li>
-                </ul>
-              </div>
-              <Link
-                href="/register-institution"
-                className="w-full py-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs text-center transition-colors shadow-md shadow-blue-700/25"
-              >
-                Sajili Shule ya Sekondari
-              </Link>
-            </div>
-
-            {/* College & University Plan */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
-              <div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                  Vyuo vya Kati & Vyuo Vikuu
-                </span>
-                <h3 className="text-xl font-black text-slate-900 mb-3">Chuo Enterprise</h3>
-                <div className="mb-4">
-                  <span className="text-3xl font-black text-slate-900">TZS 650,000</span>
-                  <span className="text-xs text-slate-500 block mt-0.5">kwa Semesta</span>
-                </div>
-                <ul className="space-y-2.5 text-xs text-slate-600 mb-6">
-                  <li className="flex items-center gap-2">✓ Uhesabuji wa GPA za Semesta</li>
-                  <li className="flex items-center gap-2">✓ Usajili wa Kozi na Moduli</li>
-                  <li className="flex items-center gap-2">✓ Idara na Vitivo (Faculties)</li>
-                  <li className="flex items-center gap-2">✓ Usimamizi wa Malipo na Ankara</li>
-                </ul>
-              </div>
-              <Link
-                href="/register-institution"
-                className="w-full py-3 rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 font-bold text-xs text-center transition-colors shadow-xs"
-              >
-                Wasiliana Nasi kwa Chuo
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 8. FOOTER */}
       <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
@@ -1071,7 +967,7 @@ export default function LandingPage() {
               <ul className="space-y-2 text-xs text-slate-400">
                 <li><a href="#tovuti-za-shule" className="hover:text-white transition-colors">Tovuti za Shule (Portals)</a></li>
                 <li><a href="#matokeo-ya-mitihani" className="hover:text-white transition-colors">Kadi za Ripoti za Mitihani</a></li>
-                <li><a href="#huduma-na-ada" className="hover:text-white transition-colors">Usimamizi wa Ada</a></li>
+                <li><a href="#ngazi-za-elimu" className="hover:text-white transition-colors">Usimamizi wa Ada</a></li>
                 <li><a href="#ngazi-za-elimu" className="hover:text-white transition-colors">Ufuatiliaji wa Mahudhurio</a></li>
                 <li><Link href="/admissions/apply" className="hover:text-white transition-colors">Fomu za Udahili Mtandaoni</Link></li>
               </ul>
