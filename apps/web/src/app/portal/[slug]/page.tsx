@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -21,10 +21,8 @@ import {
   Clock,
   ChevronRight,
   CheckCircle2,
-  ExternalLink,
 } from 'lucide-react';
 
-// Registry of Registered School Tenants
 interface SchoolProfile {
   code: string;
   name: string;
@@ -36,7 +34,7 @@ interface SchoolProfile {
   email: string;
   established: string;
   principal: string;
-  academicSystem: 'TERMS' | 'SEMESTERS';
+  academicSystem: 'Mihula (Terms)' | 'Semesters';
   gradingSummary: string;
   studentCount: number;
   programs: { title: string; desc: string; badge: string }[];
@@ -48,136 +46,136 @@ const REGISTERED_SCHOOLS: Record<string, SchoolProfile> = {
     code: 'KSS',
     name: 'Kilimanjaro Secondary School',
     motto: 'Elimu Ni Nuru na Uongozi • Strive for Excellence',
-    regNumber: 'REG NO: S.1429',
-    type: 'Co-Educational Secondary School (Form 1–4)',
-    location: 'Moshi Urban, Kilimanjaro, Tanzania',
+    regNumber: 'Namba ya Usajili: S.1429 (Wizara ya Elimu)',
+    type: 'Shule ya Sekondari ya Bweni na Kutwa (Kidato cha 1–4)',
+    location: 'Moshi Mjini, Mkoa wa Kilimanjaro, Tanzania',
     phone: '+255 27 275 4321',
     email: 'info@kilimanjarosec.sc.tz',
     established: '1984',
     principal: 'Dr. Baraka Mwamba, M.Ed.',
-    academicSystem: 'TERMS',
-    gradingSummary: 'NECTA National Examination Standards (Standard Competition Ranking)',
+    academicSystem: 'Mihula (Terms)',
+    gradingSummary: 'Viwango vya NECTA (Nafasi Darasani & Division I-IV)',
     studentCount: 1420,
     programs: [
       {
-        title: 'Ordinary Level (Form 1 – 4)',
-        desc: 'Comprehensive national secondary curriculum covering Sciences, Commercial, and Arts streams with modern laboratories.',
-        badge: 'Term System',
+        title: 'Kidato cha 1 hadi cha 4 (O-Level)',
+        desc: 'Mtaala kamili wa Taifa wa masomo ya Sayansi, Biashara, na Sanaa wenye maabara za kisasa za fizikia na kemia.',
+        badge: 'Mihula 2',
       },
       {
-        title: 'Science & ICT Specialization',
-        desc: 'Advanced Physics, Chemistry, Biology, and Computer Studies with hands-on coding and science experiments.',
-        badge: 'Practical Labs',
+        title: 'Kambi ya Sayansi na TEHAMA',
+        desc: 'Mafunzo maalum ya kompyuta, maabara ya lugha, na majaribio ya kisayansi kujiandaa na mitihani ya NECTA.',
+        badge: 'Sayansi & TEHAMA',
       },
       {
-        title: 'Extracurricular & Sports Academy',
-        desc: 'Debate society, athletics, football, Scouting, and environmental conservation clubs.',
-        badge: 'Holistic Growth',
+        title: 'Vilabu vya Michezo na Taaluma',
+        desc: 'Umoja wa wajenzi wa taifa, mijadala ya Kiingereza na Kiswahili, mpira wa miguu, na uhifadhi wa mazingira.',
+        badge: 'Ukuaji Kamili',
       },
     ],
     announcements: [
       {
         date: '28 Sep 2026',
-        title: 'Term 1 Official Examination Results & Rankings Published',
-        category: 'Examinations',
+        title: 'Matokeo Rasmi ya Mitihani ya Muhula wa Pili Yametangazwa',
+        category: 'Mitihani',
       },
       {
         date: '15 Sep 2026',
-        title: 'Form 1 Online Application Window 2026/2027 Now Open',
-        category: 'Admissions',
+        title: 'Fomu za Kujiunga na Kidato cha Kwanza 2026/2027 Zipo Wazi Mtandaoni',
+        category: 'Udahili',
       },
       {
         date: '02 Sep 2026',
-        title: 'Annual Parent-Teacher Association (PTA) Conference Schedule',
-        category: 'Notice',
+        title: 'Mkutano Mkuu wa Wazazi na Walimu (PTA) Tarehe 10 Oktoba',
+        category: 'Tangazo Rasmi',
       },
     ],
   },
   lvit: {
     code: 'LVIT',
     name: 'Lake Victoria Institute of Technology',
-    motto: 'Innovation, Research & Professional Integrity',
-    regNumber: 'REG NO: REG/NACTVET/0894',
-    type: 'Higher Learning Institute & College',
-    location: 'Capripoint, Mwanza City, Tanzania',
+    motto: 'Ubunifu, Teknolojia na Uadilifu wa Kitaaluma',
+    regNumber: 'Namba ya Usajili: REG/NACTVET/0894',
+    type: 'Chuo cha Kati cha Ufundi na Elimu ya Juu',
+    location: 'Capripoint, Jiji la Mwanza, Tanzania',
     phone: '+255 28 250 8899',
     email: 'admissions@lvit.ac.tz',
     established: '2004',
     principal: 'Prof. Maryam Juma, Ph.D.',
-    academicSystem: 'SEMESTERS',
-    gradingSummary: 'Semester Credits & Cumulative GPA (5.0 Scale) with Bursar Clearance Gate',
+    academicSystem: 'Semesters',
+    gradingSummary: 'Mikopo ya Masomo (Credits) na GPA ya 5.0 (TCU & NACTVET)',
     studentCount: 3850,
     programs: [
       {
-        title: 'Faculty of Computing & Information Systems',
-        desc: 'Diploma and Degree programs in Software Engineering, Network Infrastructure, and Cyber Security.',
-        badge: 'Semester Credits',
+        title: 'Kitivo cha Sayansi ya Kompyuta na TEHAMA',
+        desc: 'Stashahada na Shahada za Uhandisi wa Programu (Software Engineering), Mtandao na Usalama wa Kimtandao.',
+        badge: 'Credits za Semesta',
       },
       {
-        title: 'Faculty of Business & Accounting',
-        desc: 'Professional accounting, procurement, logistics, and digital entrepreneurship qualifications.',
+        title: 'Idara ya Uhasibu na Biashara',
+        desc: 'Astashahada na Stashahada zinazotambulika na Bodi ya Wahasibu (NBAA).',
         badge: 'NBAA Accredited',
       },
       {
-        title: 'Institute of Applied Sciences',
-        desc: 'Laboratory technology, water resource engineering, and industrial biotechnology modules.',
-        badge: 'Practical Research',
+        title: 'Uhandisi wa Mazingira na Maji',
+        desc: 'Mafunzo ya vitendo ya rasilimali za maji ya Ziwa Victoria na teknolojia ya mazingira.',
+        badge: 'Mafunzo ya Vitendo',
       },
     ],
     announcements: [
       {
         date: '25 Sep 2026',
-        title: 'Semester II Examination Registration & Financial Clearance Deadline',
-        category: 'Bursar & Exams',
+        title: 'Mwisho wa Kufanya Usajili wa Mitihani ya Semesta ya Pili na Kukamilisha Ada',
+        category: 'Bursar & Mitihani',
       },
       {
         date: '10 Sep 2026',
-        title: 'Degree & Diploma Supplementary Examination Timetable Released',
-        category: 'Senate Notice',
+        title: 'Ratiba ya Mitihani ya Marudio (Supplementary Exams) Imetoka',
+        category: 'Seneti ya Chuo',
       },
       {
         date: '01 Sep 2026',
-        title: 'Call for Applications: September/October Academic Intake 2026',
-        category: 'Admissions',
+        title: 'Nafasi za Masomo Muhula wa Septemba/Oktoba 2026 Zinaendelea Kupokelewa',
+        category: 'Udahili',
       },
     ],
   },
   saia: {
     code: 'SAIA',
     name: 'St. Augustine International Academy',
-    motto: 'Fostering Global Leaders of Character & Intellect',
-    regNumber: 'REG NO: INT/9821/TZ',
-    type: 'Primary & Secondary International Academy',
-    location: 'Njiro Hills, Arusha, Tanzania',
+    motto: 'Uongozi kupitia Maarifa na Maadili Mema',
+    regNumber: 'Namba ya Usajili: S.4891',
+    type: 'Shule ya Msingi na Sekondari (Arusha)',
+    location: 'Njiro, Jiji la Arusha, Tanzania',
     phone: '+255 27 254 9900',
     email: 'info@staugustine.ac.tz',
     established: '2012',
     principal: 'Mr. Josephat Ngalawa, B.Ed.',
-    academicSystem: 'TERMS',
-    gradingSummary: 'Holistic 5-Tier Competency Assessment & Term Examination Merit Ranking',
+    academicSystem: 'Mihula (Terms)',
+    gradingSummary: 'Tathmini Endelevu (CA) & Madaraja ya NECTA',
     studentCount: 980,
     programs: [
       {
-        title: 'Primary School (Standard 1–7)',
-        desc: 'Foundational literacy, mathematics, science exploration, and French/Swahili bilingual studies.',
-        badge: 'Foundation Years',
+        title: 'Shule ya Msingi (Standard 1–7)',
+        desc: 'Misingi imara ya Kiingereza, Hisabati, Sayansi, na masomo ya kompyuta kwa vitendo.',
+        badge: 'Madarasa ya Msingi',
       },
       {
-        title: 'Secondary School (Form 1–4)',
-        desc: 'Rigorous academic preparation with smart classrooms, robotics lab, and international exchange programs.',
-        badge: 'Secondary O-Level',
+        title: 'Shule ya Sekondari (Form 1–4)',
+        desc: 'Maandalizi thabiti ya mitihani ya Kidato cha 4 yenye matokeo ya Division One ya juu.',
+        badge: 'Sekondari O-Level',
       },
     ],
     announcements: [
       {
         date: '20 Sep 2026',
-        title: 'Mid-Term Progress Reports Dispatched to Verified Parent Portals',
-        category: 'Academic',
+        title: 'Ripoti za Maendeleo ya Masomo Zimetumwa kwenye Akaunti za Wazazi',
+        category: 'Taaluma',
       },
       {
         date: '05 Sep 2026',
-        title: 'Inter-School Sports Gala & Science Fair Invitations',
-        category: 'Events',
+        title: 'Mashindano ya Michezo na Maonesho ya Sayansi ya Shule za Arusha',
+        category: 'Michezo & Sanaa',
       },
     ],
   },
@@ -187,45 +185,44 @@ export default function SchoolBrandedPortalPage() {
   const params = useParams();
   const slug = (typeof params?.slug === 'string' ? params.slug.toLowerCase() : 'kss');
 
-  // Fallback if tenant slug is not in standard seed, construct dynamic school record
   const school: SchoolProfile = REGISTERED_SCHOOLS[slug] || {
     code: slug.toUpperCase(),
-    name: `${slug.toUpperCase()} Educational Academy`,
-    motto: 'Excellence in Knowledge & Character',
-    regNumber: `REG NO: ED/${slug.toUpperCase()}/2026`,
-    type: 'Registered Educational Institution',
-    location: 'East Africa Region',
+    name: `Shule ya ${slug.toUpperCase()}`,
+    motto: 'Elimu Ni Ufunguo wa Maisha',
+    regNumber: `S.${slug.toUpperCase()}/2026`,
+    type: 'Taasisi ya Elimu Iliyosajiliwa Tanzania',
+    location: 'Mkoa, Tanzania',
     phone: '+255 700 000 000',
-    email: `contact@${slug.toLowerCase()}.ac.tz`,
+    email: `info@${slug.toLowerCase()}.sc.tz`,
     established: '2026',
-    principal: 'Institutional Administrator',
-    academicSystem: 'TERMS',
-    gradingSummary: 'Configured Academic Grading & Assessment Framework',
+    principal: 'Mkuu wa Shule',
+    academicSystem: 'Mihula (Terms)',
+    gradingSummary: 'Viwango Rasmi vya NECTA Tanzania',
     studentCount: 500,
     programs: [
       {
-        title: 'Standard Academic Program',
-        desc: 'Full-time curriculum structured according to ministry education standards.',
-        badge: 'Active Curriculum',
+        title: 'Mtaala Rasmi wa Masomo',
+        desc: 'Masomo yote kulingana na muongozo wa Wizara ya Elimu Tanzania.',
+        badge: 'Mtaala wa Taifa',
       },
     ],
     announcements: [
       {
-        date: 'Today',
-        title: 'School Online Portal Successfully Active',
-        category: 'General',
+        date: 'Leo',
+        title: 'Tovuti Rasmi ya Shule Imewashwa Mtandaoni',
+        category: 'Taarifa',
       },
     ],
   };
 
   return (
     <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
-      {/* 1. OFFICIAL INSTITUTION TOP BAR */}
+      {/* 1. TOP OFFICIAL BAR */}
       <div>
         <div className="bg-[#060a12] border-b border-slate-800 text-[11px] text-slate-400 py-2 px-6">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-4">
-              <span className="font-mono text-emerald-400">{school.regNumber}</span>
+              <span className="font-mono text-emerald-400 font-bold">{school.regNumber}</span>
               <span className="hidden md:inline text-slate-600">•</span>
               <span className="flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-slate-500" />
@@ -239,18 +236,18 @@ export default function SchoolBrandedPortalPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="italic text-slate-400">"{school.motto}"</span>
+              <span className="italic text-slate-300">"{school.motto}"</span>
               <Link
                 href="/"
                 className="text-[10px] text-blue-400 hover:text-blue-300 font-mono transition-colors border-l border-slate-800 pl-3"
               >
-                Universal Platform ↗
+                Universal Ed Tanzania ↗
               </Link>
             </div>
           </div>
         </div>
 
-        {/* 2. SCHOOL BRANDED HEADER & NAVIGATION */}
+        {/* 2. SCHOOL HEADER */}
         <header className="glass-nav sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             {/* School Crest & Identity */}
@@ -271,19 +268,19 @@ export default function SchoolBrandedPortalPage() {
             {/* Navigation Links */}
             <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-300">
               <a href="#about" className="hover:text-white transition-colors">
-                About School
+                Kuhusu Shule
               </a>
               <a href="#programs" className="hover:text-white transition-colors">
-                Academics
+                Masomo & Michepuo
               </a>
               <a href="#announcements" className="hover:text-white transition-colors">
-                Announcements
+                Matangazo
               </a>
               <Link
                 href="/admissions/apply"
-                className="hover:text-emerald-400 transition-colors text-emerald-300"
+                className="hover:text-emerald-400 transition-colors text-emerald-300 font-bold"
               >
-                Online Admissions
+                Udahili Mtandaoni
               </Link>
             </nav>
 
@@ -294,7 +291,7 @@ export default function SchoolBrandedPortalPage() {
                 className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30 transition-all flex items-center gap-1.5"
               >
                 <Users className="w-3.5 h-3.5" />
-                <span>Portal Sign In</span>
+                <span>Ingia Portal ya Shule</span>
               </Link>
             </div>
           </div>
@@ -302,11 +299,10 @@ export default function SchoolBrandedPortalPage() {
 
         {/* 3. SCHOOL HERO SHOWCASE */}
         <section className="relative overflow-hidden pt-12 pb-20 border-b border-slate-800">
-          {/* Real Campus Image as Background for this specific School */}
           <div className="absolute inset-0 z-0">
             <Image
               src="/images/hero-campus-bg.jpg"
-              alt={`${school.name} Campus`}
+              alt={`${school.name} Kampasi`}
               fill
               className="object-cover object-center opacity-25 filter brightness-[0.7] contrast-125"
               priority
@@ -320,16 +316,16 @@ export default function SchoolBrandedPortalPage() {
               <div className="lg:col-span-7 space-y-6">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-blue-300 text-xs font-semibold backdrop-blur-md">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span>Official Institutional Portal • Est. {school.established}</span>
+                  <span>Tovuti Rasmi ya Shule • Ilianzishwa Mwaka {school.established}</span>
                 </div>
 
                 <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.15]">
-                  Welcome to <br />
+                  Karibu <br />
                   <span className="text-gradient-blue">{school.name}</span>
                 </h2>
 
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
-                  {school.motto}. Dedicated to academic achievement, character development, and holistic leadership for our {school.studentCount.toLocaleString()} enrolled learners.
+                  {school.motto}. Taasisi inayojenga maadili, ufaulu wa juu wa mitihani ya Taifa, na uongozi kwa wanafunzi wetu {school.studentCount.toLocaleString()} waliosajiliwa.
                 </p>
 
                 {/* Direct Action Hub */}
@@ -338,7 +334,7 @@ export default function SchoolBrandedPortalPage() {
                     href="/admissions/apply"
                     className="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2"
                   >
-                    <span>Apply for 2026/2027 Admission</span>
+                    <span>Omba Kujiunga 2026/2027</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 
@@ -347,7 +343,7 @@ export default function SchoolBrandedPortalPage() {
                     className="px-5 py-3.5 rounded-xl bg-slate-900/80 border border-slate-700 hover:border-slate-500 text-slate-200 font-semibold text-xs transition-all flex items-center gap-2"
                   >
                     <GraduationCap className="w-4 h-4 text-purple-400" />
-                    <span>Student Report Cards</span>
+                    <span>Report Card za Wanafunzi</span>
                   </Link>
 
                   <Link
@@ -355,7 +351,7 @@ export default function SchoolBrandedPortalPage() {
                     className="px-5 py-3.5 rounded-xl bg-slate-900/80 border border-slate-700 hover:border-slate-500 text-slate-200 font-semibold text-xs transition-all flex items-center gap-2"
                   >
                     <Users className="w-4 h-4 text-amber-400" />
-                    <span>Parent Portal</span>
+                    <span>Portal ya Wazazi</span>
                   </Link>
                 </div>
 
@@ -363,15 +359,15 @@ export default function SchoolBrandedPortalPage() {
                 <div className="pt-2 flex flex-wrap gap-4 text-xs text-slate-400">
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>{school.academicSystem}-Based Calendar</span>
+                    <span>Mfumo wa {school.academicSystem}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-blue-400" />
-                    <span>Verified Ministry Registration</span>
+                    <span>Usajili Rasmi Tanzania</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-purple-400" />
-                    <span>Online Fee Clearance Gate</span>
+                    <span>Kuzuia Report kwa Wenye Deni la Ada</span>
                   </div>
                 </div>
               </div>
@@ -380,8 +376,8 @@ export default function SchoolBrandedPortalPage() {
               <div className="lg:col-span-5 space-y-4">
                 <div className="glass-card rounded-2xl p-6 border border-slate-800 bg-[#0e1424]/90 shadow-2xl">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider text-blue-400 mb-4 flex items-center justify-between">
-                    <span>Direct School Workspaces</span>
-                    <span className="text-[10px] text-emerald-400 font-mono font-normal">Active Session</span>
+                    <span>Viingilio Rasmi vya Shule Hii</span>
+                    <span className="text-[10px] text-emerald-400 font-mono font-normal">Mfumo Upo Hewani</span>
                   </h3>
 
                   <div className="space-y-3">
@@ -395,9 +391,9 @@ export default function SchoolBrandedPortalPage() {
                         </div>
                         <div>
                           <div className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
-                            Student 360° Portal
+                            Portal ya Mwanafunzi (Student 360°)
                           </div>
-                          <div className="text-[10px] text-slate-400">View marks, ranking & download report card</div>
+                          <div className="text-[10px] text-slate-400">Angalia alama, nafasi darasani & pakua report card</div>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
@@ -413,9 +409,9 @@ export default function SchoolBrandedPortalPage() {
                         </div>
                         <div>
                           <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
-                            Verified Guardian Portal
+                            Portal ya Mzazi / Mlezi
                           </div>
-                          <div className="text-[10px] text-slate-400">Monitor child progress & fee invoices</div>
+                          <div className="text-[10px] text-slate-400">Fuatilia maendeleo ya mtoto & stakabadhi za ada</div>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
@@ -431,9 +427,9 @@ export default function SchoolBrandedPortalPage() {
                         </div>
                         <div>
                           <div className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
-                            Teacher Assessment Center
+                            Portal ya Walimu (Teacher Portal)
                           </div>
-                          <div className="text-[10px] text-slate-400">Enter marks, upload Excel & submit grades</div>
+                          <div className="text-[10px] text-slate-400">Weka alama za mitihani na pakia Excel ya darasa</div>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
@@ -449,9 +445,9 @@ export default function SchoolBrandedPortalPage() {
                         </div>
                         <div>
                           <div className="text-xs font-bold text-white group-hover:text-blue-300 transition-colors">
-                            Administration & Principal
+                            Mkuu wa Shule & Utawala
                           </div>
-                          <div className="text-[10px] text-slate-400">Approve results, publication & audit log</div>
+                          <div className="text-[10px] text-slate-400">Thibitisha matokeo ya muhula & tangaza rasmi</div>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
@@ -463,15 +459,15 @@ export default function SchoolBrandedPortalPage() {
           </div>
         </section>
 
-        {/* 4. ACADEMIC PROGRAMS OFFERED */}
+        {/* 4. ACADEMIC PROGRAMS */}
         <section id="programs" className="py-16 border-b border-slate-800 bg-[#0b101d]/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="max-w-2xl mb-10">
               <span className="text-xs font-mono uppercase tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                Academic Curriculum
+                Mitaala ya Masomo
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-white mt-3 tracking-tight">
-                Programs Offered at {school.name}
+                Ngazi za Masomo Zinazofundishwa {school.name}
               </h2>
             </div>
 
@@ -494,7 +490,7 @@ export default function SchoolBrandedPortalPage() {
                       href="/admissions/apply"
                       className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1"
                     >
-                      <span>Enroll in Program</span>
+                      <span>Omba Nafasi ya Masomo</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
@@ -504,16 +500,16 @@ export default function SchoolBrandedPortalPage() {
           </div>
         </section>
 
-        {/* 5. OFFICIAL ANNOUNCEMENTS NOTICE BOARD */}
+        {/* 5. ANNOUNCEMENTS */}
         <section id="announcements" className="py-16 border-b border-slate-800 bg-[#090d16]">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
                 <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                  Official Notice Board
+                  Ubao wa Matangazo Rasmi
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-black text-white mt-2 tracking-tight">
-                  Recent School Announcements
+                  Matangazo ya Hivi Karibuni
                 </h2>
               </div>
             </div>
@@ -538,7 +534,7 @@ export default function SchoolBrandedPortalPage() {
                     href="/login"
                     className="text-xs text-slate-400 hover:text-white font-medium flex items-center gap-1 shrink-0"
                   >
-                    <span>Read Details</span>
+                    <span>Soma Zaidi</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -547,7 +543,7 @@ export default function SchoolBrandedPortalPage() {
           </div>
         </section>
 
-        {/* 6. PRINCIPAL'S WELCOME STATEMENT */}
+        {/* 6. PRINCIPAL'S WELCOME */}
         <section id="about" className="py-16 bg-[#0b101d]/60">
           <div className="max-w-5xl mx-auto px-6">
             <div className="glass-card rounded-3xl p-8 sm:p-10 border border-slate-800 bg-[#0e1424]/80 shadow-2xl">
@@ -557,17 +553,17 @@ export default function SchoolBrandedPortalPage() {
                 </div>
                 <div className="space-y-3 text-center sm:text-left">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/60 border border-blue-500/20 text-blue-300 text-xs font-semibold">
-                    <span>Message from the Administration</span>
+                    <span>Neno Kutoka kwa Mkuu wa Shule</span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-white">
-                    "Fostering Academic Excellence with Integrity"
+                    "Kujenga Taaluma na Maadili Mema ya Kitanzania"
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    At {school.name}, we are committed to providing an exceptional learning environment where every student is challenged, nurtured, and supported. Our digital portal ensures complete transparency between teachers, students, and parents, providing real-time access to continuous assessment scores, examination results, and attendance records.
+                    Hapa {school.name}, tunazingatia malezi bora, nidhamu, na ufaulu wa kiwango cha juu katika mitihani ya NECTA. Kupitia mfumo wetu huu wa kidijitali, mzazi anaweza kuona maendeleo ya mwanaye popote alipo bila kulazimika kusubiri mwisho wa mwaka.
                   </p>
                   <div className="pt-2">
                     <div className="font-bold text-white text-sm">{school.principal}</div>
-                    <div className="text-xs text-blue-400">Head of Institution • {school.name}</div>
+                    <div className="text-xs text-blue-400">Mkuu wa Shule • {school.name}</div>
                   </div>
                 </div>
               </div>
@@ -588,40 +584,40 @@ export default function SchoolBrandedPortalPage() {
                 <span className="font-bold text-white text-sm tracking-tight">{school.name}</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-                Official institutional web portal. Powered by Universal Education Management Platform for multi-tenant security, examinations ranking, and student 360° lifecycle.
+                Tovuti rasmi ya {school.name}. Mfumo uliounganishwa moja kwa moja na viwango vya mitihani ya NECTA Tanzania.
               </p>
               <div className="text-[11px] font-mono text-emerald-400">
-                Official Reg: {school.regNumber}
+                {school.regNumber}
               </div>
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Quick Portals</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Viingilio vya Haraka</h4>
               <ul className="space-y-1.5 text-xs text-slate-400">
-                <li><Link href="/student" className="hover:text-white transition-colors">Student Report Cards</Link></li>
-                <li><Link href="/parent" className="hover:text-white transition-colors">Guardian Verification</Link></li>
-                <li><Link href="/teacher" className="hover:text-white transition-colors">Teacher Assessment</Link></li>
-                <li><Link href="/admin" className="hover:text-white transition-colors">Administration Console</Link></li>
+                <li><Link href="/student" className="hover:text-white transition-colors">Report Card za Wanafunzi</Link></li>
+                <li><Link href="/parent" className="hover:text-white transition-colors">Akaunti ya Wazazi</Link></li>
+                <li><Link href="/teacher" className="hover:text-white transition-colors">Akaunti ya Walimu</Link></li>
+                <li><Link href="/admin" className="hover:text-white transition-colors">Utawala wa Shule</Link></li>
               </ul>
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Institution Contact</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Mawasiliano ya Shule</h4>
               <ul className="space-y-1.5 text-xs text-slate-400">
                 <li>{school.location}</li>
-                <li>Phone: {school.phone}</li>
-                <li>Email: {school.email}</li>
-                <li>Academic Year: 2026/2027</li>
+                <li>Simu: {school.phone}</li>
+                <li>Barua Pepe: {school.email}</li>
+                <li>Mwaka wa Masomo: 2026/2027</li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-slate-800/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
             <div>
-              © 2026 {school.name}. All rights reserved.
+              © 2026 {school.name}. Haki zote zimehifadhiwa.
             </div>
             <div>
-              Powered by <Link href="/" className="text-blue-400 hover:text-blue-300 font-semibold">Universal Education Management Platform</Link>
+              Inaendeshwa na <Link href="/" className="text-blue-400 hover:text-blue-300 font-semibold">Universal Education Management Platform (Tanzania)</Link>
             </div>
           </div>
         </div>

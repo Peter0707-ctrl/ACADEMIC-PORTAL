@@ -26,15 +26,16 @@ import {
   Search,
   MapPin,
   Calendar,
+  Check,
 } from 'lucide-react';
 
 // Typewriter Dynamic Words
 const TYPEWRITER_PHRASES = [
-  'Secondary Schools',
-  'Universities & Colleges',
-  'Advanced High Schools',
-  'Primary Schools',
-  'Vocational Institutes',
+  'Shule za Sekondari (O-Level & A-Level)',
+  'Vyuo Vikuu na Taasisi za Elimu ya Juu',
+  'Shule za Msingi (Primary Schools)',
+  'Vyuo vya Kati vya Ufundi (NACTVET)',
+  'Vituo vya Mafunzo ya Ufundi Stadi (VETA)',
 ];
 
 function TypewriterHeading() {
@@ -44,15 +45,14 @@ function TypewriterHeading() {
 
   useEffect(() => {
     const currentPhrase = TYPEWRITER_PHRASES[phraseIndex];
-    const typingSpeed = isDeleting ? 45 : 85;
+    const typingSpeed = isDeleting ? 40 : 80;
 
     const timer = setTimeout(() => {
       if (!isDeleting) {
         if (currentText.length < currentPhrase.length) {
           setCurrentText(currentPhrase.slice(0, currentText.length + 1));
         } else {
-          // Pause when word is completely typed
-          setTimeout(() => setIsDeleting(true), 2000);
+          setTimeout(() => setIsDeleting(true), 2200);
         }
       } else {
         if (currentText.length > 0) {
@@ -68,21 +68,21 @@ function TypewriterHeading() {
   }, [currentText, isDeleting, phraseIndex]);
 
   return (
-    <span className="text-gradient-blue inline-block min-w-[280px] sm:min-w-[380px] text-left">
+    <span className="text-gradient-blue inline-block min-w-[300px] sm:min-w-[460px] text-left">
       {currentText}
       <span className="text-cyan-400 font-light animate-pulse ml-1">|</span>
     </span>
   );
 }
 
-// Institutional Academic Models
+// Institutional Academic Models for Tanzania
 interface InstitutionTierConfig {
   id: string;
   name: string;
   category: string;
   badge: string;
   description: string;
-  academicDivision: 'Terms' | 'Semesters';
+  academicDivision: 'Mihula (Terms)' | 'Semesters';
   gradingSystem: string;
   rankingEnabled: boolean;
   financialClearanceGate: boolean;
@@ -94,146 +94,144 @@ interface InstitutionTierConfig {
 const INSTITUTION_TIERS: InstitutionTierConfig[] = [
   {
     id: 'secondary',
-    name: 'Secondary School',
-    category: 'Ordinary Level (Form 1–4)',
-    badge: 'Term System • Class Merit Ranking',
+    name: 'Shule ya Sekondari (O-Level)',
+    category: 'Kidato cha 1 hadi cha 4',
+    badge: 'Mfumo wa Mihula • Nafasi Darasani',
     description:
-      'Engineered for national secondary curricula. Manages term schedules, automated student position calculation with competition tie handling, and comprehensive subject mark entry.',
-    academicDivision: 'Terms',
-    gradingSystem: 'NECTA Standards (A: 75–100, B: 65–74, C: 45–64, D: 30–44, F: 0–29)',
+      'Imeandaliwa kulingana na mtaala wa NECTA Tanzania. Inasimamia mihula ya masomo, upandaji wa alama, kupanga nafasi (1, 2, 2, 4 bila kuruka alama zilizolingana), na mgawanyo wa madaraja (Division I hadi IV na 0).',
+    academicDivision: 'Mihula (Terms)',
+    gradingSystem: 'NECTA Standard (A: 75–100, B: 65–74, C: 45–64, D: 30–44, F: 0–29)',
     rankingEnabled: true,
     financialClearanceGate: false,
-    rolesAvailable: ['Headmaster', 'Academic Master', 'Teacher', 'Student', 'Parent', 'Bursar'],
-    workflowApprovers: ['Subject Teacher (Draft)', 'Academic Master (Review)', 'Headmaster (Final Approval & Release)'],
-    keyHighlight: 'Automated division assignment and verified parent SMS alerts upon official release date.',
-  },
-  {
-    id: 'university',
-    name: 'University & Higher Learning',
-    category: 'Tertiary Degree & Post-Graduate Programs',
-    badge: 'Semester Credits • GPA / CGPA',
-    description:
-      'Built for complex multi-faculty academic structures. Supports modular course credits, GPA/CGPA computation, departmental moderation, Senate approvals, and student fee clearance enforcement.',
-    academicDivision: 'Semesters',
-    gradingSystem: 'University 5.0 Scale (A: 5.0, B+: 4.0, B: 3.0, C: 2.0, D: 1.0, E: 0.0)',
-    rankingEnabled: false,
-    financialClearanceGate: true,
-    rolesAvailable: ['Vice Chancellor', 'Dean', 'Registrar', 'Head of Department', 'Lecturer', 'Student', 'Bursar'],
-    workflowApprovers: ['Lecturer (Course Marks)', 'Head of Department (Moderation)', 'Dean & Senate (Formal Release)'],
-    keyHighlight: 'Financial clearance lock: Students with outstanding balances cannot download exam permits or official transcripts.',
-  },
-  {
-    id: 'primary',
-    name: 'Primary School',
-    category: 'Standard 1–7 Foundation Education',
-    badge: 'Continuous Assessment',
-    description:
-      'Streamlined class stream administration, continuous assessment tracking, foundational literacy/numeracy metrics, and direct parent communication.',
-    academicDivision: 'Terms',
-    gradingSystem: 'Primary Standard 5-Tier (A: Bora Sana, B: Nzuri, C: Wastani, D: Dhaifu, E: Hafifu)',
-    rankingEnabled: true,
-    financialClearanceGate: false,
-    rolesAvailable: ['Headteacher', 'Class Teacher', 'Subject Teacher', 'Parent / Guardian'],
-    workflowApprovers: ['Class Teacher (Entry)', 'Headteacher (Publish)'],
-    keyHighlight: 'Direct guardian mobile integration for continuous student performance monitoring.',
+    rolesAvailable: ['Headmaster', 'Academic Master', 'Senior Master', 'Walimu wa Masomo', 'Wanafunzi', 'Wazazi'],
+    workflowApprovers: ['Mwalimu wa Somo (Draft)', 'Academic Master (Uhakiki)', 'Mkuu wa Shule (Idhini Rasmi na Kutangaza)'],
+    keyHighlight: 'Uhesabuji wa pointi za masomo 7 bora kiotomatiki na taarifa za SMS kwa wazazi siku ya matokeo.',
   },
   {
     id: 'advanced',
-    name: 'Advanced Secondary (High School)',
-    category: 'Form 5 & 6 (A-Level)',
-    badge: 'Combinations & Points',
+    name: 'Sekondari ya Juu (A-Level)',
+    category: 'Kidato cha 5 na 6 (High School)',
+    badge: 'Michepuo (Combinations) • Points',
     description:
-      'Configured for specialized subject combinations (e.g. PCM, PCB, HGL, ECA, EGM). Features principal point calculations and university entry eligibility tracking.',
-    academicDivision: 'Terms',
-    gradingSystem: 'Advanced Level Points (A: 1 pt, B: 2 pts, C: 3 pts, D: 4 pts, E: 5 pts, S: 6 pts, F: 7 pts)',
+      'Inasaidia michepuo yote ya Tanzania (PCM, PCB, CBG, HGL, HKL, HGK, EGM, ECA, na mingineyo). Inapiga hesabu ya pointi za NECTA (A=1 hadi F=7) na madaraja ya kujiunga na Vyuo Vikuu.',
+    academicDivision: 'Mihula (Terms)',
+    gradingSystem: 'NECTA A-Level Points (A: 1 pt, B: 2 pts, C: 3 pts, D: 4 pts, E: 5 pts, S: 6 pts, F: 7 pts)',
     rankingEnabled: true,
     financialClearanceGate: false,
-    rolesAvailable: ['Headmaster', 'Academic Master', 'Senior Master', 'Teacher', 'Student', 'Parent'],
-    workflowApprovers: ['Teacher', 'Academic Master', 'Headmaster'],
-    keyHighlight: 'Division and points forecasting aligned with national university admission requirements.',
+    rolesAvailable: ['Mkuu wa Shule', 'Academic Master', 'Walimu wa Combinations', 'Wanafunzi', 'Wazazi'],
+    workflowApprovers: ['Mwalimu wa Somo', 'Academic Master', 'Mkuu wa Shule'],
+    keyHighlight: 'Utabiri wa vigezo vya udahili wa TCU kulingana na alama za tahasusi zilizopatikana.',
+  },
+  {
+    id: 'university',
+    name: 'Chuo Kikuu (University)',
+    category: 'Shahada ya Kwanza na Uzamili (TCU)',
+    badge: 'Mfumo wa Semesta • GPA ya 5.0',
+    description:
+      'Imejengwa kulingana na miongozo ya Tume ya Vyuo Vikuu Tanzania (TCU). Inasimamia idara, vitivo (Faculties), mikopo ya masomo (Credits), uhesabuji wa GPA/CGPA, idhini ya Seneti, na kizuizi cha ada.',
+    academicDivision: 'Semesters',
+    gradingSystem: 'TCU Scale ya 5.0 (A: 70–100 / 5.0, B+: 60–69 / 4.0, B: 50–59 / 3.0, C: 40–49 / 2.0, D: 35–39, E: 0–34)',
+    rankingEnabled: false,
+    financialClearanceGate: true,
+    rolesAvailable: ['Makamu Mkuu wa Chuo', 'Dean wa Kitivo', 'Registrar', 'Wakuu wa Idara (HOD)', 'Wahadhiri', 'Wanafunzi', 'Bursar'],
+    workflowApprovers: ['Mhadhiri wa Kozi', 'Mkuu wa Idara (Moderation)', 'Dean na Seneti ya Chuo (Kutoa Matokeo)'],
+    keyHighlight: 'Kizuizi cha Ada (Financial Clearance Gate): Mwanafunzi asiyekamilisha ada hawezi kupakua cheti cha mtihani au transcript.',
   },
   {
     id: 'vocational',
-    name: 'Vocational & Technical Institutes',
-    category: 'VETA & Technical Training',
-    badge: 'Competency-Based Modules',
+    name: 'Vyuo vya Kati na Ufundi (NACTVET & VETA)',
+    category: 'Astashahada, Stashahada & Mafunzo ya Ufundi',
+    badge: 'NTA Level 4–6 • CBET Modules',
     description:
-      'Tailored for vocational trades, workshop practical assessments, competency-based education and training (CBET), and apprenticeship tracking.',
+      'Mfumo wa vyuo vya kati vilivyosajiliwa na NACTVET na VETA. Unasimamia mafunzo kwa vitendo (Practical Workshops), moduli za umahiri (Competency-Based Education), na mafunzo kazini (Field Attachment).',
     academicDivision: 'Semesters',
-    gradingSystem: 'Competency Based (Competent / Not Yet Competent / Modular Credits)',
+    gradingSystem: 'NACTVET Grading System (Distinction, Upper Credit, Lower Credit, Pass)',
     rankingEnabled: false,
     financialClearanceGate: true,
-    rolesAvailable: ['Principal', 'Workshop Instructor', 'Apprentice / Student', 'Industry Liaison Officer'],
-    workflowApprovers: ['Instructor (Workshop Evaluation)', 'Academic Dean (Certification)'],
-    keyHighlight: 'Practical workshop logs and industry apprenticeship verification records.',
+    rolesAvailable: ['Mkuu wa Chuo', 'Wakufunzi wa Warsha', 'Wanafunzi wa Mafunzo', 'Afisa Mafunzo ya Vitendo'],
+    workflowApprovers: ['Mkufunzi wa Warsha', 'Dean wa Taaluma'],
+    keyHighlight: 'Kumbukumbu za alama za vitendo na usajili wa mitihani ya NACTVET.',
+  },
+  {
+    id: 'primary',
+    name: 'Shule ya Msingi (Primary School)',
+    category: 'Darasa la 1 hadi la 7',
+    badge: 'Tathmini Endelevu (CA)',
+    description:
+      'Usimamizi rahisi wa madarasa na mikondo (Streams), alama za tathmini endelevu, ripoti za maendeleo, na mawasiliano ya simu kwa wazazi.',
+    academicDivision: 'Mihula (Terms)',
+    gradingSystem: 'Tathmini ya Madaraja 5 (A: Bora Sana, B: Nzuri, C: Wastani, D: Dhaifu, E: Hafifu)',
+    rankingEnabled: true,
+    financialClearanceGate: false,
+    rolesAvailable: ['Mwalimu Mkuu', 'Mwalimu wa Darasa', 'Walimu wa Masomo', 'Wazazi / Walezi'],
+    workflowApprovers: ['Mwalimu wa Somo', 'Mwalimu Mkuu'],
+    keyHighlight: 'Uunganishaji wa namba za simu za wazazi kwa ajili ya taarifa za haraka za maendeleo ya mwanafunzi.',
   },
 ];
 
-// Sample Live School Portals for Direct Access
+// Sample Live School Portals in Tanzania
 const FEATURED_SCHOOL_PORTALS = [
   {
     name: 'Kilimanjaro Secondary School',
     code: 'KSS',
     slug: 'kss',
-    type: 'Secondary (Form 1–4)',
-    location: 'Moshi, Kilimanjaro',
-    motto: 'Strive for Academic Excellence',
-    accentColor: 'from-blue-600 to-indigo-600',
+    type: 'Shule ya Sekondari (Kidato cha 1–4)',
+    location: 'Moshi Mjini, Mkoa wa Kilimanjaro',
+    motto: 'Elimu Ni Nuru na Uongozi',
+    regNumber: 'S.1429 (Wizara ya Elimu)',
     verifiedStudents: 1420,
   },
   {
     name: 'Lake Victoria Institute of Technology',
     code: 'LVIT',
     slug: 'lvit',
-    type: 'University & Diploma Institute',
-    location: 'Mwanza City, Tanzania',
-    motto: 'Innovation, Technology & Integrity',
-    accentColor: 'from-cyan-600 to-blue-700',
+    type: 'Chuo cha Elimu ya Juu na Teknolojia',
+    location: 'Capripoint, Jiji la Mwanza',
+    motto: 'Ubunifu, Teknolojia na Uadilifu',
+    regNumber: 'REG/NACTVET/0894',
     verifiedStudents: 3850,
   },
   {
     name: 'St. Augustine International Academy',
     code: 'SAIA',
     slug: 'saia',
-    type: 'International Secondary & Primary',
-    location: 'Arusha, Tanzania',
-    motto: 'Leadership through Knowledge',
-    accentColor: 'from-purple-600 to-indigo-700',
+    type: 'Shule ya Msingi na Sekondari',
+    location: 'Njiro, Jiji la Arusha',
+    motto: 'Uongozi kupitia Maarifa na Maadili',
+    regNumber: 'S.4891',
     verifiedStudents: 980,
   },
 ];
 
-// Regional Localization Specifications
-const REGIONAL_FRAMEWORKS = [
+// Regulatory Bodies of Tanzania
+const TANZANIA_REGULATORS = [
   {
-    country: 'Tanzania',
-    framework: 'NECTA • TCU • NACTVET',
-    currency: 'TZS',
-    examTypes: 'PSLE, CSEE, ACSEE, TCU Degree',
+    name: 'NECTA',
+    fullName: 'Baraza la Mitihani la Taifa la Tanzania',
+    role: 'Mitihani ya Taifa (PSLE, CSEE, ACSEE)',
+    standards: 'Division I–IV, Points za Masomo, na Nafasi Darasani',
+    badge: 'Mitihani ya Taifa',
   },
   {
-    country: 'Kenya',
-    framework: 'KNEC • CBC • CUE',
-    currency: 'KES',
-    examTypes: 'KPSEA, KCSE, CBC Assessment',
+    name: 'TCU',
+    fullName: 'Tume ya Vyuo Vikuu Tanzania',
+    role: 'Udhibiti na Viwango vya Vyuo Vikuu',
+    standards: 'Shahada za Kwanza na Uzamili, Mfumo wa GPA ya 5.0',
+    badge: 'Elimu ya Juu',
   },
   {
-    country: 'Uganda',
-    framework: 'UNEB • NCHE',
-    currency: 'UGX',
-    examTypes: 'PLE, UCE, UACE',
+    name: 'NACTVET',
+    fullName: 'Baraza la Taifa la Elimu ya Ufundi na Mafunzo ya Ufundi Stadi',
+    role: 'Vyuo vya Kati, Ufundi na VETA',
+    standards: 'NTA Level 4–6, Moduli za CBET na Alama za Vitendo',
+    badge: 'Vyuo vya Ufundi',
   },
   {
-    country: 'Rwanda',
-    framework: 'NESA • HEC',
-    currency: 'RWF',
-    examTypes: 'National Examinations, Advanced Level',
-  },
-  {
-    country: 'Zambia',
-    framework: 'ECZ • HEA',
-    currency: 'ZMW',
-    examTypes: 'Grade 7, Grade 9, Grade 12 ECZ',
+    name: 'TAMISEMI & MoEST',
+    fullName: 'Wizara ya Elimu, Sayansi na Teknolojia / TAMISEMI',
+    role: 'Usimamizi wa Shule za Serikali na Binafsi',
+    standards: 'Sajili za Shule, Mahudhurio na Miundombinu ya Kujifunzia',
+    badge: 'Wizara ya Elimu',
   },
 ];
 
@@ -254,7 +252,7 @@ export default function HomePage() {
       <div>
         <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-blue-950 border-b border-blue-500/20 px-4 py-2 text-center text-xs text-blue-200 font-medium flex items-center justify-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-          <span>Unified Academic Management Platform — Supporting Primary, Secondary, Colleges & Universities across East Africa</span>
+          <span>Mfumo Rasmi wa Kidijitali wa Usimamizi wa Shule na Vyuo Tanzania — NECTA, NACTVET & TCU Aligned</span>
         </div>
 
         <header className="glass-nav sticky top-0 z-50 transition-all">
@@ -269,7 +267,7 @@ export default function HomePage() {
                   UNIVERSAL ED
                 </span>
                 <span className="text-[11px] text-blue-400 font-mono tracking-wider uppercase mt-1">
-                  Academic Platform
+                  Tanzania Academic Portal
                 </span>
               </div>
             </Link>
@@ -278,19 +276,19 @@ export default function HomePage() {
             <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
               <a href="#portals-finder" className="text-blue-400 hover:text-blue-300 transition-colors font-semibold flex items-center gap-1.5">
                 <School className="w-4 h-4" />
-                <span>School Portals</span>
+                <span>Tovuti za Shule</span>
               </a>
               <a href="#tiers" className="hover:text-white transition-colors">
-                Academic Levels
+                Viwango vya Elimu
               </a>
               <a href="#workflow" className="hover:text-white transition-colors">
-                How It Works
+                Mzunguko wa Mfumo
+              </a>
+              <a href="#regulators" className="hover:text-white transition-colors">
+                NECTA & TCU
               </a>
               <a href="#portals" className="hover:text-white transition-colors">
-                Role Workspaces
-              </a>
-              <a href="#regions" className="hover:text-white transition-colors">
-                Regional Standards
+                Dashibodi za Watumiaji
               </a>
             </nav>
 
@@ -300,13 +298,13 @@ export default function HomePage() {
                 href="/login"
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 transition-all bg-slate-900/60"
               >
-                Sign In
+                Ingia Portal
               </Link>
               <Link
                 href="/register-institution"
                 className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2"
               >
-                <span>Register Institution</span>
+                <span>Sajili Shule Yako</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -319,12 +317,11 @@ export default function HomePage() {
           <div className="absolute inset-0 z-0">
             <Image
               src="/images/hero-campus-bg.jpg"
-              alt="Aerial photograph of academic campus"
+              alt="Mandhari ya Kampasi ya Shule na Chuo Tanzania"
               fill
               className="object-cover object-center opacity-30 filter brightness-[0.7] contrast-125 scale-105"
               priority
             />
-            {/* Cinematic Gradient Overlays to keep text 100% readable */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#090d16]/95 via-[#090d16]/85 to-[#090d16]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/30 via-transparent to-transparent" />
           </div>
@@ -334,19 +331,19 @@ export default function HomePage() {
             <div className="text-center max-w-4xl mx-auto space-y-6">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-blue-300 text-xs font-medium backdrop-blur-md shadow-lg">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span>Enterprise Multi-Tenant Educational Architecture</span>
+                <span>Imebuniwa Mahususi kwa Mfumo wa Elimu Tanzania (TZS • NECTA • TCU • NACTVET)</span>
               </div>
 
               {/* Dynamic Typewriter Headline */}
               <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.15]">
-                Complete Academic Management for{' '}
+                Usimamizi Kamili wa Kidijitali kwa{' '}
                 <div className="mt-1 sm:mt-2">
                   <TypewriterHeading />
                 </div>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed drop-shadow-md">
-                A centralized, secure academic platform designed to manage student admissions, continuous assessments, examination grading, position rankings, and verified parent communication.
+                Mfumo wa kisasa unaohifadhi kumbukumbu za shule, usajili wa wanafunzi wapya, uwekaji wa alama za masomo, uhesabuji wa madaraja na nafasi darasani, na uthibitisho wa wazazi kupitia simu zao.
               </p>
 
               {/* Action Buttons */}
@@ -356,7 +353,7 @@ export default function HomePage() {
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition-all shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 group"
                 >
                   <School className="w-4 h-4 text-blue-200" />
-                  <span>Access Your School Portal</span>
+                  <span>Fungua Tovuti ya Shule Yako</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </a>
 
@@ -365,14 +362,14 @@ export default function HomePage() {
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-slate-700 hover:border-slate-500 hover:bg-slate-800/80 backdrop-blur-md text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
                 >
                   <Building2 className="w-4 h-4 text-emerald-400" />
-                  <span>Register New Institution</span>
+                  <span>Sajili Shule au Chuo Kipya</span>
                 </Link>
 
                 <Link
                   href="/login"
                   className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-slate-800 hover:bg-slate-900/80 backdrop-blur-md text-slate-300 font-medium text-sm transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Staff / Student Login</span>
+                  <span>Kuingia Kwenye Akaunti</span>
                 </Link>
               </div>
 
@@ -380,29 +377,29 @@ export default function HomePage() {
               <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-medium">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  Strict Tenant Isolation
+                  Usalama wa Data ya Shule Pekee
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Lock className="w-4 h-4 text-blue-400" />
-                  Immutable Audit Records
+                  Kumbukumbu za Kudumu (Audit Log)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <FileSpreadsheet className="w-4 h-4 text-purple-400" />
-                  14-Point Spreadsheet Validation
+                  Uhakiki wa Excel wa Pointi 14
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-amber-400" />
-                  Standard Competition Ranking
+                  Nafasi Darasani (Competition Ties)
                 </span>
               </div>
             </div>
 
-            {/* 3. HERO IMAGE SHOWCASE (Production Dashboard UI) */}
+            {/* 3. HERO IMAGE SHOWCASE (EduFlow Dashboard) */}
             <div className="mt-14 relative rounded-3xl p-2 sm:p-4 bg-gradient-to-b from-blue-500/20 via-slate-800/40 to-transparent border border-white/10 shadow-2xl glow-blue">
               <div className="relative rounded-2xl overflow-hidden bg-[#0e1424] border border-white/5">
                 <Image
                   src="/images/hero-dashboard.jpg"
-                  alt="Academic Analytics Dashboard and Student Performance Tracking Interface"
+                  alt="Dashibodi ya Kisasa ya Usimamizi wa Shule na Alama za Mitihani"
                   width={1920}
                   height={1080}
                   className="w-full h-auto object-cover transform hover:scale-[1.01] transition-transform duration-700"
@@ -413,16 +410,16 @@ export default function HomePage() {
                 <div className="absolute top-4 left-4 sm:top-6 sm:left-6 glass-card rounded-xl p-3 border border-white/15 hidden sm:flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-emerald-400" />
                   <div>
-                    <div className="text-[11px] font-bold text-white leading-none">Class Ranking Engine</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Tie Handling: 1st, 2nd, 2nd, 4th (Standard Competition)</div>
+                    <div className="text-[11px] font-bold text-white leading-none">Upangaji wa Nafasi Darasani</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Kanuni ya NECTA: 1st, 2nd, 2nd, 4th</div>
                   </div>
                 </div>
 
                 <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 glass-card rounded-xl p-3 border border-white/15 hidden sm:flex items-center gap-3">
                   <ShieldCheck className="w-4 h-4 text-blue-400" />
                   <div>
-                    <div className="text-[11px] font-bold text-white leading-none">Financial Clearance Gate</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Enforces Bursar fee clearance before report card generation</div>
+                    <div className="text-[11px] font-bold text-white leading-none">Kizuizi cha Ada (Bursar Gate)</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Mwanafunzi mwenye deni anazuiwa ripoti kiotomatiki</div>
                   </div>
                 </div>
               </div>
@@ -430,19 +427,19 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 3. DIRECT INSTITUTION PORTALS FINDER (User's request: Registered schools have their own dedicated website) */}
+        {/* 3. DIRECT INSTITUTION PORTALS FINDER (Tanzanian Schools) */}
         <section id="portals-finder" className="py-16 bg-[#0b101d] border-b border-slate-800">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
                 <span className="text-xs uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                  Dedicated School Portals
+                  Tovuti Binafsi za Shule na Vyuo
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-black text-white mt-3 tracking-tight">
-                  Access Your Institution's Branded Portal
+                  Fungua Tovuti ya Shule Yako
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
-                  Every registered school operates on its own dedicated portal featuring their official logo, motto, news, student results, and online admissions.
+                  Kila shule au chuo kinachosajiliwa kinapata tovuti yake binafsi yenye nembo, kaulimbiu, matangazo, na viingilio vya wanafunzi na wazazi bila kupitia ukurasa mkuu.
                 </p>
               </div>
 
@@ -453,7 +450,7 @@ export default function HomePage() {
                   type="text"
                   value={portalSearch}
                   onChange={(e) => setPortalSearch(e.target.value)}
-                  placeholder="Search school name or code..."
+                  placeholder="Tafuta jina la shule au mkoa..."
                   className="w-full pl-10 pr-4 py-2.5 bg-[#090d16] border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
@@ -497,13 +494,13 @@ export default function HomePage() {
 
                   <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
                     <span className="text-[10px] text-emerald-400 font-mono">
-                      ✓ {school.verifiedStudents.toLocaleString()} Enrolled
+                      ✓ Wanafunzi {school.verifiedStudents.toLocaleString()}
                     </span>
                     <Link
                       href={`/portal/${school.slug}`}
                       className="px-3.5 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 text-blue-200 hover:text-white font-semibold text-xs transition-all flex items-center gap-1.5"
                     >
-                      <span>Open School Portal</span>
+                      <span>Fungua Tovuti</span>
                       <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -513,7 +510,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 4. REAL-WORLD IMPACT (Modern Campus Environment) */}
+        {/* 4. REAL-WORLD IMPACT (Wanafunzi wa Tanzania Maktabani) */}
         <section className="py-16 border-b border-slate-800/80 bg-[#090d16]">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -521,7 +518,7 @@ export default function HomePage() {
               <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl order-2 lg:order-1">
                 <Image
                   src="/images/students-campus.jpg"
-                  alt="Secondary school and university students learning with digital academic tools"
+                  alt="Wanafunzi wa Tanzania wakitumia kompyuta kujifunzia maktabani"
                   width={1600}
                   height={900}
                   className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
@@ -529,10 +526,10 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#090d16] via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-6 left-6 right-6 p-4 glass-card rounded-2xl border border-white/10">
                   <span className="text-xs font-mono uppercase tracking-widest text-blue-400 block mb-1">
-                    Student 360° Academic Records
+                    Taarifa Kamili za Mwanafunzi (Student 360°)
                   </span>
                   <p className="text-xs text-slate-200">
-                    Equipping students, verified guardians, and school administrators across Tanzania, Kenya, Uganda, Rwanda, and Zambia with reliable, tamper-free academic records.
+                    Kuwawezesha wanafunzi, wazazi waliohakikiwa, na walimu nchi nzima ya Tanzania kupata ripoti sahihi za mitihani, mahudhurio, na maendeleo ya kitaaluma.
                   </p>
                 </div>
               </div>
@@ -540,28 +537,28 @@ export default function HomePage() {
               {/* Text Highlights */}
               <div className="space-y-6 order-1 lg:order-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-                  <span>Engineered for Reliability & Data Security</span>
+                  <span>Imejengwa kwa Viwango vya Tanzania</span>
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-snug">
-                  Streamlined Academic Administration for Modern Institutions
+                  Kurahisisha Uendeshaji wa Shule na Vyuo Tanzania
                 </h2>
                 <p className="text-slate-400 text-sm leading-relaxed">
-                  Different institutions operate under distinct national policies, grading standards, and calendar structures. Universal Ed provides an agile, multi-tenant framework where every school configures its own academic rules without custom coding.
+                  Mfumo huu umetengenezwa mahususi kuondoa usumbufu wa kuhesabu madaraja kwa mkono. Kila shule inajiwekea sheria zake za kimasomo, kalenda ya mihula, na michango ya ada kwa ulinzi thabiti wa taarifa.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
                     <CheckCircle2 className="w-5 h-5 text-emerald-400 mb-2" />
-                    <div className="font-bold text-white text-sm">Verified Parent Linking</div>
+                    <div className="font-bold text-white text-sm">Uthibitisho wa Mzazi</div>
                     <p className="text-xs text-slate-400 mt-1">
-                      Guardians access only verified children profiles. No cross-student data leakage.
+                      Mzazi anapata taarifa za watoto wake pekee waliothibitishwa na uongozi wa shule.
                     </p>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 mb-2" />
-                    <div className="font-bold text-white text-sm">Audited Grade Adjustments</div>
+                    <div className="font-bold text-white text-sm">Kurekebisha Alama Kihalali</div>
                     <p className="text-xs text-slate-400 mt-1">
-                      Post-publication grade corrections follow a strictly logged review and authorization trail.
+                      Alama ikishatangazwa, marekebisho yanahitaji sababu rasmi na idhini ya Mkuu wa Shule.
                     </p>
                   </div>
                 </div>
@@ -575,13 +572,13 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <span className="text-xs uppercase font-mono tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                Institutional Customization
+                Uwezo wa Kubadilika Kulingana na Shule Yako
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-white mt-3 tracking-tight">
-                One Platform. Any Educational Level.
+                Mfumo Mmoja. Ngazi Zote za Elimu Tanzania.
               </h2>
               <p className="text-sm text-slate-400 mt-2">
-                Select an institution type below to preview how grading schemes, academic terms, and approval workflows adapt dynamically.
+                Chagua kiwango cha elimu hapa chini uone jinsi mfumo unavyojibadilisha papo hapo kulingana na taratibu za shule au chuo chako.
               </p>
             </div>
 
@@ -629,25 +626,25 @@ export default function HomePage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
                       <span className="text-slate-500 block mb-1 font-mono uppercase text-[10px]">
-                        Academic Calendar Structure
+                        Muundo wa Kalenda ya Masomo
                       </span>
                       <span className="text-white font-semibold text-sm">
-                        {activeTier.academicDivision}-Based System
+                        {activeTier.academicDivision}
                       </span>
                     </div>
 
                     <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
                       <span className="text-slate-500 block mb-1 font-mono uppercase text-[10px]">
-                        Position & Merit Calculation
+                        Upangaji wa Nafasi Darasani
                       </span>
                       <span className={activeTier.rankingEnabled ? 'text-emerald-400 font-semibold text-sm' : 'text-slate-400 font-semibold text-sm'}>
-                        {activeTier.rankingEnabled ? '✓ Enabled (Standard Competition Ties)' : '✕ Disabled (Cumulative GPA)'}
+                        {activeTier.rankingEnabled ? '✓ Imewashwa (Standard Competition Ties)' : '✕ Imezimwa (GPA / CGPA)'}
                       </span>
                     </div>
 
                     <div className="sm:col-span-2 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
                       <span className="text-slate-500 block mb-1 font-mono uppercase text-[10px]">
-                        Grading Framework
+                        Mfumo wa Madaraja na Alama
                       </span>
                       <span className="text-blue-300 font-mono font-medium">{activeTier.gradingSystem}</span>
                     </div>
@@ -656,7 +653,7 @@ export default function HomePage() {
                   {/* Workflow Approval Sequence */}
                   <div>
                     <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-2">
-                      Formal Examination Release Workflow:
+                      Mlolongo wa Idhini ya Kutangaza Matokeo:
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
                       {activeTier.workflowApprovers.map((step, idx) => (
@@ -677,7 +674,7 @@ export default function HomePage() {
                 <div className="p-6 rounded-2xl bg-[#090d16] border border-slate-800 flex flex-col justify-between space-y-6">
                   <div>
                     <div className="text-xs font-mono uppercase tracking-widest text-slate-500 mb-2">
-                      Configured Stakeholder Roles
+                      Majukumu ya Watumiaji
                     </div>
                     <div className="flex flex-wrap gap-1.5 mb-6">
                       {activeTier.rolesAvailable.map((role, idx) => (
@@ -691,7 +688,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="text-xs font-mono uppercase tracking-widest text-slate-500 mb-2">
-                      Academic Operational Highlight
+                      Kipengele Maalumu
                     </div>
                     <p className="text-xs text-slate-300 bg-slate-900/60 p-3 rounded-xl border border-slate-800 leading-relaxed">
                       {activeTier.keyHighlight}
@@ -702,7 +699,7 @@ export default function HomePage() {
                     href="/register-institution"
                     className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs text-center transition-all shadow-md shadow-blue-600/30 block"
                   >
-                    Setup {activeTier.name} Portal →
+                    Sanidi Tovuti ya {activeTier.name} →
                   </Link>
                 </div>
               </div>
@@ -710,18 +707,54 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 6. SYSTEM LIFECYCLE (Steps 1 to 6) */}
+        {/* 6. REGULATORS OF TANZANIA SECTION */}
+        <section id="regulators" className="py-16 border-b border-slate-800 bg-[#0e1424]/60">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <span className="text-xs uppercase font-mono tracking-widest text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
+                Ulinganifu wa Mitaala Tanzania
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-3 tracking-tight">
+                Imejengwa Kuendana na Miongozo ya NECTA, TCU na NACTVET
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
+              {TANZANIA_REGULATORS.map((reg, idx) => (
+                <div key={idx} className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between">
+                  <div>
+                    <span className="px-2.5 py-1 rounded-md bg-blue-950/60 border border-blue-500/30 text-blue-300 font-mono text-[10px] font-bold mb-3 inline-block">
+                      {reg.badge}
+                    </span>
+                    <h3 className="font-extrabold text-white text-lg mb-1">{reg.name}</h3>
+                    <p className="text-[11px] text-slate-400 mb-3">{reg.fullName}</p>
+                    <div className="text-xs text-slate-300 border-t border-slate-800 pt-3">
+                      <strong className="text-white block mb-0.5">Usimamizi:</strong>
+                      {reg.role}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-emerald-400 font-mono">
+                    ✓ {reg.standards}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 7. SYSTEM LIFECYCLE (Mzunguko wa Mfumo) */}
         <section id="workflow" className="py-20 border-b border-slate-800/80 bg-[#0b101d]/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                End-to-End Operational Lifecycle
+                Mzunguko Kamili wa Mwanafunzi
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-white mt-3 tracking-tight">
-                From Admission to Graduation
+                Kuanzia Usajili Hadi Kuhitimu
               </h2>
               <p className="text-sm text-slate-400 mt-2">
-                A connected lifecycle where student data remains intact across academic years and permanent historical records.
+                Taarifa za mwanafunzi hazifutiki hata akihitimu, zinabaki kwenye kumbukumbu rasmi za shule kwa miaka yote.
               </p>
             </div>
 
@@ -731,9 +764,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold flex items-center justify-center text-sm mb-4">
                   01
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Institution Onboarding</h3>
+                <h3 className="font-bold text-white text-base mb-1">Usajili wa Shule</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Setup institution profile, academic structure, grade boundaries, fee policies, and administration accounts.
+                  Kuweka taarifa za shule, muundo wa madarasa, viwango vya alama (Pass marks), na akaunti ya mkuu wa shule.
                 </p>
               </div>
 
@@ -742,9 +775,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold flex items-center justify-center text-sm mb-4">
                   02
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Online Admissions</h3>
+                <h3 className="font-bold text-white text-base mb-1">Maombi ya Wanafunzi Mtandaoni</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Prospective students submit online applications with document attachments. Accepted applicants transition automatically to active student records.
+                  Wanafunzi wanaomba nafasi mtandaoni kwa kupakia vyeti na namba ya mtihani ya NECTA. Wakikubaliwa, wanahamishiwa darasani moja kwa moja.
                 </p>
               </div>
 
@@ -753,9 +786,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 font-bold flex items-center justify-center text-sm mb-4">
                   03
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Academic Structure & Attendance</h3>
+                <h3 className="font-bold text-white text-base mb-1">Madarasa na Mahudhurio</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Assign subjects, teachers, and class streams. Record daily or period attendance and track syllabus milestones.
+                  Kupanga walimu wa masomo, orodha za wanafunzi darasani, na kurekodi mahudhurio ya kila siku.
                 </p>
               </div>
 
@@ -764,9 +797,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center text-sm mb-4">
                   04
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">14-Point Marks Validation</h3>
+                <h3 className="font-bold text-white text-base mb-1">Uingizaji wa Alama & Excel</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Teachers enter marks online or upload standardized spreadsheets. Automated validation blocks invalid scores, empty required rows, and formula discrepancies.
+                  Walimu wanaingiza alama mtandaoni au kupakia Excel. Mfumo unahakiki makosa ya pointi 14 kiotomatiki kabla ya kupokea.
                 </p>
               </div>
 
@@ -775,9 +808,9 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold flex items-center justify-center text-sm mb-4">
                   05
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Verification & Scheduled Release</h3>
+                <h3 className="font-bold text-white text-base mb-1">Uhakiki na Idhini ya Mkuu wa Shule</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Academic officers review department marks, the Headmaster or Dean approves, and results are scheduled for unified publication.
+                  Academic Master anakagua alama, Mkuu wa Shule anaweka saini na kuidhinisha tarehe ya kutangaza matokeo kwa wote.
                 </p>
               </div>
 
@@ -786,27 +819,27 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 font-bold flex items-center justify-center text-sm mb-4">
                   06
                 </div>
-                <h3 className="font-bold text-white text-base mb-1">Student & Guardian Access</h3>
+                <h3 className="font-bold text-white text-base mb-1">Kupakua Ripoti & Portal ya Wazazi</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Students and parents access term report cards, division summaries, and fee clearance receipts via dedicated secure portals.
+                  Wanafunzi na wazazi wanapokea ujumbe na kupakua ripoti ya maendeleo (Report Card) baada ya kuthibitishwa kutokuwa na deni la ada.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 7. DEDICATED ROLE PORTALS */}
+        {/* 8. DEDICATED ROLE PORTALS */}
         <section id="portals" className="py-20 border-b border-slate-800/80">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs uppercase font-mono tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                Role-Based Architecture
+                Dashibodi Zilizotengwa Kipekee
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-white mt-3 tracking-tight">
-                Dedicated Workspaces for Every Stakeholder
+                Kila Mtumiaji Ana Sehemu Yake Pekee
               </h2>
               <p className="text-sm text-slate-400 mt-2">
-                Clear separation of concerns: Administrators, teachers, students, and parents access customized dashboards matching their responsibilities.
+                Mkuu wa Shule, Mwalimu, Mwanafunzi, na Mzazi kila mmoja ana ukurasa wake wa kazi unaoendana na wajibu wake.
               </p>
             </div>
 
@@ -817,16 +850,16 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/30 text-blue-400 flex items-center justify-center mb-4">
                     <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">Administration Command</h3>
+                  <h3 className="font-bold text-white text-base mb-1">Mkuu wa Shule / Admin</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Institutional KPI metrics, examination publication controls, staff assignments, and audit trails.
+                    Takwimu za shule nzima, idhini ya mwisho ya matokeo, tarehe za kutangaza, na udhibiti wa usalama.
                   </p>
                 </div>
                 <Link
                   href="/admin"
                   className="px-4 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 text-blue-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Open Admin Center →
+                  Fungua Dashboard ya Mkuu →
                 </Link>
               </div>
 
@@ -836,16 +869,16 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-xl bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mb-4">
                     <BookOpen className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">Faculty & Teachers</h3>
+                  <h3 className="font-bold text-white text-base mb-1">Walimu (Teacher Portal)</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Continuous assessment entries, standardized mark sheet downloads, spreadsheet validation, and submission.
+                    Kuingiza alama za majaribio na mitihani, kupakua template ya Excel, na kuwasilisha matokeo kwa Academic Master.
                   </p>
                 </div>
                 <Link
                   href="/teacher"
                   className="px-4 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Open Teacher Portal →
+                  Fungua Portal ya Mwalimu →
                 </Link>
               </div>
 
@@ -855,16 +888,16 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-xl bg-purple-600/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mb-4">
                     <GraduationCap className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">Student 360° Portal</h3>
+                  <h3 className="font-bold text-white text-base mb-1">Mwanafunzi (Student 360°)</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Term report cards, subject ranking positions, cumulative averages, and financial clearance receipts.
+                    Kuangalia ripoti ya matokeo ya muhula, nafasi darasani, wastani wa alama, na stakabadhi za ada.
                   </p>
                 </div>
                 <Link
                   href="/student"
                   className="px-4 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600 border border-purple-500/30 text-purple-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Open Student Portal →
+                  Fungua Portal ya Mwanafunzi →
                 </Link>
               </div>
 
@@ -874,54 +907,24 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-xl bg-amber-600/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mb-4">
                     <Users className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">Guardian Portal</h3>
+                  <h3 className="font-bold text-white text-base mb-1">Mzazi / Mlezi (Parent Portal)</h3>
                   <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Multi-child switcher, terminal exam reports, attendance tracking, and school fee payment records.
+                    Kubadilisha watoto waliosajiliwa shuleni, kuangalia maendeleo ya mitihani, mahudhurio, na ankara za ada.
                   </p>
                 </div>
                 <Link
                   href="/parent"
                   className="px-4 py-2.5 rounded-xl bg-amber-600/20 hover:bg-amber-600 border border-amber-500/30 text-amber-300 hover:text-white font-semibold text-xs transition-all text-center block"
                 >
-                  Open Parent Portal →
+                  Fungua Portal ya Mzazi →
                 </Link>
               </div>
             </div>
           </div>
         </section>
-
-        {/* 8. REGIONAL COUNTRY COVERAGE */}
-        <section id="regions" className="py-16 bg-[#0e1424]/60">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <span className="text-xs uppercase font-mono tracking-widest text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
-                East Africa Region
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-3 tracking-tight">
-                Designed for National Curricula Standards
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-xs">
-              {REGIONAL_FRAMEWORKS.map((loc, idx) => (
-                <div key={idx} className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                  <div className="font-bold text-white text-sm flex items-center gap-1.5 mb-1">
-                    <Globe2 className="w-3.5 h-3.5 text-blue-400" />
-                    <span>{loc.country}</span>
-                  </div>
-                  <div className="text-blue-400 font-mono text-[11px] mb-2">{loc.framework}</div>
-                  <div className="text-slate-400 text-[11px]">
-                    <span className="text-slate-500 block">Currency:</span>
-                    <span className="text-slate-300 font-mono">{loc.currency}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
       </div>
 
-      {/* 9. ENTERPRISE WORLD-CLASS FOOTER */}
+      {/* 9. ENTERPRISE WORLD-CLASS FOOTER (Tanzania Aligned) */}
       <footer className="border-t border-slate-800 bg-[#060a12] text-slate-400 text-xs pt-16 pb-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
@@ -933,60 +936,60 @@ export default function HomePage() {
                 </div>
                 <div>
                   <span className="font-black text-white text-base tracking-tight block">
-                    UNIVERSAL ED
+                    UNIVERSAL ED TANZANIA
                   </span>
                   <span className="text-[10px] text-blue-400 font-mono uppercase tracking-wider block">
-                    Academic Management System
+                    Mfumo wa Kidijitali wa Taasisi za Elimu
                   </span>
                 </div>
               </div>
 
               <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-                A unified, secure academic management platform designed for Primary Schools, Secondary Schools, High Schools, Vocational Institutes, Colleges, and Universities across East Africa.
+                Mfumo jumuishi wa usimamizi wa shule za msingi, sekondari, vyuo vya ufundi (VETA na NACTVET), na vyuo vikuu (TCU) nchini Tanzania.
               </p>
 
               {/* Status Indicator */}
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span>System Status: <strong>Operational (99.98% Service Uptime)</strong></span>
+                <span>Hali ya Mfumo: <strong>Inafanya Kazi Saa 24 (99.98% Uptime)</strong></span>
               </div>
             </div>
 
-            {/* Col 2: Solutions by Level */}
+            {/* Col 2: Ngazi za Elimu */}
             <div className="space-y-3">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Institution Types</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Ngazi za Elimu</h4>
               <ul className="space-y-2 text-slate-400 text-xs">
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Primary Schools (Std 1–7)</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Secondary Schools (Form 1–4)</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Advanced High Schools (Form 5–6)</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Vocational & Technical Training</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Colleges & Polytechnics</a></li>
-                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Universities & Degree Programs</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Shule za Msingi (Std 1–7)</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Sekondari O-Level (Form 1–4)</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Sekondari A-Level (Form 5–6)</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Vyuo vya Ufundi Stadi (VETA)</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Vyuo vya Kati (NACTVET)</a></li>
+                <li><a href="#tiers" className="hover:text-blue-400 transition-colors">Vyuo Vikuu (TCU Degrees)</a></li>
               </ul>
             </div>
 
-            {/* Col 3: Core Platform Engines */}
+            {/* Col 3: Mifumo na Injini */}
             <div className="space-y-3">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Platform Features</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Vipengele vya Mfumo</h4>
               <ul className="space-y-2 text-slate-400 text-xs">
-                <li><Link href="/register-institution" className="hover:text-blue-400 transition-colors">Institution Onboarding</Link></li>
-                <li><Link href="/admissions/apply" className="hover:text-blue-400 transition-colors">Student Online Admissions</Link></li>
-                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Standard Competition Ranking</a></li>
-                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Spreadsheet Validation Engine</a></li>
-                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Financial Clearance Controls</a></li>
-                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Security Audit Logging</a></li>
+                <li><Link href="/register-institution" className="hover:text-blue-400 transition-colors">Kusajili Shule Mpya</Link></li>
+                <li><Link href="/admissions/apply" className="hover:text-blue-400 transition-colors">Maombi ya Wanafunzi Mtandaoni</Link></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Upangaji wa Nafasi Darasani</a></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Uhakiki wa Excel wa Pointi 14</a></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Kizuizi cha Ada (Bursar Gate)</a></li>
+                <li><a href="#workflow" className="hover:text-blue-400 transition-colors">Kumbukumbu Rasmi za Usalama</a></li>
               </ul>
             </div>
 
-            {/* Col 4: Ecosystem & Roles */}
+            {/* Col 4: Dashibodi */}
             <div className="space-y-3">
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Stakeholder Portals</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider">Viingilio vya Watumiaji</h4>
               <ul className="space-y-2 text-slate-400 text-xs">
-                <li><Link href="/admin" className="hover:text-blue-400 transition-colors">Headmaster & Administration</Link></li>
-                <li><Link href="/teacher" className="hover:text-blue-400 transition-colors">Teacher & Marks Entry</Link></li>
-                <li><Link href="/student" className="hover:text-blue-400 transition-colors">Student 360° Portal</Link></li>
-                <li><Link href="/parent" className="hover:text-blue-400 transition-colors">Parent & Guardian Portal</Link></li>
-                <li><Link href="/login" className="hover:text-blue-400 transition-colors">Sign In Portal</Link></li>
+                <li><Link href="/admin" className="hover:text-blue-400 transition-colors">Mkuu wa Shule & Admin</Link></li>
+                <li><Link href="/teacher" className="hover:text-blue-400 transition-colors">Mwalimu wa Somo</Link></li>
+                <li><Link href="/student" className="hover:text-blue-400 transition-colors">Mwanafunzi (Student 360°)</Link></li>
+                <li><Link href="/parent" className="hover:text-blue-400 transition-colors">Mzazi / Mlezi</Link></li>
+                <li><Link href="/login" className="hover:text-blue-400 transition-colors">Kuingia Kwenye Akaunti</Link></li>
               </ul>
             </div>
           </div>
@@ -996,26 +999,26 @@ export default function HomePage() {
             {/* Strict Copyright Requirement */}
             <div>
               <p className="text-slate-400 font-medium">
-                © 2026 Universal Education Management Platform. All rights reserved.
+                © 2026 Universal Education Management Platform. Haki zote zimehifadhiwa.
               </p>
               <p className="text-[11px] text-slate-600 mt-0.5">
-                Built for High-Security Educational Institutions across East Africa.
+                Jamhuri ya Muungano wa Tanzania • NECTA, TCU na NACTVET Aligned.
               </p>
             </div>
 
             {/* Compliance & Regulatory Links */}
             <div className="flex flex-wrap items-center gap-6 text-[11px]">
               <span className="hover:text-slate-400 cursor-pointer transition-colors">
-                Data Protection & Privacy
+                Ulinzi wa Taarifa Binafsi
               </span>
               <span className="hover:text-slate-400 cursor-pointer transition-colors">
-                Terms of Service
+                Vigezo na Masharti
               </span>
               <span className="hover:text-slate-400 cursor-pointer transition-colors">
-                Security Architecture
+                Usalama wa Kimtandao
               </span>
-              <span className="hover:text-slate-400 cursor-pointer transition-colors">
-                Tanzania • Kenya • Uganda • Rwanda • Zambia
+              <span className="text-emerald-400 font-medium">
+                Tanzania (TZS)
               </span>
             </div>
           </div>
