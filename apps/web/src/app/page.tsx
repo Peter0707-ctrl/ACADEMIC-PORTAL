@@ -20,6 +20,7 @@ import {
   DollarSign,
   UserCheck,
   Award,
+  ChevronLeft,
   ChevronRight,
   ExternalLink,
   Search,
@@ -48,7 +49,7 @@ const TYPEWRITER_PHRASES = [
   'Taasisi Zote za Elimu Tanzania',
 ];
 
-function TypewriterHeading() {
+function TypewriterHeading({ className = 'text-cyan-300 font-extrabold inline-block min-w-[260px] sm:min-w-[420px] text-center' }: { className?: string }) {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -78,12 +79,26 @@ function TypewriterHeading() {
   }, [currentText, isDeleting, phraseIndex]);
 
   return (
-    <span className="text-blue-700 font-extrabold inline-block min-w-[260px] sm:min-w-[420px] text-left">
+    <span className={className}>
       {currentText}
-      <span className="text-blue-500 font-light animate-pulse ml-1">|</span>
+      <span className="text-cyan-400 font-light animate-pulse ml-1">|</span>
     </span>
   );
 }
+
+// Picha 10 za Mandhari ya Kielimu (Slideshow ya Background)
+const HERO_SLIDES = [
+  { src: '/images/slide-1.jpg', label: 'Wanafunzi wakisoma na kujadiliana chuoni' },
+  { src: '/images/slide-2.jpg', label: 'Majengo ya kisasa ya kampasi ya kitaaluma' },
+  { src: '/images/slide-3.jpg', label: 'Mihadhara na mafunzo darasani' },
+  { src: '/images/slide-4.jpg', label: 'Matumizi ya kompyuta na teknolojia ya kisasa' },
+  { src: '/images/slide-5.jpg', label: 'Maktaba ya kisasa ya utafiti na kujisomea' },
+  { src: '/images/slide-6.jpg', label: 'Maabara za sayansi na majaribio ya vitendo' },
+  { src: '/images/slide-7.jpg', label: 'Mahafali na mafanikio ya wahitimu' },
+  { src: '/images/slide-8.jpg', label: 'Walimu na ufundishaji mahiri darasani' },
+  { src: '/images/slide-9.jpg', label: 'Mijadala ya wanafunzi na miradi ya elimu' },
+  { src: '/images/slide-10.jpg', label: 'Miundombinu imara ya elimu ya kisasa' },
+];
 
 // Vipengele Muhimu vya Mfumo
 const PLATFORM_FEATURES = [
@@ -169,6 +184,19 @@ const SUPPORTED_LEVELS = [
 ];
 
 export default function LandingPage() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Automatic slideshow transition every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* 1. MAIN NAVIGATION HEADER */}
@@ -229,131 +257,127 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* 2. HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/70 via-white to-slate-50 border-b border-slate-200 py-16 lg:py-24">
-        {/* Soft Background Accents */}
-        <div className="absolute top-0 right-0 -z-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -z-10 w-96 h-96 bg-emerald-200/30 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Column: Headlines & Action CTA */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Product Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-blue-600" />
-                <span>Programu Kamili ya Kidijitali ya Shule na Vyuo</span>
-              </div>
-
-              {/* Dynamic Typewriter Heading */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
-                Usimamizi wa Kisasa wa Elimu kwa{' '}
-                <div className="mt-1 sm:mt-2">
-                  <TypewriterHeading />
-                </div>
-              </h1>
-
-              {/* Subtitle */}
-              <p className="text-base sm:text-lg text-slate-600 max-w-2xl font-normal leading-relaxed">
-                Rahisisha uendeshaji wa shule au chuo chako kwa mfumo mmoja jumuishi: usajili wa wanafunzi,
-                uwekaji wa alama na kadi za ripoti, makusanyo ya ada na risiti, ufuatiliaji wa mahudhurio,
-                na kutoa tovuti (portal) binafsi kwa kila shule.
-              </p>
-
-              {/* Hero Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
-                <Link
-                  href="/register-institution"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold shadow-md shadow-blue-700/25 transition-all text-sm"
-                >
-                  <Building2 className="w-4 h-4" />
-                  <span>Sajili Shule Yako Sasa</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-
-                <Link
-                  href="/auth/login"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-300 shadow-sm transition-all text-sm"
-                >
-                  <Lock className="w-4 h-4 text-slate-500" />
-                  <span>Ingia Kwenye Akaunti</span>
-                </Link>
-              </div>
-
-              {/* Value Highlights */}
-              <div className="pt-4 flex flex-wrap items-center gap-4 text-xs text-slate-600 font-medium">
-                <span className="flex items-center gap-1.5 text-slate-800 font-semibold">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  Kadi za Ripoti za Papo Hapo
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="flex items-center gap-1.5 text-slate-800 font-semibold">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                  SMS & WhatsApp kwa Wazazi
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="flex items-center gap-1.5 text-slate-800 font-semibold">
-                  <CheckCircle2 className="w-4 h-4 text-purple-600" />
-                  Tovuti Binafsi ya Kila Shule
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="flex items-center gap-1.5 text-slate-800 font-semibold">
-                  <CheckCircle2 className="w-4 h-4 text-amber-600" />
-                  Usimamizi wa Ada na Risiti
-                </span>
-              </div>
+      {/* 2. HERO SECTION WITH 10 FULL-BACKGROUND EDUCATIONAL SLIDES */}
+      <section className="relative overflow-hidden min-h-[640px] sm:min-h-[720px] flex items-center justify-center border-b border-slate-200">
+        {/* Full-width Background Slides (10 Images) */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {HERO_SLIDES.map((slide, index) => (
+            <div
+              key={slide.src}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                currentSlide === index ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <Image
+                src={slide.src}
+                alt={slide.label}
+                fill
+                className="object-cover object-center scale-100 motion-safe:transition-transform motion-safe:duration-[7000ms]"
+                priority={index === 0}
+              />
             </div>
+          ))}
 
-            {/* Right Column: AI Campus Visual Card */}
-            <div className="lg:col-span-5">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-white group">
-                <div className="relative h-80 sm:h-96 w-full">
-                  <Image
-                    src="/images/ai-campus-hero.jpg"
-                    alt="Mandhari ya Kisasa ya Kampasi ya Kidijitali ya Elimu"
-                    fill
-                    className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                </div>
+          {/* Balanced Educational Overlay: Keeps pictures clearly visible while ensuring text is 100% readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-900/60 to-slate-950/80" />
+          <div className="absolute inset-0 bg-blue-950/20 mix-blend-multiply" />
+        </div>
 
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-700/90 backdrop-blur-md text-xs font-bold mb-2">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Mfumo wa Kidijitali</span>
-                  </div>
-                  <h3 className="text-lg font-bold drop-shadow-md">
-                    Usimamizi Bora wa Shule Mtandaoni
-                  </h3>
-                  <p className="text-xs text-slate-200 drop-shadow-sm">
-                    Inayotumiwa na shule na vyuo vya kisasa kuendesha shughuli za kila siku
-                  </p>
-                </div>
+        {/* Previous / Next Slide Chevron Navigation Buttons */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          aria-label="Picha Iliyopita"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          aria-label="Picha Inayofuata"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
 
-                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200 px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span className="text-xs font-extrabold text-slate-800">
-                    Mfumo Upo Hewani 24/7
-                  </span>
-                </div>
-              </div>
+        {/* Foreground Hero Content (Centered, behind text is the full background image) */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 lg:py-28 text-center flex flex-col items-center space-y-6 sm:space-y-8">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs sm:text-sm font-semibold shadow-lg">
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>Programu Kamili ya Kidijitali ya Shule na Vyuo</span>
+          </div>
 
-              {/* Quick Stat Highlights */}
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                  <span className="block text-xl font-black text-blue-700">Dakika 3</span>
-                  <span className="text-[11px] text-slate-500 font-semibold">Usajili Rahisi</span>
-                </div>
-                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                  <span className="block text-xl font-black text-emerald-600">Salama</span>
-                  <span className="text-[11px] text-slate-500 font-semibold">Kuhifadhi Data</span>
-                </div>
-                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                  <span className="block text-xl font-black text-purple-700">100%</span>
-                  <span className="text-[11px] text-slate-500 font-semibold">Wingu (Cloud)</span>
-                </div>
-              </div>
+          {/* Dynamic Typewriter Heading */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.18] drop-shadow-lg max-w-4xl">
+            Usimamizi wa Kisasa wa Elimu kwa{' '}
+            <div className="mt-2 text-cyan-300 drop-shadow-md">
+              <TypewriterHeading />
+            </div>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-base sm:text-lg lg:text-xl text-slate-100 max-w-3xl font-normal leading-relaxed drop-shadow-md">
+            Rahisisha uendeshaji wa shule au chuo chako kwa mfumo mmoja jumuishi: usajili wa wanafunzi,
+            uwekaji wa alama na kadi za ripoti, makusanyo ya ada na risiti, ufuatiliaji wa mahudhurio,
+            na kutoa tovuti (portal) binafsi kwa kila shule.
+          </p>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 w-full sm:w-auto">
+            <Link
+              href="/register-institution"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-xl shadow-blue-600/40 transition-all text-base hover:-translate-y-0.5"
+            >
+              <Building2 className="w-5 h-5" />
+              <span>Sajili Shule Yako Sasa</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+
+            <Link
+              href="/auth/login"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-bold border border-white/30 shadow-lg transition-all text-base hover:-translate-y-0.5"
+            >
+              <Lock className="w-5 h-5 text-white/90" />
+              <span>Ingia Kwenye Akaunti</span>
+            </Link>
+          </div>
+
+          {/* Value Highlights Badges */}
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs sm:text-sm text-slate-100 font-medium">
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              Kadi za Ripoti za Papo Hapo
+            </span>
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+              SMS & WhatsApp kwa Wazazi
+            </span>
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-purple-400" />
+              Tovuti Binafsi ya Kila Shule
+            </span>
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-amber-400" />
+              Usimamizi wa Ada na Risiti
+            </span>
+          </div>
+
+          {/* Slideshow Controls (10 Dots & Slide Indicator) */}
+          <div className="pt-4 flex flex-col items-center gap-2.5">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
+              {HERO_SLIDES.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    currentSlide === idx ? 'w-8 bg-cyan-400' : 'w-2.5 bg-white/40 hover:bg-white/80'
+                  }`}
+                  aria-label={`Onyesha picha ${idx + 1}`}
+                />
+              ))}
+            </div>
+            <div className="text-xs text-white/80 font-medium drop-shadow">
+              Picha ya <span className="font-bold text-cyan-300">{currentSlide + 1} ya {HERO_SLIDES.length}</span>: {HERO_SLIDES[currentSlide].label}
             </div>
           </div>
         </div>
