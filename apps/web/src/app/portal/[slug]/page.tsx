@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -11,226 +11,202 @@ import {
   BookOpen,
   Users,
   ShieldCheck,
-  Award,
+  FileSpreadsheet,
+  CheckCircle2,
   Calendar,
+  Award,
+  ArrowRight,
+  ExternalLink,
   MapPin,
   Phone,
   Mail,
-  ArrowRight,
-  FileText,
   Clock,
   ChevronRight,
-  CheckCircle2,
+  Download,
 } from 'lucide-react';
 
-interface SchoolProfile {
-  code: string;
+interface SchoolData {
+  slug: string;
   name: string;
   motto: string;
-  regNumber: string;
+  established: string;
   type: string;
+  academicSystem: string;
+  regNumber: string;
   location: string;
   phone: string;
   email: string;
-  established: string;
   principal: string;
-  academicSystem: 'Mihula (Terms)' | 'Semesters';
-  gradingSummary: string;
   studentCount: number;
   programs: { title: string; desc: string; badge: string }[];
   announcements: { date: string; title: string; category: string }[];
 }
 
-const REGISTERED_SCHOOLS: Record<string, SchoolProfile> = {
+const SCHOOLS_REGISTRY: Record<string, SchoolData> = {
   kss: {
-    code: 'KSS',
+    slug: 'kss',
     name: 'Kilimanjaro Secondary School',
-    motto: 'Elimu Ni Nuru na Uongozi • Strive for Excellence',
-    regNumber: 'Namba ya Usajili: S.1429 (Wizara ya Elimu)',
-    type: 'Shule ya Sekondari ya Bweni na Kutwa (Kidato cha 1–4)',
-    location: 'Moshi Mjini, Mkoa wa Kilimanjaro, Tanzania',
+    motto: 'Elimu ni Mwanga na Msingi wa Maisha Bora',
+    established: '1984',
+    type: 'Shule ya Sekondari ya Kutwa na Bweni (Kidato cha 1 - 4)',
+    academicSystem: 'Mihula (Terms) • Mfumo wa NECTA',
+    regNumber: 'NECTA Reg: S.0108',
+    location: 'Moshi Mjini, Mkoa wa Kilimanjaro',
     phone: '+255 27 275 4321',
     email: 'info@kilimanjarosec.sc.tz',
-    established: '1984',
-    principal: 'Dr. Baraka Mwamba, M.Ed.',
-    academicSystem: 'Mihula (Terms)',
-    gradingSummary: 'Viwango vya NECTA (Nafasi Darasani & Division I-IV)',
-    studentCount: 1420,
+    principal: 'Mwl. Daudi Makongoro',
+    studentCount: 920,
     programs: [
       {
-        title: 'Kidato cha 1 hadi cha 4 (O-Level)',
-        desc: 'Mtaala kamili wa Taifa wa masomo ya Sayansi, Biashara, na Sanaa wenye maabara za kisasa za fizikia na kemia.',
-        badge: 'Mihula 2',
+        title: 'Kidato cha Kwanza hadi cha Nne (O-Level)',
+        desc: 'Mtaala kamili wa Taifa wa NECTA wenye masomo ya Sayansi (PCM, PCB), Sanaa na Biashara.',
+        badge: 'NECTA CSEE',
       },
       {
-        title: 'Kambi ya Sayansi na TEHAMA',
-        desc: 'Mafunzo maalum ya kompyuta, maabara ya lugha, na majaribio ya kisayansi kujiandaa na mitihani ya NECTA.',
-        badge: 'Sayansi & TEHAMA',
+        title: 'Maabara za Sayansi za Kisasa',
+        desc: 'Maabara tatu zilizokaguliwa na kuthibitishwa za Fizikia, Kemia na Baiolojia kwa ajili ya vitendo (Practicals).',
+        badge: 'Sayansi Vitendo',
       },
       {
-        title: 'Vilabu vya Michezo na Taaluma',
-        desc: 'Umoja wa wajenzi wa taifa, mijadala ya Kiingereza na Kiswahili, mpira wa miguu, na uhifadhi wa mazingira.',
-        badge: 'Ukuaji Kamili',
+        title: 'Mafunzo ya Tehama (ICT & Computer Lab)',
+        desc: 'Wanafunzi wote wanafundishwa misingi ya kompyuta, usalama mtandaoni na matumizi ya teknolojia darasani.',
+        badge: 'ICT Digital',
       },
     ],
     announcements: [
       {
-        date: '28 Sep 2026',
-        title: 'Matokeo Rasmi ya Mitihani ya Muhula wa Pili Yametangazwa',
-        category: 'Mitihani',
+        date: '24 Sept 2026',
+        title: 'Matokeo ya Mitihani ya Mock ya Kidato cha Nne Yametangazwa kwenye Portal',
+        category: 'Taaluma',
       },
       {
-        date: '15 Sep 2026',
-        title: 'Fomu za Kujiunga na Kidato cha Kwanza 2026/2027 Zipo Wazi Mtandaoni',
+        date: '18 Sept 2026',
+        title: 'Mkutano Mkuu wa Wazazi na Walimu (PTA) Kupitia Mtandao na Shuleni',
+        category: 'Wazazi',
+      },
+      {
+        date: '10 Sept 2026',
+        title: 'Fomu za Kujiunga na Kidato cha Kwanza 2027 Zinaanza Kupatikana Mtandaoni',
         category: 'Udahili',
-      },
-      {
-        date: '02 Sep 2026',
-        title: 'Mkutano Mkuu wa Wazazi na Walimu (PTA) Tarehe 10 Oktoba',
-        category: 'Tangazo Rasmi',
       },
     ],
   },
   lvit: {
-    code: 'LVIT',
+    slug: 'lvit',
     name: 'Lake Victoria Institute of Technology',
-    motto: 'Ubunifu, Teknolojia na Uadilifu wa Kitaaluma',
-    regNumber: 'Namba ya Usajili: REG/NACTVET/0894',
-    type: 'Chuo cha Kati cha Ufundi na Elimu ya Juu',
-    location: 'Capripoint, Jiji la Mwanza, Tanzania',
-    phone: '+255 28 250 8899',
+    motto: 'Innovating Practical Engineering Skills',
+    established: '2008',
+    type: 'Chuo cha Kati cha Elimu ya Ufundi (NACTVET)',
+    academicSystem: 'Semesta (Semesters) • NTA Level 4 - 6',
+    regNumber: 'NACTVET Reg: REG/NACTVET/042',
+    location: 'Ilemela, Mwanza',
+    phone: '+255 28 250 1190',
     email: 'admissions@lvit.ac.tz',
-    established: '2004',
-    principal: 'Prof. Maryam Juma, Ph.D.',
-    academicSystem: 'Semesters',
-    gradingSummary: 'Mikopo ya Masomo (Credits) na GPA ya 5.0 (TCU & NACTVET)',
-    studentCount: 3850,
+    principal: 'Eng. Emmanuel Mwakasege',
+    studentCount: 1480,
     programs: [
       {
-        title: 'Kitivo cha Sayansi ya Kompyuta na TEHAMA',
-        desc: 'Stashahada na Shahada za Uhandisi wa Programu (Software Engineering), Mtandao na Usalama wa Kimtandao.',
-        badge: 'Credits za Semesta',
+        title: 'Stashahada ya Uhandisi wa Tehama na Mitandao (Diploma in IT)',
+        desc: 'Mafunzo ya vitendo ya miaka mitatu yanayowiana na soko la ajira la viwanda na taasisi za umma.',
+        badge: 'NTA Level 6',
       },
       {
-        title: 'Idara ya Uhasibu na Biashara',
-        desc: 'Astashahada na Stashahada zinazotambulika na Bodi ya Wahasibu (NBAA).',
-        badge: 'NBAA Accredited',
-      },
-      {
-        title: 'Uhandisi wa Mazingira na Maji',
-        desc: 'Mafunzo ya vitendo ya rasilimali za maji ya Ziwa Victoria na teknolojia ya mazingira.',
-        badge: 'Mafunzo ya Vitendo',
+        title: 'Uhandisi wa Umeme na Nishati Mbadala',
+        desc: 'Kufunga na kukarabati mifumo ya umeme wa viwandani na umeme wa jua (Solar Power Systems).',
+        badge: 'NACTVET Diploma',
       },
     ],
     announcements: [
       {
-        date: '25 Sep 2026',
-        title: 'Mwisho wa Kufanya Usajili wa Mitihani ya Semesta ya Pili na Kukamilisha Ada',
-        category: 'Bursar & Mitihani',
-      },
-      {
-        date: '10 Sep 2026',
-        title: 'Ratiba ya Mitihani ya Marudio (Supplementary Exams) Imetoka',
-        category: 'Seneti ya Chuo',
-      },
-      {
-        date: '01 Sep 2026',
-        title: 'Nafasi za Masomo Muhula wa Septemba/Oktoba 2026 Zinaendelea Kupokelewa',
-        category: 'Udahili',
+        date: '20 Sept 2026',
+        title: 'Ratiba ya Mitihani ya Mwisho wa Semesta ya Pili (End of Semester II) Imetoka',
+        category: 'Mitihani',
       },
     ],
   },
   saia: {
-    code: 'SAIA',
+    slug: 'saia',
     name: 'St. Augustine International Academy',
-    motto: 'Uongozi kupitia Maarifa na Maadili Mema',
-    regNumber: 'Namba ya Usajili: S.4891',
-    type: 'Shule ya Msingi na Sekondari (Arusha)',
-    location: 'Njiro, Jiji la Arusha, Tanzania',
-    phone: '+255 27 254 9900',
+    motto: 'Knowledge, Integrity and Discipline',
+    established: '2014',
+    type: 'Shule ya Msingi na Awali (English Medium)',
+    academicSystem: 'Mihula (Terms) • Baraza la Mitihani la Taifa',
+    regNumber: 'TAMISEMI Reg: EM-1042',
+    location: 'Oysterbay, Dar es Salaam',
+    phone: '+255 22 260 0987',
     email: 'info@staugustine.ac.tz',
-    established: '2012',
-    principal: 'Mr. Josephat Ngalawa, B.Ed.',
-    academicSystem: 'Mihula (Terms)',
-    gradingSummary: 'Tathmini Endelevu (CA) & Madaraja ya NECTA',
-    studentCount: 980,
+    principal: 'Sr. Beatrice Mmari',
+    studentCount: 650,
     programs: [
       {
-        title: 'Shule ya Msingi (Standard 1–7)',
-        desc: 'Misingi imara ya Kiingereza, Hisabati, Sayansi, na masomo ya kompyuta kwa vitendo.',
-        badge: 'Madarasa ya Msingi',
+        title: 'Elimu ya Awali (Nursery & Pre-School)',
+        desc: 'Mazingira salama na rafiki ya kumjengea mtoto msingi imara wa lugha, hisabati na ubunifu.',
+        badge: 'Early Childhood',
       },
       {
-        title: 'Shule ya Sekondari (Form 1–4)',
-        desc: 'Maandalizi thabiti ya mitihani ya Kidato cha 4 yenye matokeo ya Division One ya juu.',
-        badge: 'Sekondari O-Level',
+        title: 'Darasa la Kwanza hadi la Saba (Primary Standard 1-7)',
+        desc: 'Mtaala wa Taifa kwa lugha ya Kiingereza, michezo, kompyuta na maadili ya Kitanzania.',
+        badge: 'PSLE Excellence',
       },
     ],
     announcements: [
       {
-        date: '20 Sep 2026',
-        title: 'Ripoti za Maendeleo ya Masomo Zimetumwa kwenye Akaunti za Wazazi',
-        category: 'Taaluma',
-      },
-      {
-        date: '05 Sep 2026',
-        title: 'Mashindano ya Michezo na Maonesho ya Sayansi ya Shule za Arusha',
-        category: 'Michezo & Sanaa',
+        date: '15 Sept 2026',
+        title: 'Kufungua Shule kwa Muhula wa Tatu na Ukaguzi wa Vifaa vya Wanafunzi',
+        category: 'Utawala',
       },
     ],
   },
 };
 
-export default function SchoolBrandedPortalPage() {
+export default function SchoolPortalPage() {
   const params = useParams();
-  const slug = (typeof params?.slug === 'string' ? params.slug.toLowerCase() : 'kss');
-
-  const school: SchoolProfile = REGISTERED_SCHOOLS[slug] || {
-    code: slug.toUpperCase(),
-    name: `Shule ya ${slug.toUpperCase()}`,
-    motto: 'Elimu Ni Ufunguo wa Maisha',
-    regNumber: `S.${slug.toUpperCase()}/2026`,
-    type: 'Taasisi ya Elimu Iliyosajiliwa Tanzania',
-    location: 'Mkoa, Tanzania',
-    phone: '+255 700 000 000',
-    email: `info@${slug.toLowerCase()}.sc.tz`,
-    established: '2026',
+  const slug = (params?.slug as string) || 'kss';
+  const school = SCHOOLS_REGISTRY[slug] || {
+    slug,
+    name: `${slug.toUpperCase()} Secondary School`,
+    motto: 'Elimu ni Msingi wa Maendeleo',
+    established: '2010',
+    type: 'Shule ya Sekondari Tanzania',
+    academicSystem: 'Mihula • NECTA Standard',
+    regNumber: `NECTA Center S.${slug.toUpperCase()}`,
+    location: 'Tanzania',
+    phone: '+255 22 000 0000',
+    email: `info@${slug}.sc.tz`,
     principal: 'Mkuu wa Shule',
-    academicSystem: 'Mihula (Terms)',
-    gradingSummary: 'Viwango Rasmi vya NECTA Tanzania',
-    studentCount: 500,
+    studentCount: 600,
     programs: [
       {
-        title: 'Mtaala Rasmi wa Masomo',
-        desc: 'Masomo yote kulingana na muongozo wa Wizara ya Elimu Tanzania.',
-        badge: 'Mtaala wa Taifa',
+        title: 'Kidato cha 1 hadi 4 (O-Level)',
+        desc: 'Mtaala rasmi wa Tanzania wenye masomo ya Sayansi na Sanaa.',
+        badge: 'NECTA CSEE',
       },
     ],
     announcements: [
       {
         date: 'Leo',
-        title: 'Tovuti Rasmi ya Shule Imewashwa Mtandaoni',
+        title: 'Mfumo wa Tovuti ya Shule Umewashwa Rasmi',
         category: 'Taarifa',
       },
     ],
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
-      {/* 1. TOP OFFICIAL BAR */}
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
+      {/* 1. TOP NATIONAL / REGULATORY BAR */}
       <div>
-        <div className="bg-[#060a12] border-b border-slate-800 text-[11px] text-slate-400 py-2 px-6">
+        <div className="bg-slate-900 border-b border-slate-800 text-[11px] text-slate-300 py-2 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-4">
               <span className="font-mono text-emerald-400 font-bold">{school.regNumber}</span>
               <span className="hidden md:inline text-slate-600">•</span>
               <span className="flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-slate-500" />
+                <MapPin className="w-3 h-3 text-slate-400" />
                 {school.location}
               </span>
               <span className="hidden md:inline text-slate-600">•</span>
               <span className="flex items-center gap-1">
-                <Phone className="w-3 h-3 text-slate-500" />
+                <Phone className="w-3 h-3 text-slate-400" />
                 {school.phone}
               </span>
             </div>
@@ -239,46 +215,44 @@ export default function SchoolBrandedPortalPage() {
               <span className="italic text-slate-300">"{school.motto}"</span>
               <Link
                 href="/"
-                className="text-[10px] text-blue-400 hover:text-blue-300 font-mono transition-colors border-l border-slate-800 pl-3"
+                className="text-[10px] text-blue-400 hover:text-blue-300 font-bold transition-colors border-l border-slate-800 pl-3"
               >
-                Universal Ed Tanzania ↗
+                ← Mfumo Mkuu Tanzania
               </Link>
             </div>
           </div>
         </div>
 
         {/* 2. SCHOOL HEADER */}
-        <header className="glass-nav sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
             {/* School Crest & Identity */}
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 via-indigo-700 to-cyan-600 border border-white/10 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20">
-                <div className="w-8 h-8 rounded-full border border-amber-300/40 bg-slate-900/60 flex items-center justify-center">
-                  <School className="w-5 h-5 text-amber-300" />
-                </div>
+              <div className="w-12 h-12 rounded-xl bg-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-700/20">
+                <School className="w-7 h-7" />
               </div>
               <div>
-                <h1 className="font-extrabold text-base sm:text-lg text-white tracking-tight leading-tight">
+                <h1 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight leading-tight">
                   {school.name}
                 </h1>
-                <div className="text-[11px] text-blue-400 font-medium">{school.type}</div>
+                <div className="text-xs text-blue-700 font-semibold">{school.type}</div>
               </div>
             </div>
 
-            {/* Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-300">
-              <a href="#about" className="hover:text-white transition-colors">
+            {/* School Quick Navigation */}
+            <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-700">
+              <a href="#about" className="hover:text-blue-700 transition-colors">
                 Kuhusu Shule
               </a>
-              <a href="#programs" className="hover:text-white transition-colors">
+              <a href="#programs" className="hover:text-blue-700 transition-colors">
                 Masomo & Michepuo
               </a>
-              <a href="#announcements" className="hover:text-white transition-colors">
+              <a href="#announcements" className="hover:text-blue-700 transition-colors">
                 Matangazo
               </a>
               <Link
                 href="/admissions/apply"
-                className="hover:text-emerald-400 transition-colors text-emerald-300 font-bold"
+                className="hover:text-emerald-700 transition-colors text-emerald-600 font-extrabold"
               >
                 Udahili Mtandaoni
               </Link>
@@ -288,7 +262,7 @@ export default function SchoolBrandedPortalPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30 transition-all flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 shadow-md shadow-blue-700/20 transition-all flex items-center gap-1.5"
               >
                 <Users className="w-3.5 h-3.5" />
                 <span>Ingia Portal ya Shule</span>
@@ -298,34 +272,22 @@ export default function SchoolBrandedPortalPage() {
         </header>
 
         {/* 3. SCHOOL HERO SHOWCASE */}
-        <section className="relative overflow-hidden pt-12 pb-20 border-b border-slate-800 min-h-[500px] flex items-center">
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/images/hero-campus-bg.jpg"
-              alt={`${school.name} Kampasi`}
-              fill
-              className="object-cover object-center scale-105 filter brightness-95 contrast-105"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#070b14]/75 via-[#070b14]/50 to-[#070b14]/90" />
-            <div className="absolute inset-0 bg-black/20" />
-          </div>
-
-          <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/70 via-white to-slate-50 border-b border-slate-200 py-12 lg:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               {/* Left Column: School Headline & Actions */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-blue-300 text-xs font-semibold backdrop-blur-md">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-blue-200 text-blue-900 text-xs font-bold shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>Tovuti Rasmi ya Shule • Ilianzishwa Mwaka {school.established}</span>
                 </div>
 
-                <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.15]">
+                <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
                   Karibu <br />
-                  <span className="text-gradient-blue">{school.name}</span>
+                  <span className="text-blue-700">{school.name}</span>
                 </h2>
 
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
                   {school.motto}. Taasisi inayojenga maadili, ufaulu wa juu wa mitihani ya Taifa, na uongozi kwa wanafunzi wetu {school.studentCount.toLocaleString()} waliosajiliwa.
                 </p>
 
@@ -333,7 +295,7 @@ export default function SchoolBrandedPortalPage() {
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <Link
                     href="/admissions/apply"
-                    className="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                    className="px-6 py-3.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs transition-all shadow-md shadow-blue-700/25 flex items-center gap-2"
                   >
                     <span>Omba Kujiunga 2026/2027</span>
                     <ArrowRight className="w-4 h-4" />
@@ -341,33 +303,33 @@ export default function SchoolBrandedPortalPage() {
 
                   <Link
                     href="/student"
-                    className="px-5 py-3.5 rounded-xl bg-slate-900/80 border border-slate-700 hover:border-slate-500 text-slate-200 font-semibold text-xs transition-all flex items-center gap-2"
+                    className="px-5 py-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-bold text-xs transition-all shadow-xs flex items-center gap-2"
                   >
-                    <GraduationCap className="w-4 h-4 text-purple-400" />
+                    <GraduationCap className="w-4 h-4 text-purple-600" />
                     <span>Report Card za Wanafunzi</span>
                   </Link>
 
                   <Link
                     href="/parent"
-                    className="px-5 py-3.5 rounded-xl bg-slate-900/80 border border-slate-700 hover:border-slate-500 text-slate-200 font-semibold text-xs transition-all flex items-center gap-2"
+                    className="px-5 py-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-bold text-xs transition-all shadow-xs flex items-center gap-2"
                   >
-                    <Users className="w-4 h-4 text-amber-400" />
+                    <Users className="w-4 h-4 text-amber-600" />
                     <span>Portal ya Wazazi</span>
                   </Link>
                 </div>
 
                 {/* Quick Info Badges */}
-                <div className="pt-2 flex flex-wrap gap-4 text-xs text-slate-400">
+                <div className="pt-2 flex flex-wrap gap-4 text-xs text-slate-600 font-medium">
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     <span>Mfumo wa {school.academicSystem}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-blue-400" />
+                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
                     <span>Usajili Rasmi Tanzania</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-purple-400" />
+                    <CheckCircle2 className="w-4 h-4 text-purple-600" />
                     <span>Kuzuia Report kwa Wenye Deni la Ada</span>
                   </div>
                 </div>
@@ -375,83 +337,83 @@ export default function SchoolBrandedPortalPage() {
 
               {/* Right Column: Portal Access Hub Cards */}
               <div className="lg:col-span-5 space-y-4">
-                <div className="glass-card rounded-2xl p-6 border border-slate-800 bg-[#0e1424]/90 shadow-2xl">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider text-blue-400 mb-4 flex items-center justify-between">
-                    <span>Viingilio Rasmi vya Shule Hii</span>
-                    <span className="text-[10px] text-emerald-400 font-mono font-normal">Mfumo Upo Hewani</span>
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-md">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center justify-between">
+                    <span className="text-blue-700 font-black">Viingilio Rasmi vya Shule Hii</span>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">Mfumo Upo Hewani</span>
                   </h3>
 
                   <div className="space-y-3">
                     <Link
                       href="/student"
-                      className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-purple-500/40 transition-all flex items-center justify-between group"
+                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-purple-400 hover:bg-purple-50/30 transition-all flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
                           <GraduationCap className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                          <div className="text-xs font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
                             Portal ya Mwanafunzi (Student 360°)
                           </div>
-                          <div className="text-[10px] text-slate-400">Angalia alama, nafasi darasani & pakua report card</div>
+                          <div className="text-[10px] text-slate-500">Angalia alama, nafasi darasani & pakua report card</div>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-700 transition-colors" />
                     </Link>
 
                     <Link
                       href="/parent"
-                      className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-amber-500/40 transition-all flex items-center justify-between group"
+                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-amber-400 hover:bg-amber-50/30 transition-all flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
                           <Users className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                          <div className="text-xs font-bold text-slate-900 group-hover:text-amber-700 transition-colors">
                             Portal ya Mzazi / Mlezi
                           </div>
-                          <div className="text-[10px] text-slate-400">Fuatilia maendeleo ya mtoto & stakabadhi za ada</div>
+                          <div className="text-[10px] text-slate-500">Fuatilia maendeleo ya mtoto & stakabadhi za ada</div>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-700 transition-colors" />
                     </Link>
 
                     <Link
                       href="/teacher"
-                      className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-emerald-500/40 transition-all flex items-center justify-between group"
+                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
                           <BookOpen className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
+                          <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
                             Portal ya Walimu (Teacher Portal)
                           </div>
-                          <div className="text-[10px] text-slate-400">Weka alama za mitihani na pakia Excel ya darasa</div>
+                          <div className="text-[10px] text-slate-500">Weka alama za mitihani na pakia Excel ya darasa</div>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-colors" />
                     </Link>
 
                     <Link
                       href="/admin"
-                      className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-blue-500/40 transition-all flex items-center justify-between group"
+                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition-all flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
                           <ShieldCheck className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-white group-hover:text-blue-300 transition-colors">
+                          <div className="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
                             Mkuu wa Shule & Utawala
                           </div>
-                          <div className="text-[10px] text-slate-400">Thibitisha matokeo ya muhula & tangaza rasmi</div>
+                          <div className="text-[10px] text-slate-500">Thibitisha matokeo ya muhula & tangaza rasmi</div>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-700 transition-colors" />
                     </Link>
                   </div>
                 </div>
@@ -461,13 +423,13 @@ export default function SchoolBrandedPortalPage() {
         </section>
 
         {/* 4. ACADEMIC PROGRAMS */}
-        <section id="programs" className="py-16 border-b border-slate-800 bg-[#0b101d]/60">
-          <div className="max-w-7xl mx-auto px-6">
+        <section id="programs" className="py-16 border-b border-slate-200 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="max-w-2xl mb-10">
-              <span className="text-xs font-mono uppercase tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
                 Mitaala ya Masomo
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mt-3 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-3 tracking-tight">
                 Ngazi za Masomo Zinazofundishwa {school.name}
               </h2>
             </div>
@@ -476,20 +438,20 @@ export default function SchoolBrandedPortalPage() {
               {school.programs.map((prog, idx) => (
                 <div
                   key={idx}
-                  className="glass-card rounded-2xl p-6 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all"
+                  className="bg-slate-50 rounded-2xl p-6 border border-slate-200 flex flex-col justify-between hover:border-blue-300 hover:bg-white transition-all shadow-xs"
                 >
                   <div>
-                    <span className="px-2.5 py-1 rounded-md bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[10px] font-mono font-bold mb-3 inline-block">
+                    <span className="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold mb-3 inline-block">
                       {prog.badge}
                     </span>
-                    <h3 className="text-base font-bold text-white mb-2">{prog.title}</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">{prog.desc}</p>
+                    <h3 className="text-base font-bold text-slate-900 mb-2">{prog.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">{prog.desc}</p>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-slate-800">
+                  <div className="mt-6 pt-4 border-t border-slate-200">
                     <Link
                       href="/admissions/apply"
-                      className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1"
+                      className="text-xs text-blue-700 hover:text-blue-800 font-bold flex items-center gap-1"
                     >
                       <span>Omba Nafasi ya Masomo</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -502,14 +464,14 @@ export default function SchoolBrandedPortalPage() {
         </section>
 
         {/* 5. ANNOUNCEMENTS */}
-        <section id="announcements" className="py-16 border-b border-slate-800 bg-[#090d16]">
-          <div className="max-w-7xl mx-auto px-6">
+        <section id="announcements" className="py-16 border-b border-slate-200 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                   Ubao wa Matangazo Rasmi
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mt-2 tracking-tight">
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
                   Matangazo ya Hivi Karibuni
                 </h2>
               </div>
@@ -519,21 +481,21 @@ export default function SchoolBrandedPortalPage() {
               {school.announcements.map((item, idx) => (
                 <div
                   key={idx}
-                  className="glass-card rounded-xl p-4 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-700 transition-all"
+                  className="bg-white rounded-xl p-4 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-blue-400 shadow-xs transition-all"
                 >
                   <div className="flex items-start sm:items-center gap-4">
-                    <div className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300 shrink-0">
+                    <div className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shrink-0">
                       {item.date}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white">{item.title}</h4>
-                      <span className="text-[10px] text-blue-400 font-mono">{item.category}</span>
+                      <h4 className="text-sm font-bold text-slate-900">{item.title}</h4>
+                      <span className="text-[10px] text-blue-700 font-semibold">{item.category}</span>
                     </div>
                   </div>
 
                   <Link
                     href="/login"
-                    className="text-xs text-slate-400 hover:text-white font-medium flex items-center gap-1 shrink-0"
+                    className="text-xs text-slate-600 hover:text-blue-700 font-bold flex items-center gap-1 shrink-0"
                   >
                     <span>Soma Zaidi</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -545,26 +507,26 @@ export default function SchoolBrandedPortalPage() {
         </section>
 
         {/* 6. PRINCIPAL'S WELCOME */}
-        <section id="about" className="py-16 bg-[#0b101d]/60">
-          <div className="max-w-5xl mx-auto px-6">
-            <div className="glass-card rounded-3xl p-8 sm:p-10 border border-slate-800 bg-[#0e1424]/80 shadow-2xl">
+        <section id="about" className="py-16 bg-white">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="bg-slate-50 rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-sm">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-2xl shadow-xl shrink-0">
+                <div className="w-20 h-20 rounded-2xl bg-blue-700 flex items-center justify-center font-bold text-white text-2xl shadow-md shrink-0">
                   {school.principal.charAt(0)}
                 </div>
                 <div className="space-y-3 text-center sm:text-left">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/60 border border-blue-500/20 text-blue-300 text-xs font-semibold">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
                     <span>Neno Kutoka kwa Mkuu wa Shule</span>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white">
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
                     "Kujenga Taaluma na Maadili Mema ya Kitanzania"
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                     Hapa {school.name}, tunazingatia malezi bora, nidhamu, na ufaulu wa kiwango cha juu katika mitihani ya NECTA. Kupitia mfumo wetu huu wa kidijitali, mzazi anaweza kuona maendeleo ya mwanaye popote alipo bila kulazimika kusubiri mwisho wa mwaka.
                   </p>
                   <div className="pt-2">
-                    <div className="font-bold text-white text-sm">{school.principal}</div>
-                    <div className="text-xs text-blue-400">Mkuu wa Shule • {school.name}</div>
+                    <div className="font-bold text-slate-900 text-sm">{school.principal}</div>
+                    <div className="text-xs text-blue-700 font-semibold">Mkuu wa Shule • {school.name}</div>
                   </div>
                 </div>
               </div>
@@ -574,8 +536,8 @@ export default function SchoolBrandedPortalPage() {
       </div>
 
       {/* 7. DEDICATED INSTITUTION FOOTER */}
-      <footer className="border-t border-slate-800 bg-[#060a12] text-slate-400 text-xs py-12">
-        <div className="max-w-7xl mx-auto px-6">
+      <footer className="border-t border-slate-800 bg-slate-900 text-slate-400 text-xs py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="md:col-span-2 space-y-3">
               <div className="flex items-center gap-3">
@@ -587,7 +549,7 @@ export default function SchoolBrandedPortalPage() {
               <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
                 Tovuti rasmi ya {school.name}. Mfumo uliounganishwa moja kwa moja na viwango vya mitihani ya NECTA Tanzania.
               </p>
-              <div className="text-[11px] font-mono text-emerald-400">
+              <div className="text-[11px] font-mono text-emerald-400 font-semibold">
                 {school.regNumber}
               </div>
             </div>
