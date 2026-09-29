@@ -298,16 +298,17 @@ export default function SchoolBrandedPortalPage() {
         </header>
 
         {/* 3. SCHOOL HERO SHOWCASE */}
-        <section className="relative overflow-hidden pt-12 pb-20 border-b border-slate-800">
+        <section className="relative overflow-hidden pt-12 pb-20 border-b border-slate-800 min-h-[500px] flex items-center">
           <div className="absolute inset-0 z-0">
             <Image
               src="/images/hero-campus-bg.jpg"
               alt={`${school.name} Kampasi`}
               fill
-              className="object-cover object-center opacity-25 filter brightness-[0.7] contrast-125"
+              className="object-cover object-center scale-105 filter brightness-95 contrast-105"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#090d16]/95 via-[#090d16]/80 to-[#090d16]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#070b14]/75 via-[#070b14]/50 to-[#070b14]/90" />
+            <div className="absolute inset-0 bg-black/20" />
           </div>
 
           <div className="max-w-7xl mx-auto px-6 relative z-10">

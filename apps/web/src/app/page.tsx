@@ -312,18 +312,19 @@ export default function HomePage() {
         </header>
 
         {/* 2. HERO SECTION WITH CINEMATIC CAMPUS IMAGE BACKGROUND & TYPEWRITER TEXT */}
-        <section className="relative overflow-hidden pt-16 pb-24 border-b border-slate-800/80">
-          {/* Real Campus Background Image with Deep Overlay */}
+        <section className="relative overflow-hidden pt-16 pb-24 border-b border-slate-800/80 min-h-[580px] flex items-center">
+          {/* Real Campus Background Image - Clearly Visible */}
           <div className="absolute inset-0 z-0">
             <Image
               src="/images/hero-campus-bg.jpg"
-              alt="Mandhari ya Kampasi ya Shule na Chuo Tanzania"
+              alt="Mandhari ya Kampasi ya Shule na Chuo Tanzania - Chuo Kikuu cha Dodoma"
               fill
-              className="object-cover object-center opacity-30 filter brightness-[0.7] contrast-125 scale-105"
+              className="object-cover object-center scale-105 filter brightness-95 contrast-105"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#090d16]/95 via-[#090d16]/85 to-[#090d16]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/30 via-transparent to-transparent" />
+            {/* Balanced overlay so the Tanzanian campus photo is clearly visible while keeping text sharp */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#070b14]/70 via-[#070b14]/45 to-[#070b14]/90" />
+            <div className="absolute inset-0 bg-black/20" />
           </div>
 
           <div className="max-w-7xl mx-auto px-6 relative z-10">
