@@ -8,6 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Ubuntu', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
         background: '#F8FAFC',
         card: '#FFFFFF',
