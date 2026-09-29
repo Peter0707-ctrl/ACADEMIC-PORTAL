@@ -1,154 +1,366 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, GraduationCap, School, Upload } from 'lucide-react';
 
-export default function AdmissionsApplicationPage() {
+export default function AdmissionsApplyPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [appNumber, setAppNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    program: 'Form 1 Secondary',
-    previousSchool: '',
+    institution: 'Kilimanjaro Secondary School',
+    academicLevel: 'Form 1 (Ordinary Level)',
+    academicYear: '2026',
+    firstName: 'Neema',
+    lastName: 'Kiwelu',
+    dateOfBirth: '2012-05-14',
+    gender: 'FEMALE',
+    primarySchoolCompleted: 'Moshi Primary School',
+    psleIndexNumber: 'PS1029/042/2025',
+    psleAverageGrade: 'A',
+    guardianName: 'Dr. Joseph Kiwelu',
+    guardianPhone: '+255 784 112 334',
+    guardianEmail: 'jkiwelu@hospital.or.tz',
+    guardianRelation: 'Father',
+    residence: 'Moshi Urban, Kilimanjaro',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setTimeout(() => {
+      const generated = 'APP-KSS-2026-' + Math.floor(1000 + Math.random() * 9000);
+      setAppNumber(generated);
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="text-slate-400 hover:text-slate-600 transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white">
-              <GraduationCap className="w-6 h-6" />
+    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+      {/* Top Header */}
+      <header className="border-b border-slate-800/80 bg-[#0e1424]/70 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/30 text-sm">
+              U
             </div>
-            <div>
-              <span className="font-bold text-slate-900 block leading-tight">Admissions Portal</span>
-              <span className="text-xs text-slate-500">Online Student Application & Document Submission</span>
+            <div className="flex flex-col">
+              <span className="font-bold text-white text-sm tracking-tight leading-none">
+                ADMISSIONS PORTAL
+              </span>
+              <span className="text-[10px] text-blue-400 font-mono">
+                Student Online Application
+              </span>
             </div>
-          </div>
-          <Link href="/login" className="text-xs font-semibold text-blue-600 hover:underline">
-            Track Status / Sign In
           </Link>
+          <div className="flex items-center gap-3 text-xs">
+            <Link
+              href="/login"
+              className="text-slate-400 hover:text-white transition-colors"
+            >
+              Staff / Student Sign In →
+            </Link>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-12 flex-1 w-full">
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-6 py-10 w-full flex-1">
         {submitted ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm space-y-4">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8" />
+          <div className="glass-card rounded-2xl p-10 text-center border border-emerald-500/30 bg-[#0e1424]/90 shadow-2xl relative overflow-hidden">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-6">
+              ✓
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">Application Submitted!</h2>
-            <p className="text-sm text-slate-600">
-              Your application has been received by the Admissions Officer. Your tracking ID is{' '}
-              <strong className="font-mono text-slate-900">APP-2026-0891</strong>.
+            <h2 className="text-2xl font-bold text-white mb-2">Application Submitted!</h2>
+            <p className="text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">
+              Your application for admission to <strong className="text-slate-200">{formData.institution}</strong> ({formData.academicLevel}) has been received and queued for Document Verification and Admissions Board Review.
             </p>
-            <div className="pt-4 flex justify-center space-x-3">
-              <Link href="/" className="btn-secondary text-xs">
-                Back to Home
-              </Link>
-              <Link href="/login" className="btn-primary text-xs">
-                Login with Applicant Account
+
+            <div className="p-4 bg-blue-950/30 border border-blue-500/30 rounded-xl max-w-md mx-auto mb-8">
+              <span className="text-xs text-blue-400 uppercase tracking-widest block font-mono">Application Reference Number</span>
+              <span className="text-2xl font-mono font-bold text-white mt-1 block tracking-wider">{appNumber}</span>
+              <span className="text-[11px] text-slate-400 mt-1 block">Keep this reference safe. SMS update will be dispatched to {formData.guardianPhone}.</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 max-w-2xl mx-auto text-left mb-8 text-xs">
+              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                <span className="text-slate-500 block mb-1">Applicant</span>
+                <span className="text-white font-medium">{formData.firstName} {formData.lastName}</span>
+              </div>
+              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                <span className="text-slate-500 block mb-1">Class Applied</span>
+                <span className="text-blue-400 font-medium">{formData.academicLevel}</span>
+              </div>
+              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                <span className="text-slate-500 block mb-1">Status</span>
+                <span className="text-amber-400 font-medium">Under Review</span>
+              </div>
+              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                <span className="text-slate-500 block mb-1">Guardian</span>
+                <span className="text-slate-300 font-medium">{formData.guardianName}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => setSubmitted(false)}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-medium text-xs transition-all"
+              >
+                Submit Another Application
+              </button>
+              <Link
+                href="/login"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all shadow-lg shadow-blue-600/30"
+              >
+                Go to Portal Sign In →
               </Link>
             </div>
           </div>
         ) : (
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900 mb-1">Student Admission Application</h2>
-            <p className="text-xs text-slate-500 mb-6">Fill in personal details and upload required academic certificates.</p>
+          <div>
+            <div className="mb-8">
+              <span className="text-xs uppercase tracking-widest font-mono text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                Step 2 of Architecture • Student Admissions Lifecycle
+              </span>
+              <h1 className="text-3xl font-extrabold text-white mt-3 tracking-tight">
+                New Student Application Form
+              </h1>
+              <p className="text-sm text-slate-400 mt-1">
+                Applicants transition smoothly from Draft → Submitted → Review → Offer Sent → Enrolled without duplicate person records.
+              </p>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">First Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+255 7..."
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
+            <form onSubmit={handleSubmit} className="glass-card rounded-2xl border border-slate-800/80 p-8 bg-[#0e1424]/80 shadow-2xl space-y-8">
+              {/* Institution & Program Selection */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Program / Class Applying For</label>
-                <select
-                  value={formData.program}
-                  onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-2 mb-4">
+                  1. Target Institution & Program
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Select Institution
+                    </label>
+                    <select
+                      value={formData.institution}
+                      onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="Kilimanjaro Secondary School">Kilimanjaro Secondary School (Secondary)</option>
+                      <option value="Lake Victoria Institute of Technology">Lake Victoria Institute of Technology (College / University)</option>
+                      <option value="St. Augustine International Academy">St. Augustine International Academy</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Program / Class Applying For
+                    </label>
+                    <select
+                      value={formData.academicLevel}
+                      onChange={(e) => setFormData({ ...formData, academicLevel: e.target.value })}
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="Form 1 (Ordinary Level)">Form 1 (Ordinary Level)</option>
+                      <option value="Form 3 (Transfer)">Form 3 (Transfer)</option>
+                      <option value="Form 5 (PCM - Physics, Chemistry, Math)">Form 5 (PCM Combination)</option>
+                      <option value="Form 5 (EGM - Econ, Geo, Math)">Form 5 (EGM Combination)</option>
+                      <option value="Diploma in Computer Science">Diploma in Computer Science</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Applicant Personal Info */}
+              <div>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-2 mb-4">
+                  2. Applicant Personal & Prior Academic History
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Last / Family Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Date of Birth
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.dateOfBirth}
+                      onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Previous School Attended
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.primarySchoolCompleted}
+                      onChange={(e) => setFormData({ ...formData, primarySchoolCompleted: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      National Examination / Index No.
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.psleIndexNumber}
+                      onChange={(e) => setFormData({ ...formData, psleIndexNumber: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono text-emerald-400 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Average Grade Achieved
+                    </label>
+                    <select
+                      value={formData.psleAverageGrade}
+                      onChange={(e) => setFormData({ ...formData, psleAverageGrade: e.target.value })}
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="A">Grade A (Excellent)</option>
+                      <option value="B">Grade B (Very Good)</option>
+                      <option value="C">Grade C (Good)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guardian / Parent Information */}
+              <div>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-2 mb-4">
+                  3. Verified Guardian / Parent Details
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Guardian Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.guardianName}
+                      onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Guardian Mobile Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.guardianPhone}
+                      onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Guardian Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.guardianEmail}
+                      onChange={(e) => setFormData({ ...formData, guardianEmail: e.target.value })}
+                      required
+                      className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Document Upload Simulation */}
+              <div>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-2 mb-4">
+                  4. Required Verification Documents
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-dashed border-slate-700 rounded-xl p-4 text-center bg-slate-900/30 hover:border-blue-500/50 transition-colors">
+                    <span className="text-xs font-medium text-slate-300 block mb-1">
+                      Birth Certificate / NIDA Card
+                    </span>
+                    <span className="text-[11px] text-slate-500 block mb-3">PDF or JPEG up to 5MB</span>
+                    <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-[10px] text-emerald-400 font-mono">
+                      ✓ birth_cert_neema.pdf (245 KB) Attached
+                    </span>
+                  </div>
+
+                  <div className="border border-dashed border-slate-700 rounded-xl p-4 text-center bg-slate-900/30 hover:border-blue-500/50 transition-colors">
+                    <span className="text-xs font-medium text-slate-300 block mb-1">
+                      Leaving Certificate & Results Slip
+                    </span>
+                    <span className="text-[11px] text-slate-500 block mb-3">Official stamp required</span>
+                    <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-[10px] text-emerald-400 font-mono">
+                      ✓ psle_results_slip.pdf (412 KB) Attached
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+                <Link
+                  href="/"
+                  className="px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs transition-colors"
                 >
-                  <option value="Form 1 Secondary">Form 1 (Ordinary Secondary)</option>
-                  <option value="Form 5 PCB">Form 5 (Physics, Chemistry, Biology)</option>
-                  <option value="Form 5 PCM">Form 5 (Physics, Chemistry, Mathematics)</option>
-                  <option value="Diploma in Computer Science">Diploma in Computer Science</option>
-                  <option value="BSc in Software Engineering">BSc in Software Engineering</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Supporting Certificates (PDF/Images)</label>
-                <label className="border-2 border-dashed border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
-                  <Upload className="w-5 h-5 text-slate-400 mb-1" />
-                  <span className="text-xs font-semibold text-slate-600">Select certificate / result slip</span>
-                  <span className="text-[10px] text-slate-400">PDF, JPG, PNG up to 10MB</span>
-                  <input type="file" className="hidden" />
-                </label>
-              </div>
-
-              <div className="pt-4 flex justify-end">
-                <button type="submit" className="btn-primary text-xs">
-                  Submit Application
+                  ← Back to Home
+                </Link>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Submitting Application...' : 'Submit Application to Board →'}
                 </button>
               </div>
             </form>
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
+        Universal Education Management Platform • Admissions & Enrollment Engine
+      </footer>
     </div>
   );
 }
