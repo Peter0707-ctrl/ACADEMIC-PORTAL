@@ -80,13 +80,16 @@ const AUTH_CONFIG = {
     teacher: {
       nameLabel: 'Teacher Full Name',
       namePlaceholder: 'Enter official teacher full name',
-      staffIdLabel: 'Teacher Staff ID',
+      staffIdLabel: 'Teacher Staff ID / TSC No.',
       staffIdPlaceholder: 'Enter assigned teacher staff ID',
       phoneLabel: 'Mobile Phone Number',
       phonePlaceholder: 'Enter mobile number for official school alerts',
-      emailLabel: 'Email Address',
+      emailLabel: 'Official Email Address',
       emailPlaceholder: 'Enter teacher email address',
-      classLabel: 'Assigned Primary Class',
+      classesLabel: 'Classes Taught (Select one or more)',
+      subjectsLabel: 'Teaching Subjects (Select one or more)',
+      homeroomCheckLabel: 'Are you assigned as a Homeroom Class Teacher (Mwalimu wa Darasa)?',
+      homeroomSelectLabel: 'Select Your Assigned Homeroom Class',
       submitButton: 'Register Teacher Account',
       submittingButton: 'Verifying Staff Record...',
     },
@@ -123,6 +126,18 @@ const AUTH_CONFIG = {
     'Standard 5 (Grade 5)',
     'Standard 6 (Grade 6)',
     'Standard 7 (Grade 7)',
+  ],
+  primarySubjects: [
+    'Mathematics (Hisabati)',
+    'English Language',
+    'Kiswahili',
+    'Science & Technology (Sayansi)',
+    'Social Studies (Maarifa ya Jamii)',
+    'Civic & Moral Education (Uraia na Maadili)',
+    'Vocational Skills (Stadi za Kazi)',
+    'Religious Studies (Elimu ya Dini)',
+    'ICT / Computer Studies (Tehama)',
+    'Pre-Primary Early Learning (Kuhesabu na Kusoma)',
   ],
   relationships: [
     'Mother',
@@ -218,7 +233,30 @@ export default function PrimaryPortalHomePage() {
   const [teacherStaffId, setTeacherStaffId] = useState('');
   const [teacherPhone, setTeacherPhone] = useState('');
   const [teacherEmail, setTeacherEmail] = useState('');
-  const [teacherAssignedClass, setTeacherAssignedClass] = useState(AUTH_CONFIG.primaryClasses[2]);
+  const [teacherAssignedClasses, setTeacherAssignedClasses] = useState<string[]>([AUTH_CONFIG.primaryClasses[4]]); // e.g. Std 3
+  const [teacherAssignedSubjects, setTeacherAssignedSubjects] = useState<string[]>([AUTH_CONFIG.primarySubjects[0]]); // e.g. Mathematics
+  const [isHomeroomTeacher, setIsHomeroomTeacher] = useState(false);
+  const [homeroomClass, setHomeroomClass] = useState(AUTH_CONFIG.primaryClasses[4]);
+
+  const toggleTeacherClass = (cls: string) => {
+    setTeacherAssignedClasses((prev) =>
+      prev.includes(cls)
+        ? prev.length > 1
+          ? prev.filter((c) => c !== cls)
+          : prev
+        : [...prev, cls]
+    );
+  };
+
+  const toggleTeacherSubject = (sub: string) => {
+    setTeacherAssignedSubjects((prev) =>
+      prev.includes(sub)
+        ? prev.length > 1
+          ? prev.filter((s) => s !== sub)
+          : prev
+        : [...prev, sub]
+    );
+  };
 
   const [parentName, setParentName] = useState('');
   const [parentPhone, setParentPhone] = useState('');
@@ -351,6 +389,16 @@ export default function PrimaryPortalHomePage() {
 
       if (!validatePhone(cleanPhone)) {
         triggerNotification('error', 'Invalid Phone', 'Please provide a valid mobile number for school alerts.');
+        return;
+      }
+
+      if (teacherAssignedSubjects.length === 0) {
+        triggerNotification('warning', 'Subject Required', 'Please select at least one teaching subject.');
+        return;
+      }
+
+      if (teacherAssignedClasses.length === 0) {
+        triggerNotification('warning', 'Class Required', 'Please select at least one assigned primary class.');
         return;
       }
     }
@@ -855,21 +903,99 @@ export default function PrimaryPortalHomePage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        {AUTH_CONFIG.register.teacher.classLabel}
+                    <div className="sm:col-span-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          {AUTH_CONFIG.register.teacher.subjectsLabel}
+                        </label>
+                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          {teacherAssignedSubjects.length} {teacherAssignedSubjects.length === 1 ? 'subject' : 'subjects'} selected
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                        {AUTH_CONFIG.primarySubjects.map((sub) => {
+                          const isSel = teacherAssignedSubjects.includes(sub);
+                          return (
+                            <button
+                              key={sub}
+                              type="button"
+                              onClick={() => toggleTeacherSubject(sub)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                                isSel
+                                  ? 'bg-emerald-700 text-white shadow-xs'
+                                  : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:text-emerald-800'
+                              }`}
+                            >
+                              {isSel && <CheckCircle2 className="w-3.5 h-3.5" />}
+                              <span>{sub}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          {AUTH_CONFIG.register.teacher.classesLabel}
+                        </label>
+                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          {teacherAssignedClasses.length} {teacherAssignedClasses.length === 1 ? 'class' : 'classes'} selected
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                        {AUTH_CONFIG.primaryClasses.map((cls) => {
+                          const isSel = teacherAssignedClasses.includes(cls);
+                          return (
+                            <button
+                              key={cls}
+                              type="button"
+                              onClick={() => toggleTeacherClass(cls)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                                isSel
+                                  ? 'bg-emerald-700 text-white shadow-xs'
+                                  : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:text-emerald-800'
+                              }`}
+                            >
+                              {isSel && <CheckCircle2 className="w-3.5 h-3.5" />}
+                              <span>{cls}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2 p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2.5">
+                      <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={isHomeroomTeacher}
+                          onChange={(e) => setIsHomeroomTeacher(e.target.checked)}
+                          className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                        />
+                        <span>{AUTH_CONFIG.register.teacher.homeroomCheckLabel}</span>
                       </label>
-                      <select
-                        value={teacherAssignedClass}
-                        onChange={(e) => setTeacherAssignedClass(e.target.value)}
-                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                      >
-                        {AUTH_CONFIG.primaryClasses.map((cls) => (
-                          <option key={cls} value={cls}>
-                            {cls}
-                          </option>
-                        ))}
-                      </select>
+                      {isHomeroomTeacher && (
+                        <div className="pl-6 pt-1 space-y-1 animate-fade-in">
+                          <label className="block text-[11px] font-semibold text-slate-600">
+                            {AUTH_CONFIG.register.teacher.homeroomSelectLabel}
+                          </label>
+                          <select
+                            value={homeroomClass}
+                            onChange={(e) => setHomeroomClass(e.target.value)}
+                            className="w-full rounded-xl bg-white border border-emerald-200 px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 transition-all font-medium"
+                          >
+                            {AUTH_CONFIG.primaryClasses.map((cls) => (
+                              <option key={cls} value={cls}>
+                                {cls}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-[10px] text-emerald-800 font-medium">
+                            Homeroom class teachers manage daily student attendance roll-call and term report card conduct remarks.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
