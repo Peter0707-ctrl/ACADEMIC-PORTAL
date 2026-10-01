@@ -163,9 +163,9 @@ interface CenteredNotification {
 export default function PrimaryPortalHomePage() {
   // 0. Dynamic Client School Blueprint State
   const [school, setSchool] = useState({
-    name: 'PRIMARY & NURSERY SCHOOL ACADEMY',
-    shortCode: 'PNA',
-    motto: 'Knowledge, Character & Academic Excellence',
+    name: 'PRIMARY & NURSERY SCHOOL',
+    shortCode: 'PORTAL',
+    motto: 'Knowledge, Character & Academic Growth',
     category: 'Nursery, Pre-Unit & Standards 1 to 7',
     phone: '+255 779 304 500',
     email: 'pj0040280@gmail.com',
@@ -383,14 +383,16 @@ export default function PrimaryPortalHomePage() {
 
           {/* School Emblem / Logo Card */}
           <div className="relative z-10 flex flex-col items-center max-w-sm text-center animate-fade-in">
-            <div className="w-24 h-24 rounded-3xl bg-white border border-emerald-200 shadow-xl shadow-emerald-900/10 flex items-center justify-center text-emerald-700 mb-6 relative group">
-              <div className="absolute inset-0 rounded-3xl bg-emerald-100/40 animate-ping opacity-30" />
-              <GraduationCap className="w-12 h-12 text-emerald-700 relative z-10" />
+            <div className="w-24 h-24 rounded-3xl bg-white border border-emerald-200 shadow-xl shadow-emerald-900/10 flex flex-col items-center justify-center text-emerald-800 mb-6 relative group">
+              <GraduationCap className="w-11 h-11 text-emerald-700" />
+              <span className="text-[8px] font-bold text-emerald-800/80 uppercase tracking-widest mt-1">
+                School Logo
+              </span>
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200/80 text-emerald-900 text-xs font-semibold mb-3 tracking-wide">
               <School className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Official Primary &amp; Nursery School Portal</span>
+              <span>Primary &amp; Nursery School Web Blueprint</span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-800 tracking-tight leading-snug">
@@ -505,14 +507,14 @@ export default function PrimaryPortalHomePage() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-700 flex flex-col items-center justify-center text-white shadow-md shadow-emerald-700/20">
               <GraduationCap className="w-5 h-5 text-white" />
-              <span className="text-[9px] font-black tracking-widest">{school.shortCode}</span>
+              <span className="text-[8px] font-bold tracking-widest uppercase">Logo</span>
             </div>
             <div>
               <span className="text-base sm:text-lg font-black text-slate-800 tracking-tight leading-tight block">
                 {school.name}
               </span>
               <p className="text-[11px] text-slate-500 font-medium">
-                {school.category}
+                Primary &amp; Nursery School Web Blueprint
               </p>
             </div>
           </div>
