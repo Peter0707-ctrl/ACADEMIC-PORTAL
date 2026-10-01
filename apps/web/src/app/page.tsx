@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import Image from 'next/image';
 import {
   GraduationCap,
   School,
@@ -23,86 +22,62 @@ import {
   Phone,
   Mail,
   X,
+  Sliders,
+  Check,
 } from 'lucide-react';
 
 // -----------------------------------------------------------------------------
-// DYNAMIC UI CONFIGURATION (ZERO HARDCODED LABELS IN JSX)
+// DYNAMIC WHITE-LABEL SCHOOL BLUEPRINT ENGINE
+// Enables the platform to represent ANY specific client primary school instantly
 // -----------------------------------------------------------------------------
-const AUTH_CONFIG = {
-  brand: {
-    name: 'UniversalEd Primary',
-    badge: 'Primary & Nursery School Portal',
-    motto: 'Child-Centered Primary Education System',
-  },
-  roles: [
-    {
-      id: 'TEACHER',
-      label: 'Class Teacher',
-      subtitle: 'Roll-call, marks & pupil remarks',
-      icon: BookOpen,
-    },
-    {
-      id: 'PARENT',
-      label: 'Parent / Guardian',
-      subtitle: 'Child reports, attendance & fees',
-      icon: Heart,
-    },
-    {
-      id: 'STUDENT',
-      label: 'Pupil / Student',
-      subtitle: 'Homework & academic progress',
-      icon: UserCheck,
-    },
-  ],
-  splash: {
-    durationMs: 5000,
-    loadingLabel: 'Initializing Secure Primary Environment...',
-    skipButton: 'Skip to Portal',
-    tagline: 'Empowering Young Learners with Smart Digital Tools',
-  },
-  login: {
-    title: 'Sign In to School Portal',
-    subtitle: 'Select your role to access your classroom or parent dashboard.',
-    identifierPlaceholder: 'Enter email address or mobile number',
-    identifierLabel: 'Email or Mobile Number',
-    passwordLabel: 'Password',
-    passwordPlaceholder: 'Enter your password',
-    rememberMeLabel: 'Remember this device',
-    forgotPasswordLabel: 'Forgot credentials?',
-    submitButton: 'Sign In Securely',
-    submittingButton: 'Verifying Credentials...',
-    switchToRegister: 'Need to register your Primary School?',
-    switchAction: 'Register School Here',
-  },
-  register: {
-    title: 'Register Primary School',
-    subtitle: 'Set up your Nursery, Pre-Unit, or Primary School (Standards 1 to 7).',
-    schoolNameLabel: 'Official Primary School Name',
-    schoolNamePlaceholder: 'e.g. St. Jude Primary Academy',
-    shortCodeLabel: 'Short Code (School Identifier)',
-    shortCodePlaceholder: 'e.g. SJPA',
-    adminNameLabel: 'Headteacher / Principal Full Name',
-    adminNamePlaceholder: 'e.g. Peter Msira',
-    emailLabel: 'Official School Email',
-    emailPlaceholder: 'headteacher@school.ac.tz',
-    phoneLabel: 'Official Mobile Number',
-    phonePlaceholder: '+255 779 304 500',
-    gradesOfferedLabel: 'Grades & Sections Offered',
-    passwordLabel: 'Admin Password',
-    passwordPlaceholder: 'Minimum 8 characters with numbers & symbols',
-    confirmPasswordLabel: 'Confirm Password',
-    confirmPasswordPlaceholder: 'Re-enter admin password',
-    submitButton: 'Complete School Registration',
-    submittingButton: 'Provisioning School Portal...',
-    switchToLogin: 'Already have a school account?',
-    switchAction: 'Sign In to Portal',
-  },
-  gradeOptions: [
-    { id: 'NURSERY_PRIMARY', label: 'Nursery, Pre-Unit & Primary (Standards 1 - 7)' },
-    { id: 'PRIMARY_ONLY', label: 'Standards 1 to 7 Only' },
-    { id: 'EARLY_YEARS', label: 'Early Years & Kindergarten Only' },
-  ],
+interface ClientSchoolProfile {
+  name: string;
+  shortCode: string;
+  motto: string;
+  category: string;
+  phone: string;
+  email: string;
+  location: string;
+}
+
+const DEFAULT_SCHOOL_BLUEPRINT: ClientSchoolProfile = {
+  name: 'PRIMARY & NURSERY SCHOOL ACADEMY',
+  shortCode: 'PNA',
+  motto: 'Knowledge, Character & Academic Excellence',
+  category: 'Nursery, Pre-Unit & Standards 1 to 7',
+  phone: '+255 779 304 500',
+  email: 'pj0040280@gmail.com',
+  location: 'Dar es Salaam, Tanzania',
 };
+
+// Public pre-login roles: STRICTLY 3 ROLES (Admin is completely hidden)
+const PRE_LOGIN_ROLES = [
+  {
+    id: 'TEACHER',
+    label: 'Class Teacher',
+    subtitle: 'Roll-call, marks & pupil remarks',
+    icon: BookOpen,
+  },
+  {
+    id: 'PARENT',
+    label: 'Parent / Guardian',
+    subtitle: 'Child reports, attendance & fees',
+    icon: Heart,
+  },
+  {
+    id: 'STUDENT',
+    label: 'Pupil / Student',
+    subtitle: 'Homework & academic progress',
+    icon: UserCheck,
+  },
+];
+
+// Grade tier options
+const GRADE_TIER_OPTIONS = [
+  { id: 'NURSERY_PRIMARY', label: 'Nursery, Pre-Unit & Standards 1 to 7' },
+  { id: 'STANDARDS_1_7', label: 'Primary Standards 1 to 7 Only' },
+  { id: 'EARLY_YEARS', label: 'Early Years & Kindergarten Only' },
+];
 
 // -----------------------------------------------------------------------------
 // SECURITY SANITIZATION & VALIDATION ENGINE
@@ -111,8 +86,8 @@ function sanitizeInput(val: string): string {
   if (!val) return '';
   return val
     .trim()
-    .replace(/[<>'"/\\`]/g, '') // Strip potential XSS vector characters
-    .slice(0, 150); // Bound length against buffer exhaustion
+    .replace(/[<>'"/\\`]/g, '')
+    .slice(0, 150);
 }
 
 function validateEmail(email: string): boolean {
@@ -139,15 +114,12 @@ function checkPasswordStrength(pwd: string): PasswordStrength {
   const hasLower = /[a-z]/.test(pwd);
   const hasNumber = /[0-9]/.test(pwd);
   const hasSymbol = /[^A-Za-z0-9]/.test(pwd);
-
-  const criteria = [hasMinLength, hasUpper, hasLower, hasNumber, hasSymbol];
-  const score = criteria.filter(Boolean).length;
-
+  const score = [hasMinLength, hasUpper, hasLower, hasNumber, hasSymbol].filter(Boolean).length;
   return { score, hasMinLength, hasUpper, hasLower, hasNumber, hasSymbol };
 }
 
 // -----------------------------------------------------------------------------
-// NOTIFICATION MODAL TYPE DEFINITION (SMALL BLUE FORM AT CENTER)
+// CENTERED SMALL BLUE NOTIFICATION MODAL TYPE
 // -----------------------------------------------------------------------------
 interface CenteredNotification {
   type: 'info' | 'success' | 'warning' | 'error';
@@ -156,20 +128,27 @@ interface CenteredNotification {
 }
 
 export default function PrimaryPortalHomePage() {
-  // 1. Splash Screen State (5 seconds)
+  // 1. Dynamic Client School Blueprint State
+  const [school, setSchool] = useState<ClientSchoolProfile>(DEFAULT_SCHOOL_BLUEPRINT);
+  const [showBlueprintDrawer, setShowBlueprintDrawer] = useState(false);
+  const [editSchoolName, setEditSchoolName] = useState(DEFAULT_SCHOOL_BLUEPRINT.name);
+  const [editShortCode, setEditShortCode] = useState(DEFAULT_SCHOOL_BLUEPRINT.shortCode);
+  const [editMotto, setEditMotto] = useState(DEFAULT_SCHOOL_BLUEPRINT.motto);
+
+  // 2. 5-Second Opening Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
   const [progress, setProgress] = useState(0);
 
-  // 2. Active View: 'login' | 'register'
+  // 3. Active Mode: 'login' | 'register'
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
-  // 3. Pre-Login Role Selection: STRICTLY 3 ROLES (Teacher, Parent, Pupil). ADMIN IS NEVER EXPOSED.
+  // 4. Pre-Login Role: STRICTLY 3 ROLES (Teacher, Parent, Pupil) - ZERO ADMIN LEAK
   const [selectedRole, setSelectedRole] = useState<'TEACHER' | 'PARENT' | 'STUDENT'>('TEACHER');
 
-  // 4. Centered Small Blue Notification Form State
+  // 5. Centered Small Blue Notification Form State
   const [notification, setNotification] = useState<CenteredNotification | null>(null);
 
-  // 5. Login Form State
+  // 6. Login Form State
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -178,7 +157,7 @@ export default function PrimaryPortalHomePage() {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLockedOut, setIsLockedOut] = useState(false);
 
-  // 6. Registration Form State
+  // 7. Registration Form State
   const [regSchoolName, setRegSchoolName] = useState('');
   const [regShortCode, setRegShortCode] = useState('');
   const [regAdminName, setRegAdminName] = useState('');
@@ -190,7 +169,7 @@ export default function PrimaryPortalHomePage() {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Trigger Small Blue Centered Notification
+  // Trigger Small Blue Centered Notification Modal
   const triggerNotification = useCallback((type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => {
     setNotification({ type, title, message });
   }, []);
@@ -204,31 +183,53 @@ export default function PrimaryPortalHomePage() {
   // ---------------------------------------------------------------------------
   useEffect(() => {
     const startTime = Date.now();
-    const totalDuration = AUTH_CONFIG.splash.durationMs;
+    const duration = 5000;
 
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const pct = Math.min(100, Math.floor((elapsed / totalDuration) * 100));
+      const pct = Math.min(100, Math.floor((elapsed / duration) * 100));
       setProgress(pct);
 
-      if (elapsed >= totalDuration) {
-        clearInterval(interval);
+      if (elapsed >= duration) {
+        clearInterval(timer);
         setShowSplash(false);
       }
     }, 50);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, []);
 
   const skipSplash = () => {
     setShowSplash(false);
   };
 
-  // Password Strength Calculation
+  // Password strength check
   const regPasswordStrength = useMemo(() => checkPasswordStrength(regPassword), [regPassword]);
 
+  // Live Blueprint Customizer Apply
+  const applyCustomBlueprint = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanName = sanitizeInput(editSchoolName);
+    const cleanCode = sanitizeInput(editShortCode).toUpperCase();
+    const cleanMotto = sanitizeInput(editMotto);
+
+    if (!cleanName || !cleanCode) {
+      triggerNotification('warning', 'Blueprint Notice', 'School name and short code cannot be empty.');
+      return;
+    }
+
+    setSchool((prev) => ({
+      ...prev,
+      name: cleanName,
+      shortCode: cleanCode,
+      motto: cleanMotto || prev.motto,
+    }));
+    setShowBlueprintDrawer(false);
+    triggerNotification('success', 'School Branding Applied', `Portal successfully rebranded for ${cleanName}.`);
+  };
+
   // ---------------------------------------------------------------------------
-  // LOGIN SUBMISSION HANDLER WITH SECURITY VERIFICATION
+  // LOGIN SUBMISSION HANDLER
   // ---------------------------------------------------------------------------
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,13 +255,12 @@ export default function PrimaryPortalHomePage() {
       return;
     }
 
-    // Role-specific format validation
-    const isValidInput = validateEmail(cleanIdentifier) || validatePhone(cleanIdentifier);
-    if (!isValidInput) {
+    const isValid = validateEmail(cleanIdentifier) || validatePhone(cleanIdentifier);
+    if (!isValid) {
       triggerNotification(
         'error',
         'Invalid Format',
-        'Please provide a valid email address (e.g. teacher@school.ac.tz) or mobile phone number.'
+        'Please provide a valid email address (e.g. staff@school.ac.tz) or mobile phone number.'
       );
       return;
     }
@@ -269,20 +269,17 @@ export default function PrimaryPortalHomePage() {
 
     setTimeout(() => {
       setIsLoggingIn(false);
-
-      // Demonstrate verification for selected role
-      const roleLabel = AUTH_CONFIG.roles.find((r) => r.id === selectedRole)?.label || 'User';
-
+      const roleObj = PRE_LOGIN_ROLES.find((r) => r.id === selectedRole);
       triggerNotification(
         'success',
         'Authentication Verified',
-        `Welcome to the ${roleLabel} portal. Secure session established for ${cleanIdentifier}.`
+        `Welcome to the ${school.name} ${roleObj?.label} portal. Secure session established.`
       );
     }, 1000);
   };
 
   // ---------------------------------------------------------------------------
-  // REGISTRATION SUBMISSION HANDLER WITH VALIDATION
+  // REGISTRATION SUBMISSION HANDLER
   // ---------------------------------------------------------------------------
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -297,26 +294,18 @@ export default function PrimaryPortalHomePage() {
       triggerNotification(
         'warning',
         'Incomplete Details',
-        'All primary school information fields are required to provision your portal.'
+        'All primary school onboarding fields are required.'
       );
       return;
     }
 
     if (!validateEmail(cleanEmail)) {
-      triggerNotification(
-        'error',
-        'Invalid Email Address',
-        'Please enter an official school email address in standard format.'
-      );
+      triggerNotification('error', 'Invalid Email', 'Please enter an official school email address.');
       return;
     }
 
     if (!validatePhone(cleanPhone)) {
-      triggerNotification(
-        'error',
-        'Invalid Phone Number',
-        'Please provide a valid school telephone or mobile number (minimum 9 digits).'
-      );
+      triggerNotification('error', 'Invalid Phone', 'Please provide a valid mobile number (minimum 9 digits).');
       return;
     }
 
@@ -324,17 +313,13 @@ export default function PrimaryPortalHomePage() {
       triggerNotification(
         'warning',
         'Weak Password',
-        'Password must be at least 8 characters long and combine uppercase, lowercase, numbers, or symbols.'
+        'Password must be at least 8 characters long with uppercase, lowercase, and numbers or symbols.'
       );
       return;
     }
 
     if (regPassword !== regConfirmPassword) {
-      triggerNotification(
-        'error',
-        'Password Mismatch',
-        'The password confirmation does not match the password entered.'
-      );
+      triggerNotification('error', 'Password Mismatch', 'The confirmed password does not match.');
       return;
     }
 
@@ -342,50 +327,61 @@ export default function PrimaryPortalHomePage() {
 
     setTimeout(() => {
       setIsRegistering(false);
-      triggerNotification(
-        'success',
-        'Primary School Provisioned',
-        `${cleanSchoolName} (${cleanShortCode}) has been successfully created. You can now sign in using your admin credentials.`
-      );
+      // Auto-update active school to the newly registered school
+      setSchool((prev) => ({
+        ...prev,
+        name: cleanSchoolName,
+        shortCode: cleanShortCode,
+      }));
       setAuthMode('login');
       setLoginIdentifier(cleanEmail);
       setLoginPassword('');
-    }, 1400);
+      triggerNotification(
+        'success',
+        'School Portal Provisioned',
+        `${cleanSchoolName} (${cleanShortCode}) is now live. Sign in using your registered credentials.`
+      );
+    }, 1300);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 flex flex-col font-sans selection:bg-emerald-600 selection:text-white relative overflow-x-hidden">
 
       {/* ===================================================================== */}
-      {/* 1. OPENING 5-SECOND SPLASH SCREEN WITH SCHOOL LOGO */}
+      {/* 1. OPENING 5-SECOND SPLASH SCREEN WITH THE SCHOOL'S OWN EMBLEM & MOTTO */}
       {/* ===================================================================== */}
       {showSplash && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#F3FAF5] via-[#EAF5EE] to-[#DDF0E3] p-6 transition-all duration-700">
-          {/* Subtle Ambient Glow Circles (Soft Light Green) */}
           <div className="absolute w-80 h-80 rounded-full bg-emerald-200/40 blur-3xl pointer-events-none animate-pulse-soft" />
           <div className="absolute w-72 h-72 rounded-full bg-teal-100/50 blur-2xl pointer-events-none -bottom-10 -right-10" />
 
-          {/* School Emblem / Logo Card */}
-          <div className="relative z-10 flex flex-col items-center max-w-sm text-center animate-fade-in">
-            <div className="w-24 h-24 rounded-3xl bg-white border border-emerald-200 shadow-xl shadow-emerald-900/10 flex items-center justify-center text-emerald-700 mb-6 relative group">
-              <div className="absolute inset-0 rounded-3xl bg-emerald-100/40 animate-ping opacity-30" />
-              <GraduationCap className="w-12 h-12 text-emerald-700 relative z-10" />
+          <div className="relative z-10 flex flex-col items-center max-w-md text-center animate-fade-in">
+            {/* The School's Own Emblem Card */}
+            <div className="w-24 h-24 rounded-3xl bg-white border border-emerald-200 shadow-xl shadow-emerald-900/10 flex flex-col items-center justify-center text-emerald-800 mb-6 relative group">
+              <GraduationCap className="w-10 h-10 text-emerald-700" />
+              <span className="text-[10px] font-black tracking-widest text-emerald-900 uppercase mt-0.5">
+                {school.shortCode}
+              </span>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200/80 text-emerald-800 text-xs font-semibold mb-3 tracking-wide">
+            {/* School Category Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200/80 text-emerald-900 text-xs font-semibold mb-3 tracking-wide">
               <School className="w-3.5 h-3.5 text-emerald-700" />
-              <span>{AUTH_CONFIG.brand.badge}</span>
+              <span>Official School Digital Portal</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight leading-tight">
-              {AUTH_CONFIG.brand.name}
+            {/* The School's Own Name */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-800 tracking-tight leading-snug">
+              {school.name}
             </h1>
-            <p className="text-sm text-slate-600 mt-2 font-normal leading-relaxed">
-              {AUTH_CONFIG.splash.tagline}
+
+            {/* The School's Own Motto */}
+            <p className="text-xs sm:text-sm text-slate-600 mt-2 font-normal italic max-w-sm">
+              &quot;{school.motto}&quot;
             </p>
 
-            {/* 5-Second Progress Indicator */}
-            <div className="w-full mt-8 space-y-2">
+            {/* 5-Second Progress Bar with Countdown */}
+            <div className="w-full max-w-xs mt-8 space-y-2">
               <div className="w-full h-2 rounded-full bg-emerald-200/60 overflow-hidden p-0.5 border border-emerald-300/40">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-100 ease-out"
@@ -393,18 +389,18 @@ export default function PrimaryPortalHomePage() {
                 />
               </div>
               <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
-                <span>{AUTH_CONFIG.splash.loadingLabel}</span>
+                <span>Loading School Portal...</span>
                 <span>{Math.round((5000 - (progress / 100) * 5000) / 1000)}s</span>
               </div>
             </div>
 
-            {/* Skip Button */}
+            {/* Skip to Portal Button */}
             <button
               onClick={skipSplash}
               type="button"
               className="mt-6 inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-900 font-semibold px-4 py-2 rounded-xl bg-white/70 hover:bg-white border border-emerald-200 transition-all shadow-xs"
             >
-              <span>{AUTH_CONFIG.splash.skipButton}</span>
+              <span>Skip to School Portal</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -412,7 +408,7 @@ export default function PrimaryPortalHomePage() {
       )}
 
       {/* ===================================================================== */}
-      {/* 2. CENTERED SMALL BLUE NOTIFICATION MODAL */}
+      {/* 2. CENTERED SMALL BLUE NOTIFICATION MODAL (NO HARD COLORS, NO EMOJIS) */}
       {/* ===================================================================== */}
       {notification && (
         <div
@@ -421,12 +417,10 @@ export default function PrimaryPortalHomePage() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in"
           onClick={dismissNotification}
         >
-          {/* Small Blue Modal Card */}
           <div
             className="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] border border-blue-400/35 rounded-2xl p-5 shadow-2xl text-white relative animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Icon */}
             <button
               onClick={dismissNotification}
               className="absolute top-3.5 right-3.5 text-blue-300 hover:text-white transition-colors p-1 rounded-lg hover:bg-blue-900/50"
@@ -435,7 +429,6 @@ export default function PrimaryPortalHomePage() {
               <X className="w-4 h-4" />
             </button>
 
-            {/* Icon & Title Header */}
             <div className="flex items-start gap-3">
               <div
                 className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
@@ -466,7 +459,6 @@ export default function PrimaryPortalHomePage() {
               </div>
             </div>
 
-            {/* Compact Action Button */}
             <div className="mt-4 pt-3 border-t border-blue-900/60 flex justify-end">
               <button
                 type="button"
@@ -481,63 +473,162 @@ export default function PrimaryPortalHomePage() {
       )}
 
       {/* ===================================================================== */}
-      {/* 3. TOP PORTAL HEADER */}
+      {/* 3. DISCRETE LIVE CLIENT BRANDING SWITCHER (FOR PITCHING TO CLIENTS) */}
       {/* ===================================================================== */}
-      <header className="border-b border-emerald-100 bg-white/80 backdrop-blur-md sticky top-0 z-40">
+      {showBlueprintDrawer && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-xs"
+          onClick={() => setShowBlueprintDrawer(false)}
+        >
+          <div
+            className="w-full max-w-md bg-white rounded-2xl border border-emerald-200 shadow-xl p-6 text-slate-800 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+                <Sliders className="w-4 h-4 text-emerald-700" />
+                <span>Client School Blueprint Customizer</span>
+              </div>
+              <button
+                onClick={() => setShowBlueprintDrawer(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 mt-2 mb-4">
+              Enter any school name to instantly demo this portal under that school&apos;s brand.
+            </p>
+
+            <form onSubmit={applyCustomBlueprint} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  School Name
+                </label>
+                <input
+                  type="text"
+                  value={editSchoolName}
+                  onChange={(e) => setEditSchoolName(e.target.value)}
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-emerald-500"
+                  placeholder="e.g. Eagle Nursery & Primary Academy"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  School Short Code
+                </label>
+                <input
+                  type="text"
+                  value={editShortCode}
+                  onChange={(e) => setEditShortCode(e.target.value.toUpperCase())}
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-mono uppercase focus:outline-none focus:border-emerald-500"
+                  placeholder="e.g. ENPA"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  School Motto
+                </label>
+                <input
+                  type="text"
+                  value={editMotto}
+                  onChange={(e) => setEditMotto(e.target.value)}
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-emerald-500"
+                  placeholder="e.g. Discipline, Integrity & Knowledge"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBlueprintDrawer(false)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-sm"
+                >
+                  Apply School Branding
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================== */}
+      {/* 4. THE SCHOOL'S OWN OFFICIAL HEADER */}
+      {/* ===================================================================== */}
+      <header className="border-b border-emerald-100 bg-white/85 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between">
-          {/* Logo & Identity */}
+          {/* Official School Identity */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-white shadow-md shadow-emerald-700/20">
-              <GraduationCap className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-700 flex flex-col items-center justify-center text-white shadow-md shadow-emerald-700/20">
+              <GraduationCap className="w-5 h-5 text-white" />
+              <span className="text-[9px] font-black tracking-widest">{school.shortCode}</span>
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-slate-800 tracking-tight leading-none">
-                  UNIVERSAL<span className="text-emerald-700">ED</span>
-                </span>
-                <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">
-                  Primary
-                </span>
-              </div>
+              <span className="text-base sm:text-lg font-black text-slate-800 tracking-tight leading-tight block">
+                {school.name}
+              </span>
               <p className="text-[11px] text-slate-500 font-medium">
-                Primary &amp; Nursery School Portal
+                {school.category}
               </p>
             </div>
           </div>
 
-          {/* Contact Hotline & Support */}
-          <div className="hidden sm:flex items-center gap-5 text-xs text-slate-600 font-medium">
-            <div className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-emerald-700" />
-              <span>+255 779 304 500</span>
+          {/* Right Header: School Contacts & Blueprint Trigger */}
+          <div className="flex items-center gap-4 text-xs">
+            <div className="hidden md:flex items-center gap-4 text-slate-600 font-medium">
+              <div className="flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-emerald-700" />
+                <span>{school.phone}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-emerald-700" />
+                <span>{school.email}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-emerald-700" />
-              <span>pj0040280@gmail.com</span>
-            </div>
+
+            {/* Quick Demo Switcher Button for Commercial Demonstrations */}
+            <button
+              onClick={() => setShowBlueprintDrawer(true)}
+              title="Rebrand this portal for any specific school"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold transition-all"
+            >
+              <Sliders className="w-3 h-3 text-emerald-700" />
+              <span className="hidden sm:inline">Demo Switcher</span>
+            </button>
           </div>
         </div>
       </header>
 
       {/* ===================================================================== */}
-      {/* 4. MAIN AUTHENTICATION CARD & ROLE SELECTION INTERFACE */}
+      {/* 5. MAIN AUTHENTICATION & PORTAL INTERFACE */}
       {/* ===================================================================== */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-10 sm:py-14 max-w-4xl mx-auto w-full">
-        {/* Portal Greeting */}
-        <div className="text-center mb-8 space-y-2 animate-fade-in">
+        {/* School Greeting */}
+        <div className="text-center mb-7 space-y-1.5 animate-fade-in">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 text-xs font-semibold border border-emerald-200">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Secure Primary Education Access</span>
+            <span>Official School Management System</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
-            {authMode === 'login' ? AUTH_CONFIG.login.title : AUTH_CONFIG.register.title}
+            {authMode === 'login' ? `Sign In to ${school.name}` : `Register New Primary School`}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
-            {authMode === 'login' ? AUTH_CONFIG.login.subtitle : AUTH_CONFIG.register.subtitle}
+            {authMode === 'login'
+              ? `Select your role to access your classroom, pupil records, or parent account.`
+              : `Set up a dedicated digital portal for your primary or nursery school.`}
           </p>
         </div>
 
-        {/* Auth Mode Toggle Tabs (Sign In vs Register School) */}
+        {/* Tab Toggle (Sign In vs Register School) */}
         <div className="flex items-center bg-white p-1 rounded-2xl border border-emerald-200/80 shadow-xs mb-6 w-full max-w-md">
           <button
             type="button"
@@ -548,7 +639,7 @@ export default function PrimaryPortalHomePage() {
                 : 'text-slate-600 hover:text-emerald-800'
             }`}
           >
-            Sign In to Account
+            Sign In to School
           </button>
           <button
             type="button"
@@ -559,22 +650,22 @@ export default function PrimaryPortalHomePage() {
                 : 'text-slate-600 hover:text-emerald-800'
             }`}
           >
-            Register Primary School
+            Register School
           </button>
         </div>
 
         {/* ------------------------------------------------------------------- */}
-        {/* LOGIN VIEW (WITH 3 STRICT ROLES - ZERO ADMIN LEAK) */}
+        {/* SIGN IN: EXACTLY 3 ROLES (TEACHER, PARENT, PUPIL) - ADMIN HIDDEN */}
         {/* ------------------------------------------------------------------- */}
         {authMode === 'login' && (
           <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-950/5 p-6 sm:p-8 animate-scale-in">
-            {/* Role Selector: EXACTLY 3 ROLES (Teacher, Parent, Pupil) */}
+            {/* 3 Pre-Login Roles */}
             <div className="space-y-2 mb-6">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Select Your Role
               </label>
               <div className="grid grid-cols-3 gap-2">
-                {AUTH_CONFIG.roles.map((r) => {
+                {PRE_LOGIN_ROLES.map((r) => {
                   const Icon = r.icon;
                   const isSelected = selectedRole === r.id;
                   return (
@@ -602,28 +693,26 @@ export default function PrimaryPortalHomePage() {
               </div>
             </div>
 
-            {/* Login Form */}
+            {/* Login Inputs */}
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  {AUTH_CONFIG.login.identifierLabel}
+                  Email Address or Mobile Number
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.login.identifierPlaceholder}
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
+                  required
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                  placeholder="e.g. teacher@school.ac.tz or 0779304500"
+                />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-semibold text-slate-700">
-                    {AUTH_CONFIG.login.passwordLabel}
+                    Password
                   </label>
                   <button
                     type="button"
@@ -631,12 +720,12 @@ export default function PrimaryPortalHomePage() {
                       triggerNotification(
                         'info',
                         'Password Recovery',
-                        'Please contact your school administrator or use the registered parent phone to reset credentials.'
+                        `Please reach out to the ${school.name} administration office or class teacher to reset your password.`
                       )
                     }
                     className="text-[11px] font-medium text-emerald-700 hover:underline"
                   >
-                    {AUTH_CONFIG.login.forgotPasswordLabel}
+                    Forgot password?
                   </button>
                 </div>
                 <div className="relative">
@@ -646,7 +735,7 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 pr-10 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.login.passwordPlaceholder}
+                    placeholder="Enter your account password"
                   />
                   <button
                     type="button"
@@ -659,7 +748,6 @@ export default function PrimaryPortalHomePage() {
                 </div>
               </div>
 
-              {/* Remember Me */}
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600">
                   <input
@@ -668,37 +756,35 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
-                  <span>{AUTH_CONFIG.login.rememberMeLabel}</span>
+                  <span>Remember this device</span>
                 </label>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoggingIn || isLockedOut}
                 className="w-full mt-2 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <span>{isLoggingIn ? AUTH_CONFIG.login.submittingButton : AUTH_CONFIG.login.submitButton}</span>
+                <span>{isLoggingIn ? 'Verifying Credentials...' : `Sign In to ${school.shortCode}`}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
 
-            {/* Footer link to Register */}
             <div className="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
-              <span>{AUTH_CONFIG.login.switchToRegister} </span>
+              <span>Looking to register your school? </span>
               <button
                 type="button"
                 onClick={() => setAuthMode('register')}
                 className="font-bold text-emerald-700 hover:underline"
               >
-                {AUTH_CONFIG.login.switchAction}
+                Register Here
               </button>
             </div>
           </div>
         )}
 
         {/* ------------------------------------------------------------------- */}
-        {/* REGISTRATION VIEW (PRIMARY SCHOOL SELF-SERVICE ONBOARDING) */}
+        {/* REGISTRATION: ONBOARDING FOR A NEW PRIMARY SCHOOL */}
         {/* ------------------------------------------------------------------- */}
         {authMode === 'register' && (
           <div className="w-full max-w-lg bg-white/90 backdrop-blur-xl rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-950/5 p-6 sm:p-8 animate-scale-in">
@@ -706,7 +792,7 @@ export default function PrimaryPortalHomePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.schoolNameLabel}
+                    Official Primary School Name
                   </label>
                   <input
                     type="text"
@@ -714,13 +800,13 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setRegSchoolName(e.target.value)}
                     required
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.schoolNamePlaceholder}
+                    placeholder="e.g. Mlimani Nursery & Primary School"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.shortCodeLabel}
+                    School Short Code
                   </label>
                   <input
                     type="text"
@@ -728,13 +814,13 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setRegShortCode(e.target.value.toUpperCase())}
                     required
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs font-mono uppercase text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.shortCodePlaceholder}
+                    placeholder="e.g. MNPS"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.adminNameLabel}
+                    Headteacher Full Name
                   </label>
                   <input
                     type="text"
@@ -742,13 +828,13 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setRegAdminName(e.target.value)}
                     required
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.adminNamePlaceholder}
+                    placeholder="e.g. Peter Msira"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.emailLabel}
+                    Official School Email
                   </label>
                   <input
                     type="email"
@@ -756,13 +842,13 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setRegEmail(e.target.value)}
                     required
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.emailPlaceholder}
+                    placeholder="headteacher@school.ac.tz"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.phoneLabel}
+                    Official Mobile Number
                   </label>
                   <input
                     type="tel"
@@ -770,20 +856,20 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setRegPhone(e.target.value)}
                     required
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.phonePlaceholder}
+                    placeholder="+255 779 304 500"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.gradesOfferedLabel}
+                    Grades &amp; Sections Offered
                   </label>
                   <select
                     value={regGradeTier}
                     onChange={(e) => setRegGradeTier(e.target.value)}
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
                   >
-                    {AUTH_CONFIG.gradeOptions.map((g) => (
+                    {GRADE_TIER_OPTIONS.map((g) => (
                       <option key={g.id} value={g.id}>
                         {g.label}
                       </option>
@@ -793,7 +879,7 @@ export default function PrimaryPortalHomePage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.passwordLabel}
+                    Admin Password
                   </label>
                   <div className="relative">
                     <input
@@ -802,7 +888,7 @@ export default function PrimaryPortalHomePage() {
                       onChange={(e) => setRegPassword(e.target.value)}
                       required
                       className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 pr-10 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                      placeholder={AUTH_CONFIG.register.passwordPlaceholder}
+                      placeholder="Minimum 8 characters"
                     />
                     <button
                       type="button"
@@ -816,7 +902,7 @@ export default function PrimaryPortalHomePage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.confirmPasswordLabel}
+                    Confirm Password
                   </label>
                   <input
                     type="password"
@@ -824,16 +910,15 @@ export default function PrimaryPortalHomePage() {
                     onChange={(e) => setRegConfirmPassword(e.target.value)}
                     required
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                    placeholder={AUTH_CONFIG.register.confirmPasswordPlaceholder}
+                    placeholder="Confirm admin password"
                   />
                 </div>
               </div>
 
-              {/* Live Password Strength Meter */}
               {regPassword.length > 0 && (
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600 font-medium">Password Robustness:</span>
+                    <span className="text-slate-600 font-medium">Password Strength:</span>
                     <span
                       className={`font-bold ${
                         regPasswordStrength.score >= 4
@@ -869,26 +954,24 @@ export default function PrimaryPortalHomePage() {
                 </div>
               )}
 
-              {/* Submit Registration */}
               <button
                 type="submit"
                 disabled={isRegistering}
                 className="w-full mt-3 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <span>{isRegistering ? AUTH_CONFIG.register.submittingButton : AUTH_CONFIG.register.submitButton}</span>
+                <span>{isRegistering ? 'Creating School Portal...' : 'Provision School Portal'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
 
-            {/* Footer link to Login */}
             <div className="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
-              <span>{AUTH_CONFIG.register.switchToLogin} </span>
+              <span>Already registered? </span>
               <button
                 type="button"
                 onClick={() => setAuthMode('login')}
                 className="font-bold text-emerald-700 hover:underline"
               >
-                {AUTH_CONFIG.register.switchAction}
+                Sign In to Portal
               </button>
             </div>
           </div>
@@ -896,15 +979,15 @@ export default function PrimaryPortalHomePage() {
       </main>
 
       {/* ===================================================================== */}
-      {/* 5. MINIMALIST FOOTER */}
+      {/* 6. MINIMALIST FOOTER */}
       {/* ===================================================================== */}
       <footer className="border-t border-emerald-100/80 bg-white/60 py-4 text-center text-xs text-slate-500">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© {new Date().getFullYear()} UniversalEd Primary. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {school.name}. All rights reserved.</p>
           <div className="flex items-center gap-4 text-[11px] text-slate-500">
-            <span>Primary &amp; Nursery School Edition</span>
+            <span>Official Primary School Portal</span>
             <span>•</span>
-            <span>Dar es Salaam, Tanzania</span>
+            <span>{school.location}</span>
           </div>
         </div>
       </footer>
