@@ -19,23 +19,23 @@ export default function RegisterInstitutionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Form State - Strictly for Tanzania
+  // Form State - Focused on Primary & Nursery School
   const [formData, setFormData] = useState({
-    name: 'St. Augustine International Academy',
-    code: 'SAIA',
-    type: 'SECONDARY_SCHOOL',
+    name: 'St. Jude Primary & Nursery Academy',
+    code: 'SJPA',
+    type: 'INTEGRATED_PRIMARY_ACADEMY',
     country: 'Tanzania',
-    region: 'Arusha',
-    district: 'Arusha Mjini',
-    email: 'admissions@staugustine.ac.tz',
-    phone: '+255 754 000 111',
-    motto: 'Uongozi kupitia Maarifa na Maadili',
+    region: 'Dar es Salaam',
+    district: 'Kinondoni',
+    email: 'admissions@stjudeprimary.ac.tz',
+    phone: '+255 779 304 500',
+    motto: 'Knowledge, Character & Excellence',
     academicSystem: 'TERMS',
     enableRanking: true,
     requireFinancialClearanceForResults: false,
-    gradingScale: 'NECTA_STANDARD',
-    adminFullName: 'Dr. Baraka Mwamba',
-    adminEmail: 'principal@staugustine.ac.tz',
+    gradingScale: 'PRIMARY_STANDARD_A_F',
+    adminFullName: 'Peter Msira',
+    adminEmail: 'pj0040280@gmail.com',
     adminPassword: 'Password@2026',
   });
 
@@ -62,17 +62,17 @@ export default function RegisterInstitutionPage() {
                 UNIVERSAL ED
               </span>
               <span className="text-[10px] text-blue-400 font-mono uppercase tracking-wider">
-                Usajili wa Shule Tanzania
+                Primary School Registration
               </span>
             </div>
           </Link>
           <div className="flex items-center gap-4 text-xs">
-            <span className="text-slate-400">Umeshajisajili?</span>
+            <span className="text-slate-400">Already registered?</span>
             <Link
-              href="/login"
+              href="/auth/login"
               className="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 text-slate-200 transition-colors"
             >
-              Ingia Portal
+              Sign In to Portal
             </Link>
           </div>
         </div>
@@ -85,31 +85,33 @@ export default function RegisterInstitutionPage() {
             <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-6">
               ✓
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Tovuti ya Shule Yako Imekamilika!</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Primary School Portal Successfully Created!</h2>
             <p className="text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">
-              <strong className="text-slate-200">{formData.name}</strong> ({formData.code}) imesajiliwa kikamilifu.
-              Tovuti yenu rasmi yenye nembo, kaulimbiu, na viingilio vya wanafunzi na wazazi ipo tayari.
+              <strong className="text-slate-200">{formData.name}</strong> ({formData.code}) has been provisioned.
+              Your dedicated primary school portal with pupil management, report card generator, and parent access is ready.
             </p>
 
             <div className="p-4 bg-blue-950/40 border border-blue-500/30 rounded-xl max-w-md mx-auto mb-8 text-center">
-              <span className="text-xs text-blue-400 uppercase tracking-widest block font-mono">Anwani ya Tovuti ya Shule Yenu</span>
+              <span className="text-xs text-blue-400 uppercase tracking-widest block font-mono">Dedicated Primary School URL</span>
               <span className="text-lg font-mono font-bold text-white mt-1 block">
                 localhost:3000/portal/{formData.code.toLowerCase()}
               </span>
-              <span className="text-[11px] text-slate-400 mt-1 block">Wape wanafunzi, wazazi na walimu link hii kuingia moja kwa moja kwenye shule yenu.</span>
+              <span className="text-[11px] text-slate-400 mt-1 block">
+                Share this link with your class teachers, pupils, and parents to access your school directly.
+              </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-xl mx-auto text-left mb-8 text-xs">
               <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                <span className="text-slate-500 block mb-1">Aina ya Taasisi</span>
-                <span className="text-blue-400 font-semibold">{formData.type.replace('_', ' ')}</span>
+                <span className="text-slate-500 block mb-1">Institution Type</span>
+                <span className="text-blue-400 font-semibold">{formData.type.replace(/_/g, ' ')}</span>
               </div>
               <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                <span className="text-slate-500 block mb-1">Mkoa & Mji</span>
-                <span className="text-emerald-400 font-semibold">{formData.region}, Tanzania</span>
+                <span className="text-slate-500 block mb-1">Region & District</span>
+                <span className="text-emerald-400 font-semibold">{formData.region}, {formData.district}</span>
               </div>
               <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                <span className="text-slate-500 block mb-1">Barua Pepe ya Mkuu</span>
+                <span className="text-slate-500 block mb-1">Headteacher Email</span>
                 <span className="text-purple-400 font-semibold">{formData.adminEmail}</span>
               </div>
             </div>
@@ -119,14 +121,14 @@ export default function RegisterInstitutionPage() {
                 href={`/portal/${formData.code.toLowerCase()}`}
                 className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
               >
-                <span>Fungua Tovuti ya Shule Yako Sasa</span>
+                <span>Launch School Portal Now</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/login"
+                href="/auth/login"
                 className="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-medium text-sm transition-all"
               >
-                Kuingia Kwenye Akaunti
+                Sign In to Admin Dashboard
               </Link>
             </div>
           </div>
@@ -135,13 +137,13 @@ export default function RegisterInstitutionPage() {
             {/* Header */}
             <div className="mb-8">
               <span className="text-xs uppercase tracking-widest font-mono text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                Usajili wa Shule Mpya • Tanzania
+                Primary &amp; Nursery School Onboarding
               </span>
               <h1 className="text-3xl font-extrabold text-white mt-3 tracking-tight">
-                Sajili Taasisi ya Elimu
+                Register Primary School
               </h1>
               <p className="text-sm text-slate-400 mt-1">
-                Weka taarifa za shule au chuo chako kuanza kutumia mfumo rasmi wa alama, nafasi darasani, na tovuti binafsi.
+                Enter your school details to set up pupil registers, classroom streams, terminal report cards, and parent SMS.
               </p>
             </div>
 
@@ -164,8 +166,8 @@ export default function RegisterInstitutionPage() {
                   1
                 </div>
                 <div>
-                  <div className="text-xs font-semibold leading-none">Utambulisho wa Shule</div>
-                  <div className="text-[10px] text-slate-500 mt-1">Jina, mkoa & kaulimbiu</div>
+                  <div className="text-xs font-semibold leading-none">School Profile</div>
+                  <div className="text-[10px] text-slate-500 mt-1">Name, tier & contact</div>
                 </div>
               </button>
 
@@ -186,8 +188,8 @@ export default function RegisterInstitutionPage() {
                   2
                 </div>
                 <div>
-                  <div className="text-xs font-semibold leading-none">Kalenda ya Masomo</div>
-                  <div className="text-[10px] text-slate-500 mt-1">Mihula vs Semesters</div>
+                  <div className="text-xs font-semibold leading-none">Academic Calendar</div>
+                  <div className="text-[10px] text-slate-500 mt-1">Terms & grading scale</div>
                 </div>
               </button>
 
@@ -208,56 +210,54 @@ export default function RegisterInstitutionPage() {
                   3
                 </div>
                 <div>
-                  <div className="text-xs font-semibold leading-none">Mkuu wa Shule</div>
-                  <div className="text-[10px] text-slate-500 mt-1">Nenosiri na akaunti</div>
+                  <div className="text-xs font-semibold leading-none">Headteacher Admin</div>
+                  <div className="text-[10px] text-slate-500 mt-1">Credentials & launch</div>
                 </div>
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="glass-card rounded-2xl border border-slate-800/80 p-8 bg-[#0e1424]/80 shadow-2xl">
+            {/* Stepper Form */}
+            <form onSubmit={handleSubmit} className="glass-card rounded-2xl border border-slate-800 bg-[#0e1424]/80 p-8 shadow-xl">
               {/* STEP 1 */}
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="border-b border-slate-800 pb-4">
-                    <h2 className="text-lg font-bold text-white">1. Wasifu wa Shule na Mahali Ilipo Tanzania</h2>
+                    <h2 className="text-lg font-bold text-white">1. Primary School Profile & Identity</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Taarifa hizi zitaonekana kwenye ripoti za mitihani na tovuti ya shule.
+                      Provide official school information. This will appear on all pupil report cards and receipts.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Aina ya Shule / Chuo
+                        School Type / Category
                       </label>
                       <select
                         value={formData.type}
                         onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
                       >
-                        <option value="PRIMARY_SCHOOL">Shule ya Msingi (Darasa la 1–7)</option>
-                        <option value="SECONDARY_SCHOOL">Shule ya Sekondari O-Level (Kidato cha 1–4)</option>
-                        <option value="ADVANCED_SECONDARY">Sekondari ya Juu A-Level (Kidato cha 5–6)</option>
-                        <option value="VOCATIONAL_INSTITUTE">Kituo cha Mafunzo ya Ufundi Stadi (VETA)</option>
-                        <option value="COLLEGE">Chuo cha Kati cha Ufundi (NACTVET)</option>
-                        <option value="UNIVERSITY">Chuo Kikuu (TCU Accredited University)</option>
+                        <option value="INTEGRATED_PRIMARY_ACADEMY">Nursery, Pre-Unit &amp; Primary Academy</option>
+                        <option value="PRIMARY_DAY_BOARDING">English Medium Primary (Day &amp; Boarding)</option>
+                        <option value="NURSERY_PRE_PRIMARY">Early Childhood &amp; Nursery School Only</option>
+                        <option value="UPPER_PRIMARY">Standards 1 to 7 Primary School</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Nchi
+                        Country
                       </label>
                       <div className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-emerald-400 font-semibold flex items-center justify-between">
                         <span>Tanzania (TZS)</span>
-                        <span className="text-[10px] text-slate-500 font-mono">NECTA / TCU</span>
+                        <span className="text-[10px] text-slate-500 font-mono">Currency: TZS</span>
                       </div>
                     </div>
 
                     <div className="md:col-span-2">
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Jina Kamili la Shule / Chuo
+                        Official Primary School Name
                       </label>
                       <input
                         type="text"
@@ -265,13 +265,13 @@ export default function RegisterInstitutionPage() {
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
-                        placeholder="mfano: Kilimanjaro Secondary School"
+                        placeholder="e.g. St. Jude Primary & Nursery Academy"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Kifupi cha Shule (URL: /portal/kifupi)
+                        School Short Code (Portal URL: /portal/code)
                       </label>
                       <input
                         type="text"
@@ -279,13 +279,13 @@ export default function RegisterInstitutionPage() {
                         onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono uppercase text-blue-400 focus:outline-none focus:border-blue-500"
-                        placeholder="mfano: KSS"
+                        placeholder="e.g. SJPA"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Kaulimbiu ya Shule (Motto)
+                        School Motto
                       </label>
                       <input
                         type="text"
@@ -293,13 +293,13 @@ export default function RegisterInstitutionPage() {
                         onChange={(e) => setFormData({ ...formData, motto: e.target.value })}
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
-                        placeholder="mfano: Elimu Ni Nuru na Uongozi"
+                        placeholder="e.g. Knowledge, Character & Excellence"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Barua Pepe Rasmi
+                        Official School Email
                       </label>
                       <input
                         type="email"
@@ -307,13 +307,13 @@ export default function RegisterInstitutionPage() {
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
-                        placeholder="info@shule.sc.tz"
+                        placeholder="admissions@school.sc.tz"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Namba ya Simu
+                        Official Phone Number
                       </label>
                       <input
                         type="tel"
@@ -327,7 +327,7 @@ export default function RegisterInstitutionPage() {
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Mkoa
+                        Region
                       </label>
                       <select
                         value={formData.region}
@@ -342,7 +342,7 @@ export default function RegisterInstitutionPage() {
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Wilaya / Manispaa
+                        District / Municipality
                       </label>
                       <input
                         type="text"
@@ -350,7 +350,7 @@ export default function RegisterInstitutionPage() {
                         onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
-                        placeholder="mfano: Moshi Mjini"
+                        placeholder="e.g. Kinondoni"
                       />
                     </div>
                   </div>
@@ -361,7 +361,7 @@ export default function RegisterInstitutionPage() {
                       onClick={() => setStep(2)}
                       className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all shadow-md shadow-blue-600/30"
                     >
-                      Hatua Inayofuata: Muundo wa Mihula →
+                      Next Step: Academic Terms &amp; Grading →
                     </button>
                   </div>
                 </div>
@@ -371,16 +371,16 @@ export default function RegisterInstitutionPage() {
               {step === 2 && (
                 <div className="space-y-6">
                   <div className="border-b border-slate-800 pb-4">
-                    <h2 className="text-lg font-bold text-white">2. Muundo wa Mihula na Uhesabuji wa Alama</h2>
+                    <h2 className="text-lg font-bold text-white">2. Academic Terms &amp; Assessment Setup</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Weka sheria za masomo kulingana na muongozo wa shule au chuo chako.
+                      Configure term divisions, classroom rankings, and primary grading scales.
                     </p>
                   </div>
 
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Mgawanyo wa Kalenda ya Masomo
+                        Academic Calendar Division
                       </label>
                       <div className="grid grid-cols-2 gap-3">
                         <label
@@ -397,13 +397,13 @@ export default function RegisterInstitutionPage() {
                             onChange={() => setFormData({ ...formData, academicSystem: 'TERMS' })}
                             className="hidden"
                           />
-                          <span className="font-bold text-xs">Mihula (Term 1, Term 2)</span>
-                          <span className="text-[11px] text-slate-500 mt-1">Kawaida kwa Shule za Msingi na Sekondari</span>
+                          <span className="font-bold text-xs">Standard Terms (Term 1 &amp; Term 2)</span>
+                          <span className="text-[11px] text-slate-500 mt-1">Default for Primary &amp; Nursery Schools</span>
                         </label>
 
                         <label
                           className={`p-3.5 rounded-xl border cursor-pointer flex flex-col justify-between transition-all ${
-                            formData.academicSystem === 'SEMESTERS'
+                            formData.academicSystem === 'THREE_TERMS'
                               ? 'border-blue-500 bg-blue-950/30 text-white'
                               : 'border-slate-800 bg-slate-900/40 text-slate-400'
                           }`}
@@ -411,12 +411,12 @@ export default function RegisterInstitutionPage() {
                           <input
                             type="radio"
                             name="academicSystem"
-                            checked={formData.academicSystem === 'SEMESTERS'}
-                            onChange={() => setFormData({ ...formData, academicSystem: 'SEMESTERS' })}
+                            checked={formData.academicSystem === 'THREE_TERMS'}
+                            onChange={() => setFormData({ ...formData, academicSystem: 'THREE_TERMS' })}
                             className="hidden"
                           />
-                          <span className="font-bold text-xs">Semesta (Semester 1 & 2)</span>
-                          <span className="text-[11px] text-slate-500 mt-1">Kawaida kwa Vyuo vya Kati na Vyuo Vikuu</span>
+                          <span className="font-bold text-xs">3-Term Calendar (Term 1, 2 &amp; 3)</span>
+                          <span className="text-[11px] text-slate-500 mt-1">Used by some British / Cambridge Primary curricula</span>
                         </label>
                       </div>
                     </div>
@@ -424,9 +424,9 @@ export default function RegisterInstitutionPage() {
                     <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-xs font-semibold text-slate-200">Kupanga Nafasi Darasani (Ranking)</div>
+                          <div className="text-xs font-semibold text-slate-200">Classroom Performance Ranking</div>
                           <div className="text-[11px] text-slate-500">
-                            Piga hesabu ya nafasi (1, 2, 2, 4 kwa waliolingana alama)
+                            Automatically calculate position in class &amp; stream (e.g. 1st, 2nd, 3rd)
                           </div>
                         </div>
                         <input
@@ -439,9 +439,9 @@ export default function RegisterInstitutionPage() {
 
                       <div className="flex items-center justify-between border-t border-slate-800 pt-3">
                         <div>
-                          <div className="text-xs font-semibold text-slate-200">Kizuizi cha Ada (Financial Clearance Gate)</div>
+                          <div className="text-xs font-semibold text-slate-200">Fee Clearance Gate for Results</div>
                           <div className="text-[11px] text-slate-500">
-                            Mwanafunzi mwenye deni la ada azuiwe kupakua report card mtandaoni
+                            Hold terminal report cards if tuition or transport fee has an outstanding balance
                           </div>
                         </div>
                         <input
@@ -460,16 +460,16 @@ export default function RegisterInstitutionPage() {
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Kipimo cha Alama (Grading Scale)
+                        Primary School Grading Scale
                       </label>
                       <select
                         value={formData.gradingScale}
                         onChange={(e) => setFormData({ ...formData, gradingScale: e.target.value })}
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
                       >
-                        <option value="NECTA_STANDARD">NECTA Standard (A: 75-100, B: 65-74, C: 45-64, D: 30-44, F: 0-29)</option>
-                        <option value="UNIVERSITY_GPA_5">TCU University 5.0 GPA Scale (A: 5.0, B+: 4.0, B: 3.0, C: 2.0, D: 1.0, E: 0.0)</option>
-                        <option value="NACTVET_SCALE">NACTVET Competency Scale (Distinction, Upper Credit, Credit, Pass)</option>
+                        <option value="PRIMARY_STANDARD_A_F">Primary Standard (A: 81-100, B: 61-80, C: 41-60, D: 21-40, F: 0-20)</option>
+                        <option value="PRIMARY_OUT_OF_50">Continuous Assessment Scale (Marked out of 50)</option>
+                        <option value="EARLY_YEARS_EMERGENT">Early Years Mastery (Exceeding, Meeting, Approaching, Emerging)</option>
                       </select>
                     </div>
                   </div>
@@ -480,14 +480,14 @@ export default function RegisterInstitutionPage() {
                       onClick={() => setStep(1)}
                       className="px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs transition-colors"
                     >
-                      ← Nyuma
+                      ← Back
                     </button>
                     <button
                       type="button"
                       onClick={() => setStep(3)}
                       className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all shadow-md shadow-blue-600/30"
                     >
-                      Hatua ya 3: Akaunti ya Mkuu →
+                      Step 3: Headteacher Account →
                     </button>
                   </div>
                 </div>
@@ -497,16 +497,16 @@ export default function RegisterInstitutionPage() {
               {step === 3 && (
                 <div className="space-y-6">
                   <div className="border-b border-slate-800 pb-4">
-                    <h2 className="text-lg font-bold text-white">3. Akaunti ya Mkuu wa Shule / Msimamizi</h2>
+                    <h2 className="text-lg font-bold text-white">3. Headteacher / Administrator Account</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Hii itakuwa akaunti kuu ya kuingia na kusanidi walimu, masomo, na kutangaza matokeo.
+                      This will be the root administrator account to manage teachers, classes, subjects, and report cards.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Jina Kamili la Mkuu wa Shule
+                        Headteacher Full Name
                       </label>
                       <input
                         type="text"
@@ -514,13 +514,13 @@ export default function RegisterInstitutionPage() {
                         onChange={(e) => setFormData({ ...formData, adminFullName: e.target.value })}
                         required
                         className="w-full bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
-                        placeholder="mfano: Dr. Baraka Mwamba"
+                        placeholder="e.g. Peter Msira"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Barua Pepe ya Kuingilia
+                        Administrator Login Email
                       </label>
                       <input
                         type="email"
@@ -533,7 +533,7 @@ export default function RegisterInstitutionPage() {
 
                     <div>
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Nenosiri Imara
+                        Secure Password
                       </label>
                       <input
                         type="password"
@@ -546,11 +546,11 @@ export default function RegisterInstitutionPage() {
                   </div>
 
                   <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 text-xs text-slate-300 space-y-2">
-                    <div className="font-semibold text-blue-400">Muhtasari wa Usajili:</div>
+                    <div className="font-semibold text-blue-400">Onboarding Summary:</div>
                     <ul className="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
-                      <li>Tovuti binafsi ya shule itafunguliwa papo hapo kwenye <code>/portal/${formData.code.toLowerCase()}</code>.</li>
-                      <li>Akaunti zote za walimu, wanafunzi, na wazazi zitafunguliwa ndani ya shule hii pekee.</li>
-                      <li>Sarafu ya mfumo: Shilingi ya Tanzania (TZS).</li>
+                      <li>Your school website will be live immediately at <code>/portal/{formData.code.toLowerCase()}</code>.</li>
+                      <li>Standard 1 to 7 classes and Nursery streams will be pre-configured.</li>
+                      <li>All teacher, pupil, and parent logins remain isolated to this school.</li>
                     </ul>
                   </div>
 
@@ -560,14 +560,14 @@ export default function RegisterInstitutionPage() {
                       onClick={() => setStep(2)}
                       className="px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs transition-colors"
                     >
-                      ← Nyuma
+                      ← Back
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting}
                       className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50"
                     >
-                      {isSubmitting ? 'Inatengeneza Tovuti ya Shule...' : 'Kamilisha Usajili wa Shule 🚀'}
+                      {isSubmitting ? 'Creating School Portal...' : 'Complete Primary School Setup 🚀'}
                     </button>
                   </div>
                 </div>
@@ -579,7 +579,7 @@ export default function RegisterInstitutionPage() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-        Universal Education Management Platform • Jamhuri ya Muungano wa Tanzania
+        UniversalEd Primary • Dedicated Primary &amp; Nursery School Management Platform
       </footer>
     </div>
   );
