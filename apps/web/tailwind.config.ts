@@ -9,31 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Ubuntu', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Calibri', 'Candara', 'Segoe UI', 'Optima', 'Arial', 'sans-serif'],
+        calibri: ['Calibri', 'Candara', 'Segoe UI', 'Optima', 'Arial', 'sans-serif'],
       },
       colors: {
-        background: '#F8FAFC',
+        background: '#F3FAF5',
         card: '#FFFFFF',
-        primary: {
-          DEFAULT: '#2563EB',
-          hover: '#1D4ED8',
-          light: '#EFF6FF',
-        },
-        success: {
-          DEFAULT: '#16A34A',
-          hover: '#15803D',
-          light: '#ECFDF3',
-        },
-        warning: {
-          DEFAULT: '#D97706',
-          light: '#FFFBEB',
-        },
-        danger: {
-          DEFAULT: '#DC2626',
-          light: '#FEF2F2',
+        mint: {
+          50: '#F5FAF6',
+          100: '#EBF6EE',
+          200: '#D5EDDB',
+          300: '#B5DFC0',
+          400: '#89CA9C',
+          500: '#5FB378',
+          600: '#43975C',
+          700: '#34784B',
+          800: '#2C603D',
+          900: '#264F34',
         },
         slate: {
-          DEFAULT: '#0F172A',
+          DEFAULT: '#1E293B',
           muted: '#64748B',
           border: '#E2E8F0',
         },
