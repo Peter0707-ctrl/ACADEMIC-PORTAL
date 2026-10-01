@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import Image from 'next/image';
+import Link from 'next/link';
 import {
   GraduationCap,
   School,
@@ -31,14 +31,9 @@ import {
 } from 'lucide-react';
 
 // -----------------------------------------------------------------------------
-// DYNAMIC UI CONFIGURATION (ZERO HARDCODED LABELS IN JSX)
+// DYNAMIC UI CONFIGURATION (ZERO HARDCODED WORDS IN JSX)
 // -----------------------------------------------------------------------------
 const AUTH_CONFIG = {
-  brand: {
-    name: 'UniversalEd Primary',
-    badge: 'Primary & Nursery School Portal',
-    motto: 'Child-Centered Primary Education System',
-  },
   roles: [
     {
       id: 'TEACHER',
@@ -62,50 +57,78 @@ const AUTH_CONFIG = {
   splash: {
     durationMs: 5000,
     loadingLabel: 'Initializing Secure Primary Environment...',
-    skipButton: 'Skip to Portal',
-    tagline: 'Empowering Young Learners with Smart Digital Tools',
+    skipButton: 'Skip to School Portal',
+    tagline: 'Child-Centered Primary Education System',
   },
   login: {
     title: 'Sign In to School Portal',
-    subtitle: 'Select your role to access your classroom or parent dashboard.',
+    subtitle: 'Select your role to access your classroom, pupil records, or parent account.',
     identifierPlaceholder: 'Enter email address or mobile number',
     identifierLabel: 'Email or Mobile Number',
     passwordLabel: 'Password',
-    passwordPlaceholder: 'Enter your password',
+    passwordPlaceholder: 'Enter your account password',
     rememberMeLabel: 'Remember this device',
     forgotPasswordLabel: 'Forgot credentials?',
     submitButton: 'Sign In Securely',
     submittingButton: 'Verifying Credentials...',
-    switchToRegister: 'Need to register your Primary School?',
-    switchAction: 'Register School Here',
+    switchToRegister: 'Need to create an account for this school?',
+    switchAction: 'Create Account Here',
   },
   register: {
-    title: 'Register Primary School',
-    subtitle: 'Set up your Nursery, Pre-Unit, or Primary School (Standards 1 to 7).',
-    schoolNameLabel: 'Official Primary School Name',
-    schoolNamePlaceholder: 'e.g. St. Jude Primary Academy',
-    shortCodeLabel: 'Short Code (School Identifier)',
-    shortCodePlaceholder: 'e.g. SJPA',
-    adminNameLabel: 'Headteacher / Principal Full Name',
-    adminNamePlaceholder: 'e.g. Peter Msira',
-    emailLabel: 'Official School Email',
-    emailPlaceholder: 'headteacher@school.ac.tz',
-    phoneLabel: 'Official Mobile Number',
-    phonePlaceholder: '+255 779 304 500',
-    gradesOfferedLabel: 'Grades & Sections Offered',
-    passwordLabel: 'Admin Password',
+    title: 'Create Account',
+    subtitle: 'Register as a Class Teacher or Parent under this school portal.',
+    teacher: {
+      nameLabel: 'Teacher Full Name',
+      namePlaceholder: 'Enter official teacher full name',
+      staffIdLabel: 'Teacher Staff ID',
+      staffIdPlaceholder: 'Enter assigned teacher staff ID',
+      phoneLabel: 'Mobile Phone Number',
+      phonePlaceholder: 'Enter mobile number for official school alerts',
+      emailLabel: 'Email Address',
+      emailPlaceholder: 'Enter teacher email address',
+      classLabel: 'Assigned Primary Class',
+      submitButton: 'Register Teacher Account',
+      submittingButton: 'Verifying Staff Record...',
+    },
+    parent: {
+      nameLabel: 'Parent / Guardian Full Name',
+      namePlaceholder: 'Enter parent or guardian full name',
+      phoneLabel: 'Mobile Number (SMS Reports & Fee Alerts)',
+      phonePlaceholder: 'Enter mobile number to receive pupil reports',
+      childAdmLabel: 'Child / Pupil Admission Number',
+      childAdmPlaceholder: 'Enter child admission number',
+      relationLabel: 'Relationship to Pupil',
+      submitButton: 'Register Parent Account',
+      submittingButton: 'Verifying Enrolment...',
+    },
+    pupilNotice: {
+      title: 'Pupil Account Access',
+      message: 'Pupil credentials are created automatically by the school administration upon enrollment. Please use your Admission Number and Student PIN on the Sign In tab.',
+      action: 'Go to Sign In',
+    },
+    passwordLabel: 'Account Password',
     passwordPlaceholder: 'Minimum 8 characters with numbers & symbols',
     confirmPasswordLabel: 'Confirm Password',
-    confirmPasswordPlaceholder: 'Re-enter admin password',
-    submitButton: 'Complete School Registration',
-    submittingButton: 'Provisioning School Portal...',
-    switchToLogin: 'Already have a school account?',
+    confirmPasswordPlaceholder: 'Re-enter account password',
+    switchToLogin: 'Already have an account?',
     switchAction: 'Sign In to Portal',
   },
-  gradeOptions: [
-    { id: 'NURSERY_PRIMARY', label: 'Nursery, Pre-Unit & Primary (Standards 1 - 7)' },
-    { id: 'PRIMARY_ONLY', label: 'Standards 1 to 7 Only' },
-    { id: 'EARLY_YEARS', label: 'Early Years & Kindergarten Only' },
+  primaryClasses: [
+    'Nursery & Day Care',
+    'Pre-Unit / Kindergarten',
+    'Standard 1 (Grade 1)',
+    'Standard 2 (Grade 2)',
+    'Standard 3 (Grade 3)',
+    'Standard 4 (Grade 4)',
+    'Standard 5 (Grade 5)',
+    'Standard 6 (Grade 6)',
+    'Standard 7 (Grade 7)',
+  ],
+  relationships: [
+    'Mother',
+    'Father',
+    'Legal Guardian',
+    'Sponsor / Relative',
   ],
 };
 
@@ -116,8 +139,8 @@ function sanitizeInput(val: string): string {
   if (!val) return '';
   return val
     .trim()
-    .replace(/[<>'"/\\`]/g, '') // Strip potential XSS vector characters
-    .slice(0, 150); // Bound length against buffer exhaustion
+    .replace(/[<>'"/\\`]/g, '')
+    .slice(0, 150);
 }
 
 function validateEmail(email: string): boolean {
@@ -144,15 +167,12 @@ function checkPasswordStrength(pwd: string): PasswordStrength {
   const hasLower = /[a-z]/.test(pwd);
   const hasNumber = /[0-9]/.test(pwd);
   const hasSymbol = /[^A-Za-z0-9]/.test(pwd);
-
-  const criteria = [hasMinLength, hasUpper, hasLower, hasNumber, hasSymbol];
-  const score = criteria.filter(Boolean).length;
-
+  const score = [hasMinLength, hasUpper, hasLower, hasNumber, hasSymbol].filter(Boolean).length;
   return { score, hasMinLength, hasUpper, hasLower, hasNumber, hasSymbol };
 }
 
 // -----------------------------------------------------------------------------
-// NOTIFICATION MODAL TYPE DEFINITION (SMALL BLUE FORM AT CENTER)
+// CENTERED SMALL BLUE NOTIFICATION MODAL TYPE
 // -----------------------------------------------------------------------------
 interface CenteredNotification {
   type: 'info' | 'success' | 'warning' | 'error';
@@ -162,7 +182,7 @@ interface CenteredNotification {
 
 export default function PrimaryPortalHomePage() {
   // 0. Dynamic Client School Blueprint State
-  const [school, setSchool] = useState({
+  const [school] = useState({
     name: 'PRIMARY & NURSERY SCHOOL',
     shortCode: 'PORTAL',
     motto: 'Knowledge, Character & Academic Growth',
@@ -176,10 +196,10 @@ export default function PrimaryPortalHomePage() {
   const [showSplash, setShowSplash] = useState(true);
   const [progress, setProgress] = useState(0);
 
-  // 2. Active View: 'login' | 'register'
+  // 2. Active Mode: 'login' | 'register'
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
-  // 3. Pre-Login Role Selection: STRICTLY 3 ROLES (Teacher, Parent, Pupil). ADMIN IS NEVER EXPOSED.
+  // 3. Pre-Login Role: STRICTLY 3 ROLES (Teacher, Parent, Pupil) - ZERO ADMIN LEAK
   const [selectedRole, setSelectedRole] = useState<'TEACHER' | 'PARENT' | 'STUDENT'>('TEACHER');
 
   // 4. Centered Small Blue Notification Form State
@@ -191,22 +211,26 @@ export default function PrimaryPortalHomePage() {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0);
-  const [isLockedOut, setIsLockedOut] = useState(false);
+  const [isLockedOut] = useState(false);
 
-  // 6. Registration Form State
-  const [regSchoolName, setRegSchoolName] = useState('');
-  const [regShortCode, setRegShortCode] = useState('');
-  const [regAdminName, setRegAdminName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPhone, setRegPhone] = useState('');
-  const [regGradeTier, setRegGradeTier] = useState('NURSERY_PRIMARY');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  const [showRegPassword, setShowRegPassword] = useState(false);
+  // 6. Registration Form State (Teacher / Parent specific)
+  const [teacherName, setTeacherName] = useState('');
+  const [teacherStaffId, setTeacherStaffId] = useState('');
+  const [teacherPhone, setTeacherPhone] = useState('');
+  const [teacherEmail, setTeacherEmail] = useState('');
+  const [teacherAssignedClass, setTeacherAssignedClass] = useState(AUTH_CONFIG.primaryClasses[2]);
+
+  const [parentName, setParentName] = useState('');
+  const [parentPhone, setParentPhone] = useState('');
+  const [parentChildAdm, setParentChildAdm] = useState('');
+  const [parentRelation, setParentRelation] = useState(AUTH_CONFIG.relationships[0]);
+
+  const [userPassword, setUserPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showUserPassword, setShowUserPassword] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Trigger Small Blue Centered Notification
+  // Trigger Small Blue Centered Notification Modal
   const triggerNotification = useCallback((type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => {
     setNotification({ type, title, message });
   }, []);
@@ -220,20 +244,20 @@ export default function PrimaryPortalHomePage() {
   // ---------------------------------------------------------------------------
   useEffect(() => {
     const startTime = Date.now();
-    const totalDuration = AUTH_CONFIG.splash.durationMs;
+    const duration = AUTH_CONFIG.splash.durationMs;
 
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const pct = Math.min(100, Math.floor((elapsed / totalDuration) * 100));
+      const pct = Math.min(100, Math.floor((elapsed / duration) * 100));
       setProgress(pct);
 
-      if (elapsed >= totalDuration) {
-        clearInterval(interval);
+      if (elapsed >= duration) {
+        clearInterval(timer);
         setShowSplash(false);
       }
     }, 50);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, []);
 
   const skipSplash = () => {
@@ -241,10 +265,10 @@ export default function PrimaryPortalHomePage() {
   };
 
   // Password Strength Calculation
-  const regPasswordStrength = useMemo(() => checkPasswordStrength(regPassword), [regPassword]);
+  const passwordStrength = useMemo(() => checkPasswordStrength(userPassword), [userPassword]);
 
   // ---------------------------------------------------------------------------
-  // LOGIN SUBMISSION HANDLER WITH SECURITY VERIFICATION
+  // LOGIN SUBMISSION HANDLER
   // ---------------------------------------------------------------------------
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,7 +276,7 @@ export default function PrimaryPortalHomePage() {
     if (isLockedOut) {
       triggerNotification(
         'error',
-        'Security Rate Limit',
+        'Security Notice',
         'Account verification temporarily suspended. Please wait 30 seconds before attempting again.'
       );
       return;
@@ -270,13 +294,12 @@ export default function PrimaryPortalHomePage() {
       return;
     }
 
-    // Role-specific format validation
-    const isValidInput = validateEmail(cleanIdentifier) || validatePhone(cleanIdentifier);
-    if (!isValidInput) {
+    const isValid = validateEmail(cleanIdentifier) || validatePhone(cleanIdentifier);
+    if (!isValid) {
       triggerNotification(
         'error',
         'Invalid Format',
-        'Please provide a valid email address (e.g. teacher@school.ac.tz) or mobile phone number.'
+        'Please provide a valid email address or mobile phone number.'
       );
       return;
     }
@@ -285,72 +308,81 @@ export default function PrimaryPortalHomePage() {
 
     setTimeout(() => {
       setIsLoggingIn(false);
-
-      // Demonstrate verification for selected role
-      const roleLabel = AUTH_CONFIG.roles.find((r) => r.id === selectedRole)?.label || 'User';
-
+      const roleObj = AUTH_CONFIG.roles.find((r) => r.id === selectedRole);
       triggerNotification(
         'success',
         'Authentication Verified',
-        `Welcome to the ${roleLabel} portal. Secure session established for ${cleanIdentifier}.`
+        `Welcome to the ${school.name} ${roleObj?.label} portal. Secure session established.`
       );
     }, 1000);
   };
 
   // ---------------------------------------------------------------------------
-  // REGISTRATION SUBMISSION HANDLER WITH VALIDATION
+  // REGISTRATION SUBMISSION HANDLER (TEACHER OR PARENT UNDER THIS SCHOOL)
   // ---------------------------------------------------------------------------
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleUserRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const cleanSchoolName = sanitizeInput(regSchoolName);
-    const cleanShortCode = sanitizeInput(regShortCode).toUpperCase();
-    const cleanAdminName = sanitizeInput(regAdminName);
-    const cleanEmail = sanitizeInput(regEmail);
-    const cleanPhone = sanitizeInput(regPhone);
+    if (selectedRole === 'STUDENT') {
+      triggerNotification(
+        'info',
+        'Pupil Accounts',
+        AUTH_CONFIG.register.pupilNotice.message
+      );
+      return;
+    }
 
-    if (!cleanSchoolName || !cleanShortCode || !cleanAdminName || !cleanEmail || !cleanPhone) {
+    // Teacher Validation
+    if (selectedRole === 'TEACHER') {
+      const cleanName = sanitizeInput(teacherName);
+      const cleanStaffId = sanitizeInput(teacherStaffId);
+      const cleanPhone = sanitizeInput(teacherPhone);
+      const cleanEmail = sanitizeInput(teacherEmail);
+
+      if (!cleanName || !cleanStaffId || !cleanPhone || !cleanEmail) {
+        triggerNotification('warning', 'Incomplete Details', 'Please complete all teacher information fields.');
+        return;
+      }
+
+      if (!validateEmail(cleanEmail)) {
+        triggerNotification('error', 'Invalid Email', 'Please provide a valid official teacher email address.');
+        return;
+      }
+
+      if (!validatePhone(cleanPhone)) {
+        triggerNotification('error', 'Invalid Phone', 'Please provide a valid mobile number for school alerts.');
+        return;
+      }
+    }
+
+    // Parent Validation
+    if (selectedRole === 'PARENT') {
+      const cleanName = sanitizeInput(parentName);
+      const cleanPhone = sanitizeInput(parentPhone);
+      const cleanChildAdm = sanitizeInput(parentChildAdm);
+
+      if (!cleanName || !cleanPhone || !cleanChildAdm) {
+        triggerNotification('warning', 'Incomplete Details', 'Please provide parent name, mobile number, and child admission number.');
+        return;
+      }
+
+      if (!validatePhone(cleanPhone)) {
+        triggerNotification('error', 'Invalid Phone', 'Please provide a valid mobile number to receive student SMS reports.');
+        return;
+      }
+    }
+
+    if (passwordStrength.score < 3) {
       triggerNotification(
         'warning',
-        'Incomplete Details',
-        'All primary school information fields are required to provision your portal.'
+        'Password Strength',
+        'Password must be at least 8 characters long and combine uppercase, lowercase, and numbers or symbols.'
       );
       return;
     }
 
-    if (!validateEmail(cleanEmail)) {
-      triggerNotification(
-        'error',
-        'Invalid Email Address',
-        'Please enter an official school email address in standard format.'
-      );
-      return;
-    }
-
-    if (!validatePhone(cleanPhone)) {
-      triggerNotification(
-        'error',
-        'Invalid Phone Number',
-        'Please provide a valid school telephone or mobile number (minimum 9 digits).'
-      );
-      return;
-    }
-
-    if (regPasswordStrength.score < 3) {
-      triggerNotification(
-        'warning',
-        'Weak Password',
-        'Password must be at least 8 characters long and combine uppercase, lowercase, numbers, or symbols.'
-      );
-      return;
-    }
-
-    if (regPassword !== regConfirmPassword) {
-      triggerNotification(
-        'error',
-        'Password Mismatch',
-        'The password confirmation does not match the password entered.'
-      );
+    if (userPassword !== confirmPassword) {
+      triggerNotification('error', 'Password Mismatch', 'The confirmed password does not match the password entered.');
       return;
     }
 
@@ -358,31 +390,33 @@ export default function PrimaryPortalHomePage() {
 
     setTimeout(() => {
       setIsRegistering(false);
+      const roleName = selectedRole === 'TEACHER' ? 'Teacher' : 'Parent';
       triggerNotification(
         'success',
-        'Primary School Provisioned',
-        `${cleanSchoolName} (${cleanShortCode}) has been successfully created. You can now sign in using your admin credentials.`
+        'Account Registered',
+        `Your ${roleName} account under ${school.name} has been created successfully. You can now sign in.`
       );
       setAuthMode('login');
-      setLoginIdentifier(cleanEmail);
-      setLoginPassword('');
-    }, 1400);
+      if (selectedRole === 'TEACHER') setLoginIdentifier(teacherEmail || teacherPhone);
+      if (selectedRole === 'PARENT') setLoginIdentifier(parentPhone);
+      setUserPassword('');
+      setConfirmPassword('');
+    }, 1200);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 flex flex-col font-sans selection:bg-emerald-600 selection:text-white relative overflow-x-hidden">
 
       {/* ===================================================================== */}
-      {/* 1. OPENING 5-SECOND SPLASH SCREEN WITH SCHOOL LOGO */}
+      {/* 1. 5-SECOND SPLASH SCREEN WITH CLEAN SCHOOL LOGO BLUEPRINT */}
       {/* ===================================================================== */}
       {showSplash && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#F3FAF5] via-[#EAF5EE] to-[#DDF0E3] p-6 transition-all duration-700">
-          {/* Subtle Ambient Glow Circles (Soft Light Green) */}
           <div className="absolute w-80 h-80 rounded-full bg-emerald-200/40 blur-3xl pointer-events-none animate-pulse-soft" />
           <div className="absolute w-72 h-72 rounded-full bg-teal-100/50 blur-2xl pointer-events-none -bottom-10 -right-10" />
 
-          {/* School Emblem / Logo Card */}
-          <div className="relative z-10 flex flex-col items-center max-w-sm text-center animate-fade-in">
+          <div className="relative z-10 flex flex-col items-center max-w-md text-center animate-fade-in">
+            {/* School Emblem Placeholder */}
             <div className="w-24 h-24 rounded-3xl bg-white border border-emerald-200 shadow-xl shadow-emerald-900/10 flex flex-col items-center justify-center text-emerald-800 mb-6 relative group">
               <GraduationCap className="w-11 h-11 text-emerald-700" />
               <span className="text-[8px] font-bold text-emerald-800/80 uppercase tracking-widest mt-1">
@@ -403,7 +437,7 @@ export default function PrimaryPortalHomePage() {
             </p>
 
             {/* 5-Second Progress Indicator */}
-            <div className="w-full mt-8 space-y-2">
+            <div className="w-full max-w-xs mt-8 space-y-2">
               <div className="w-full h-2 rounded-full bg-emerald-200/60 overflow-hidden p-0.5 border border-emerald-300/40">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-100 ease-out"
@@ -411,12 +445,11 @@ export default function PrimaryPortalHomePage() {
                 />
               </div>
               <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
-                <span>{AUTH_CONFIG.splash.loadingLabel}</span>
+                <span>Loading School Portal...</span>
                 <span>{Math.round((5000 - (progress / 100) * 5000) / 1000)}s</span>
               </div>
             </div>
 
-            {/* Skip Button */}
             <button
               onClick={skipSplash}
               type="button"
@@ -439,12 +472,10 @@ export default function PrimaryPortalHomePage() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in"
           onClick={dismissNotification}
         >
-          {/* Small Blue Modal Card */}
           <div
             className="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] border border-blue-400/35 rounded-2xl p-5 shadow-2xl text-white relative animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Icon */}
             <button
               onClick={dismissNotification}
               className="absolute top-3.5 right-3.5 text-blue-300 hover:text-white transition-colors p-1 rounded-lg hover:bg-blue-900/50"
@@ -453,7 +484,6 @@ export default function PrimaryPortalHomePage() {
               <X className="w-4 h-4" />
             </button>
 
-            {/* Icon & Title Header */}
             <div className="flex items-start gap-3">
               <div
                 className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
@@ -484,7 +514,6 @@ export default function PrimaryPortalHomePage() {
               </div>
             </div>
 
-            {/* Compact Action Button */}
             <div className="mt-4 pt-3 border-t border-blue-900/60 flex justify-end">
               <button
                 type="button"
@@ -503,7 +532,6 @@ export default function PrimaryPortalHomePage() {
       {/* ===================================================================== */}
       <header className="border-b border-emerald-100 bg-white/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between">
-          {/* Logo & Identity */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-700 flex flex-col items-center justify-center text-white shadow-md shadow-emerald-700/20">
               <GraduationCap className="w-5 h-5 text-white" />
@@ -519,7 +547,6 @@ export default function PrimaryPortalHomePage() {
             </div>
           </div>
 
-          {/* Contact Hotline & Support */}
           <div className="hidden sm:flex items-center gap-5 text-xs text-slate-600 font-medium">
             <div className="flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5 text-emerald-700" />
@@ -534,26 +561,24 @@ export default function PrimaryPortalHomePage() {
       </header>
 
       {/* ===================================================================== */}
-      {/* 4. MAIN AUTHENTICATION CARD & ROLE SELECTION INTERFACE */}
+      {/* 4. MAIN AUTHENTICATION & ROLE SELECTION INTERFACE */}
       {/* ===================================================================== */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-10 sm:py-14 max-w-4xl mx-auto w-full">
         {/* Portal Greeting */}
         <div className="text-center mb-8 space-y-2 animate-fade-in">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 text-xs font-semibold border border-emerald-200">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Secure Primary Education Access</span>
+            <span>Official Primary Education Portal</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
-            {authMode === 'login' ? `Sign In to ${school.name}` : `Register New Primary School`}
+            {authMode === 'login' ? `Sign In to ${school.name}` : `Create User Account`}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
-            {authMode === 'login'
-              ? `Select your role to access your classroom, pupil records, or parent account.`
-              : `Set up a dedicated digital portal for your primary or nursery school.`}
+            {authMode === 'login' ? AUTH_CONFIG.login.subtitle : AUTH_CONFIG.register.subtitle}
           </p>
         </div>
 
-        {/* Auth Mode Toggle Tabs (Sign In vs Register School) */}
+        {/* Tab Toggle: Sign In vs Create Account */}
         <div className="flex items-center bg-white p-1 rounded-2xl border border-emerald-200/80 shadow-xs mb-6 w-full max-w-md">
           <button
             type="button"
@@ -564,7 +589,7 @@ export default function PrimaryPortalHomePage() {
                 : 'text-slate-600 hover:text-emerald-800'
             }`}
           >
-            Sign In to Account
+            Sign In
           </button>
           <button
             type="button"
@@ -575,16 +600,16 @@ export default function PrimaryPortalHomePage() {
                 : 'text-slate-600 hover:text-emerald-800'
             }`}
           >
-            Register Primary School
+            Create Account
           </button>
         </div>
 
         {/* ------------------------------------------------------------------- */}
-        {/* LOGIN VIEW (WITH 3 STRICT ROLES - ZERO ADMIN LEAK) */}
+        {/* SIGN IN: EXACTLY 3 ROLES (TEACHER, PARENT, PUPIL) */}
         {/* ------------------------------------------------------------------- */}
         {authMode === 'login' && (
           <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-950/5 p-6 sm:p-8 animate-scale-in">
-            {/* Role Selector: EXACTLY 3 ROLES (Teacher, Parent, Pupil) */}
+            {/* 3 Pre-Login Roles */}
             <div className="space-y-2 mb-6">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Select Your Role
@@ -618,22 +643,20 @@ export default function PrimaryPortalHomePage() {
               </div>
             </div>
 
-            {/* Login Form */}
+            {/* Login Inputs */}
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   {AUTH_CONFIG.login.identifierLabel}
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.login.identifierPlaceholder}
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
+                  required
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                  placeholder={AUTH_CONFIG.login.identifierPlaceholder}
+                />
               </div>
 
               <div>
@@ -647,7 +670,7 @@ export default function PrimaryPortalHomePage() {
                       triggerNotification(
                         'info',
                         'Password Recovery',
-                        'Please contact your school administrator or use the registered parent phone to reset credentials.'
+                        `Please contact the ${school.name} administration desk or your class teacher to reset your password.`
                       )
                     }
                     className="text-[11px] font-medium text-emerald-700 hover:underline"
@@ -675,7 +698,6 @@ export default function PrimaryPortalHomePage() {
                 </div>
               </div>
 
-              {/* Remember Me */}
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600">
                   <input
@@ -688,18 +710,16 @@ export default function PrimaryPortalHomePage() {
                 </label>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoggingIn || isLockedOut}
                 className="w-full mt-2 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <span>{isLoggingIn ? 'Verifying Credentials...' : `Sign In to ${school.shortCode}`}</span>
+                <span>{isLoggingIn ? AUTH_CONFIG.login.submittingButton : AUTH_CONFIG.login.submitButton}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
 
-            {/* Footer link to Register */}
             <div className="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
               <span>{AUTH_CONFIG.login.switchToRegister} </span>
               <button
@@ -714,189 +734,305 @@ export default function PrimaryPortalHomePage() {
         )}
 
         {/* ------------------------------------------------------------------- */}
-        {/* REGISTRATION VIEW (PRIMARY SCHOOL SELF-SERVICE ONBOARDING) */}
+        {/* CREATE ACCOUNT: ROLE-AWARE (TEACHER OR PARENT UNDER THIS SCHOOL) */}
         {/* ------------------------------------------------------------------- */}
         {authMode === 'register' && (
           <div className="w-full max-w-lg bg-white/90 backdrop-blur-xl rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-950/5 p-6 sm:p-8 animate-scale-in">
-            <form onSubmit={handleRegisterSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.schoolNameLabel}
-                  </label>
-                  <input
-                    type="text"
-                    value={regSchoolName}
-                    onChange={(e) => setRegSchoolName(e.target.value)}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.schoolNamePlaceholder}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.shortCodeLabel}
-                  </label>
-                  <input
-                    type="text"
-                    value={regShortCode}
-                    onChange={(e) => setRegShortCode(e.target.value.toUpperCase())}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs font-mono uppercase text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.shortCodePlaceholder}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.adminNameLabel}
-                  </label>
-                  <input
-                    type="text"
-                    value={regAdminName}
-                    onChange={(e) => setRegAdminName(e.target.value)}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.adminNamePlaceholder}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.emailLabel}
-                  </label>
-                  <input
-                    type="email"
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.emailPlaceholder}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.phoneLabel}
-                  </label>
-                  <input
-                    type="tel"
-                    value={regPhone}
-                    onChange={(e) => setRegPhone(e.target.value)}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20 transition-all"
-                    placeholder={AUTH_CONFIG.register.phonePlaceholder}
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.gradesOfferedLabel}
-                  </label>
-                  <select
-                    value={regGradeTier}
-                    onChange={(e) => setRegGradeTier(e.target.value)}
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                  >
-                    {AUTH_CONFIG.gradeOptions.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.passwordLabel}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showRegPassword ? 'text' : 'password'}
-                      value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
-                      required
-                      className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 pr-10 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                      placeholder={AUTH_CONFIG.register.passwordPlaceholder}
-                    />
+            {/* Role Selector: Which account type is being created? */}
+            <div className="space-y-2 mb-6">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Select Account Type to Register
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {AUTH_CONFIG.roles.map((r) => {
+                  const Icon = r.icon;
+                  const isSelected = selectedRole === r.id;
+                  return (
                     <button
+                      key={r.id}
                       type="button"
-                      onClick={() => setShowRegPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-                    >
-                      {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    {AUTH_CONFIG.register.confirmPasswordLabel}
-                  </label>
-                  <input
-                    type="password"
-                    value={regConfirmPassword}
-                    onChange={(e) => setRegConfirmPassword(e.target.value)}
-                    required
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                    placeholder={AUTH_CONFIG.register.confirmPasswordPlaceholder}
-                  />
-                </div>
-              </div>
-
-              {/* Live Password Strength Meter */}
-              {regPassword.length > 0 && (
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 font-medium">Password Robustness:</span>
-                    <span
-                      className={`font-bold ${
-                        regPasswordStrength.score >= 4
-                          ? 'text-emerald-700'
-                          : regPasswordStrength.score >= 2
-                          ? 'text-amber-600'
-                          : 'text-rose-600'
+                      onClick={() => setSelectedRole(r.id as 'TEACHER' | 'PARENT' | 'STUDENT')}
+                      className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
+                        isSelected
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800 shadow-xs ring-1 ring-emerald-500/20'
+                          : 'border-slate-200 bg-slate-50/70 text-slate-600 hover:border-emerald-300 hover:bg-white'
                       }`}
                     >
-                      {regPasswordStrength.score >= 4
-                        ? 'Strong'
-                        : regPasswordStrength.score >= 2
-                        ? 'Fair'
-                        : 'Weak'}
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden flex gap-1">
-                    {[1, 2, 3, 4, 5].map((lvl) => (
                       <div
-                        key={lvl}
-                        className={`h-full flex-1 transition-all ${
-                          lvl <= regPasswordStrength.score
-                            ? regPasswordStrength.score >= 4
-                              ? 'bg-emerald-600'
-                              : regPasswordStrength.score >= 2
-                              ? 'bg-amber-500'
-                              : 'bg-rose-500'
-                            : 'bg-transparent'
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                          isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
                         }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-[11px] font-bold leading-tight">{r.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* PUPIL GUIDANCE VIEW (Pupils don't register, they use provided PIN) */}
+            {selectedRole === 'STUDENT' ? (
+              <div className="p-6 bg-emerald-50/60 rounded-2xl border border-emerald-200/80 text-center space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 border border-emerald-200 text-emerald-800 flex items-center justify-center mx-auto">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800">
+                    {AUTH_CONFIG.register.pupilNotice.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    {AUTH_CONFIG.register.pupilNotice.message}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('login')}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm"
+                >
+                  {AUTH_CONFIG.register.pupilNotice.action}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleUserRegisterSubmit} className="space-y-4">
+                {/* TEACHER SPECIFIC REGISTRATION FIELDS */}
+                {selectedRole === 'TEACHER' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.teacher.nameLabel}
+                      </label>
+                      <input
+                        type="text"
+                        value={teacherName}
+                        onChange={(e) => setTeacherName(e.target.value)}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.teacher.namePlaceholder}
                       />
-                    ))}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.teacher.staffIdLabel}
+                      </label>
+                      <input
+                        type="text"
+                        value={teacherStaffId}
+                        onChange={(e) => setTeacherStaffId(e.target.value)}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs font-mono uppercase text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.teacher.staffIdPlaceholder}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.teacher.phoneLabel}
+                      </label>
+                      <input
+                        type="tel"
+                        value={teacherPhone}
+                        onChange={(e) => setTeacherPhone(e.target.value)}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.teacher.phonePlaceholder}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.teacher.emailLabel}
+                      </label>
+                      <input
+                        type="email"
+                        value={teacherEmail}
+                        onChange={(e) => setTeacherEmail(e.target.value)}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.teacher.emailPlaceholder}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.teacher.classLabel}
+                      </label>
+                      <select
+                        value={teacherAssignedClass}
+                        onChange={(e) => setTeacherAssignedClass(e.target.value)}
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      >
+                        {AUTH_CONFIG.primaryClasses.map((cls) => (
+                          <option key={cls} value={cls}>
+                            {cls}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* PARENT SPECIFIC REGISTRATION FIELDS */}
+                {selectedRole === 'PARENT' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.parent.nameLabel}
+                      </label>
+                      <input
+                        type="text"
+                        value={parentName}
+                        onChange={(e) => setParentName(e.target.value)}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.parent.namePlaceholder}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.parent.phoneLabel}
+                      </label>
+                      <input
+                        type="tel"
+                        value={parentPhone}
+                        onChange={(e) => setParentPhone(e.target.value)}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.parent.phonePlaceholder}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.parent.childAdmLabel}
+                      </label>
+                      <input
+                        type="text"
+                        value={parentChildAdm}
+                        onChange={(e) => setParentChildAdm(e.target.value.toUpperCase())}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs font-mono uppercase text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.parent.childAdmPlaceholder}
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        {AUTH_CONFIG.register.parent.relationLabel}
+                      </label>
+                      <select
+                        value={parentRelation}
+                        onChange={(e) => setParentRelation(e.target.value)}
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      >
+                        {AUTH_CONFIG.relationships.map((rel) => (
+                          <option key={rel} value={rel}>
+                            {rel}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* PASSWORD FIELDS FOR BOTH ROLES */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      {AUTH_CONFIG.register.passwordLabel}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showUserPassword ? 'text' : 'password'}
+                        value={userPassword}
+                        onChange={(e) => setUserPassword(e.target.value)}
+                        required
+                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 pr-10 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                        placeholder={AUTH_CONFIG.register.passwordPlaceholder}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowUserPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                      >
+                        {showUserPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      {AUTH_CONFIG.register.confirmPasswordLabel}
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      placeholder={AUTH_CONFIG.register.confirmPasswordPlaceholder}
+                    />
                   </div>
                 </div>
-              )}
 
-              {/* Submit Registration */}
-              <button
-                type="submit"
-                disabled={isRegistering}
-                className="w-full mt-3 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <span>{isRegistering ? AUTH_CONFIG.register.submittingButton : AUTH_CONFIG.register.submitButton}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
+                {/* Password Strength Meter */}
+                {userPassword.length > 0 && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 font-medium">Password Robustness:</span>
+                      <span
+                        className={`font-bold ${
+                          passwordStrength.score >= 4
+                            ? 'text-emerald-700'
+                            : passwordStrength.score >= 2
+                            ? 'text-amber-600'
+                            : 'text-rose-600'
+                        }`}
+                      >
+                        {passwordStrength.score >= 4
+                          ? 'Strong'
+                          : passwordStrength.score >= 2
+                          ? 'Fair'
+                          : 'Weak'}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden flex gap-1">
+                      {[1, 2, 3, 4, 5].map((lvl) => (
+                        <div
+                          key={lvl}
+                          className={`h-full flex-1 transition-all ${
+                            lvl <= passwordStrength.score
+                              ? passwordStrength.score >= 4
+                                ? 'bg-emerald-600'
+                                : passwordStrength.score >= 2
+                                ? 'bg-amber-500'
+                                : 'bg-rose-500'
+                              : 'bg-transparent'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {/* Footer link to Login */}
+                <button
+                  type="submit"
+                  disabled={isRegistering}
+                  className="w-full mt-3 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <span>
+                    {isRegistering
+                      ? (selectedRole === 'TEACHER' ? AUTH_CONFIG.register.teacher.submittingButton : AUTH_CONFIG.register.parent.submittingButton)
+                      : (selectedRole === 'TEACHER' ? AUTH_CONFIG.register.teacher.submitButton : AUTH_CONFIG.register.parent.submitButton)}
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
+            )}
+
             <div className="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
               <span>{AUTH_CONFIG.register.switchToLogin} </span>
               <button
@@ -912,7 +1048,7 @@ export default function PrimaryPortalHomePage() {
       </main>
 
       {/* ===================================================================== */}
-      {/* 6. COMPREHENSIVE OFFICIAL PRIMARY SCHOOL WEB FOOTER */}
+      {/* 5. COMPREHENSIVE OFFICIAL PRIMARY SCHOOL WEB FOOTER */}
       {/* ===================================================================== */}
       <footer className="border-t border-emerald-200/80 bg-gradient-to-b from-[#EBF6EE] via-[#E4F2E8] to-[#DAEEDF] text-slate-700 pt-12 pb-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -922,7 +1058,7 @@ export default function PrimaryPortalHomePage() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-700 flex flex-col items-center justify-center text-white shadow-md shadow-emerald-800/20">
                   <GraduationCap className="w-5 h-5 text-white" />
-                  <span className="text-[9px] font-black tracking-widest">{school.shortCode}</span>
+                  <span className="text-[8px] font-bold tracking-widest uppercase">Logo</span>
                 </div>
                 <div>
                   <span className="text-base font-black text-slate-800 leading-tight block">
@@ -1065,11 +1201,11 @@ export default function PrimaryPortalHomePage() {
             </div>
           </div>
 
-          {/* Sub-Footer Copyright & Blueprint Indicator */}
+          {/* Sub-Footer Copyright */}
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
             <p>© {new Date().getFullYear()} {school.name}. All rights reserved.</p>
             <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
-              <span>Official Primary &amp; Nursery School Portal</span>
+              <span>Primary &amp; Nursery School Web Blueprint</span>
               <span>•</span>
               <span>{school.location}</span>
             </div>
