@@ -21,15 +21,20 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
+  BookOpen,
+  Bus,
+  Clock,
+  HeartHandshake,
+  Award,
 } from 'lucide-react';
 
-// ── Typewriter phrases ─────────────────────────────────────────────────────────
+// Typewriter Heading specifically for Primary & Nursery Schools
 const TYPEWRITER_PHRASES = [
-  'Secondary & High Schools',
-  'Primary & Nursery Schools',
-  'Colleges & Technical Institutes',
-  'Universities & Higher Learning',
-  'Educational Institutions',
+  'Nursery & Kindergarten Schools',
+  'Pre-Unit & Early Childhood Centers',
+  'Lower Primary (Standard 1 - 4)',
+  'Upper Primary (Standard 5 - 7)',
+  'Primary & Preparatory Academies',
 ];
 
 function TypewriterHeading() {
@@ -38,315 +43,368 @@ function TypewriterHeading() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const phrase = TYPEWRITER_PHRASES[phraseIndex];
-    const speed = isDeleting ? 38 : 72;
+    const currentPhrase = TYPEWRITER_PHRASES[phraseIndex];
+    const typingSpeed = isDeleting ? 38 : 72;
 
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       if (!isDeleting) {
-        if (currentText.length < phrase.length) {
-          setCurrentText(phrase.slice(0, currentText.length + 1));
+        if (currentText.length < currentPhrase.length) {
+          setCurrentText(currentPhrase.slice(0, currentText.length + 1));
         } else {
           setTimeout(() => setIsDeleting(true), 2600);
         }
       } else {
         if (currentText.length > 0) {
-          setCurrentText(phrase.slice(0, currentText.length - 1));
+          setCurrentText(currentPhrase.slice(0, currentText.length - 1));
         } else {
           setIsDeleting(false);
-          setPhraseIndex((p) => (p + 1) % TYPEWRITER_PHRASES.length);
+          setPhraseIndex((prev) => (prev + 1) % TYPEWRITER_PHRASES.length);
         }
       }
-    }, speed);
+    }, typingSpeed);
 
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [currentText, isDeleting, phraseIndex]);
 
   return (
-    <span className="text-cyan-300 font-black">
+    <span className="text-cyan-300 font-black inline-block min-w-[280px] sm:min-w-[460px] text-center">
       {currentText}
-      <span className="text-cyan-400 font-thin animate-pulse ml-0.5">|</span>
+      <span className="text-cyan-400 font-light animate-pulse ml-1">|</span>
     </span>
   );
 }
 
-// ── Background slides ──────────────────────────────────────────────────────────
+// 10 Educational Background Slides
 const HERO_SLIDES = [
-  { src: '/images/slide-1.jpg', label: 'Collaborative student learning' },
-  { src: '/images/slide-2.jpg', label: 'Modern academic campus' },
-  { src: '/images/slide-3.jpg', label: 'Interactive classrooms' },
-  { src: '/images/slide-4.jpg', label: 'Digital learning labs' },
-  { src: '/images/slide-5.jpg', label: 'Research library' },
-  { src: '/images/slide-6.jpg', label: 'Science laboratories' },
-  { src: '/images/slide-7.jpg', label: 'Graduation ceremony' },
-  { src: '/images/slide-8.jpg', label: 'Inspiring educators' },
-  { src: '/images/slide-9.jpg', label: 'Student seminars' },
-  { src: '/images/slide-10.jpg', label: 'World-class facilities' },
+  { src: '/images/slide-1.jpg', label: 'Interactive Primary Classroom Learning & Reading' },
+  { src: '/images/slide-2.jpg', label: 'Modern Primary School Campus & Safe Environment' },
+  { src: '/images/slide-3.jpg', label: 'Dedicated Primary School Teachers & Pupils' },
+  { src: '/images/slide-4.jpg', label: 'Early Childhood Education & Digital Literacy' },
+  { src: '/images/slide-5.jpg', label: 'Primary School Reading Corner & Library Books' },
+  { src: '/images/slide-6.jpg', label: 'Pupils Science Experiments & Practical Learning' },
+  { src: '/images/slide-7.jpg', label: 'Annual Graduation Day for Pre-Unit & Standard 7' },
+  { src: '/images/slide-8.jpg', label: 'Caring Educators & Creative Classroom Teaching' },
+  { src: '/images/slide-9.jpg', label: 'Student Collaborative Projects & Discovery' },
+  { src: '/images/slide-10.jpg', label: 'Safe, Joyful & Supportive School Infrastructure' },
 ];
 
-// ── Platform features ──────────────────────────────────────────────────────────
-const PLATFORM_FEATURES = [
+// Core Primary School Features
+const PRIMARY_FEATURES = [
   {
     icon: Users,
     color: 'bg-blue-50 text-blue-700 border-blue-200',
-    title: 'Student Information System',
-    desc: 'Centralised student records, class enrolments, ID generation, and guardian contacts in one secure cloud database.',
+    title: 'Pupil Records & Admissions (SIS)',
+    desc: 'Manage complete pupil profiles from Baby Class to Standard 7, passport photos, parent contact details, emergency guardians, and student ID generation in one secure cloud portal.',
   },
   {
     icon: FileSpreadsheet,
     color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    title: 'Examinations & Report Cards',
-    desc: 'Enter marks online or upload via Excel. Automatic grade and GPA calculations, class rankings, and professional PDF report cards.',
+    title: 'Assessment & Term Report Cards',
+    desc: 'Teachers enter monthly test and terminal scores online or upload via Excel. The system calculates totals, averages, grades (A-F), class ranks, and generates photo-enabled PDF report cards.',
   },
   {
     icon: CreditCard,
     color: 'bg-purple-50 text-purple-700 border-purple-200',
-    title: 'Fees, Billing & Receipts',
-    desc: 'Track collections, issue digital receipts instantly, monitor individual balances, and produce financial reports per term or semester.',
-  },
-  {
-    icon: Smartphone,
-    color: 'bg-amber-50 text-amber-700 border-amber-200',
-    title: 'Parent Communication Portal',
-    desc: 'Exam results, fee receipts, and school announcements delivered to parents via SMS and a dedicated web portal.',
+    title: 'School Fees, Transport & Meal Billing',
+    desc: 'Track tuition payments, school bus transport routes, morning snacks, and lunch billing. Issue instant digital receipts and send real-time SMS balance reminders to parents.',
   },
   {
     icon: Calendar,
     color: 'bg-rose-50 text-rose-700 border-rose-200',
-    title: 'Attendance Tracking',
-    desc: 'Daily class-level attendance for students and staff, early absence alerts, and institution-wide attendance analytics.',
+    title: 'Daily Attendance & Roll-Call',
+    desc: 'Class teachers take morning roll-call in under 30 seconds per stream. Spot absenteeism early and trigger instant alerts to parents when a child is absent from school.',
+  },
+  {
+    icon: Smartphone,
+    color: 'bg-amber-50 text-amber-700 border-amber-200',
+    title: 'Direct Parent SMS & Notifications',
+    desc: 'Deliver terminal examination results, fee payment confirmations, closing day announcements, and emergency notices straight to parents via SMS and their dedicated parent portal.',
   },
   {
     icon: Globe2,
     color: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-    title: 'Branded Institution Portal',
-    desc: 'Every school gets its own branded web portal with custom logo, news, admission forms, and secure staff and student login.',
+    title: 'Dedicated Primary School Website',
+    desc: 'Every registered primary school receives its own branded website portal with school logo, announcements, online admission application forms, and teacher/parent access.',
   },
 ];
 
-// ── Onboarding steps ───────────────────────────────────────────────────────────
+// 3 Simple Steps to Start
 const ONBOARDING_STEPS = [
   {
     step: '01',
-    title: 'Register Your Institution',
-    desc: 'Provide your institution name, academic tier, location, and admin credentials. Setup takes under 3 minutes.',
+    title: 'Register Your Primary School',
+    desc: 'Enter your school name, grades offered (Nursery, Pre-Unit, Standards 1 to 7), location, and administration credentials. Takes under 3 minutes.',
   },
   {
     step: '02',
-    title: 'Set Up Classes & Enrol Students',
-    desc: 'Create classes, assign teachers to subjects, and bulk-import student records via Excel or direct entry.',
+    title: 'Set Up Classes & Enroll Pupils',
+    desc: 'Create class streams (e.g. Standard 1 Blue, Standard 1 Red), assign class teachers to subjects, and bulk-import pupil rosters via Excel.',
   },
   {
     step: '03',
-    title: 'Run Assessments & Deliver Results',
-    desc: 'Teachers submit marks, the platform computes grades and rankings, and parents receive report cards on their devices.',
+    title: 'Enter Marks & Issue Report Cards',
+    desc: 'Teachers record assessment scores, the system calculates ranks and averages, and printable PDF report cards with headteacher remarks are ready instantly.',
   },
 ];
 
-// ── Institution tiers ──────────────────────────────────────────────────────────
-const SUPPORTED_LEVELS = [
+// Primary School Grade Levels
+const PRIMARY_LEVELS = [
   {
-    title: 'Primary & Nursery Schools',
-    desc: 'Photo-enabled report cards, behavioural assessments, daily attendance, and automated guardian notifications.',
-    badge: 'Nursery & Primary',
+    title: 'Nursery & Pre-School',
+    desc: 'Baby Class, Middle Class, and Pre-Unit. Developmental milestones, phonics, basic arithmetic, and playful learning evaluation with photo report cards.',
+    badge: 'Ages 3 - 5 Years',
   },
   {
-    title: 'Secondary Schools',
-    desc: 'Midterm and terminal exams, automatic grade and division calculations, subject rankings, and fee clearance controls.',
-    badge: 'O-Level & A-Level',
+    title: 'Lower Primary (Standard 1 - 4)',
+    desc: 'Strong foundation in reading, writing, arithmetic (3Rs), English, Kiswahili, basic science, and positive conduct and behavioral assessments.',
+    badge: 'Standards 1 to 4',
   },
   {
-    title: 'Vocational & Technical Colleges',
-    desc: 'Semester-based grading, practical workshop tracking, competency assessments, and transcript issuance.',
-    badge: 'Diploma & Certificates',
+    title: 'Upper Primary (Standard 5 - 7)',
+    desc: 'Subject mastery, continuous assessment tracking, monthly mock tests, terminal examination rankings, and preparation for national exit examinations.',
+    badge: 'Standards 5 to 7',
   },
   {
-    title: 'Universities & Higher Learning',
-    desc: 'Course registration, credit unit calculations, semester and cumulative GPA tracking, and multi-faculty approval workflows.',
-    badge: 'Higher Education',
+    title: 'Primary & Preparatory Academies',
+    desc: 'Integrated curriculum tracking, extracurricular activities, clubs, school bus routing, meal management, and comprehensive parent communication.',
+    badge: 'Academy Edition',
   },
 ];
 
-// ── Page component ─────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const [slide, setSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Automatic slideshow transition every 5 seconds
   useEffect(() => {
-    const t = setInterval(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
   }, []);
 
-  const prev = () => setSlide((s) => (s - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
-  const next = () => setSlide((s) => (s + 1) % HERO_SLIDES.length);
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col selection:bg-blue-600 selection:text-white">
-
-      {/* ── NAVBAR ── */}
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      {/* 1. NAVIGATION HEADER */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-xl bg-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-700/20 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6" />
+          {/* Logo & Identity */}
+          <Link href="/" className="flex items-center gap-3.5 group">
+            <div className="w-12 h-12 rounded-xl bg-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-700/20 group-hover:scale-105 transition-transform">
+              <GraduationCap className="w-7 h-7" />
             </div>
             <div>
-              <div className="text-xl font-black text-slate-900 tracking-tight leading-none">
-                UNIVERSAL<span className="text-blue-700">ED</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-black text-slate-900 tracking-tight">
+                  UNIVERSAL<span className="text-blue-700">ED</span>
+                </span>
+                <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">
+                  Primary School Edition
+                </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium tracking-wide mt-0.5">
-                Education Management Platform
+              <p className="text-xs text-slate-500 font-medium">
+                Primary & Nursery School Management Portal
               </p>
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-600">
+          {/* Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-700">
             <a href="#features" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5" /> Features
+              <Layers className="w-4 h-4 text-blue-600" />
+              Primary Features
             </a>
             <a href="#how-it-works" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-emerald-500" /> How It Works
+              <Zap className="w-4 h-4 text-emerald-600" />
+              How It Works
             </a>
-            <a href="#institutions" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
-              <School className="w-3.5 h-3.5 text-purple-500" /> Institutions
+            <a href="#classes" className="hover:text-blue-700 transition-colors flex items-center gap-1.5">
+              <School className="w-4 h-4 text-purple-600" />
+              Classes & Levels
             </a>
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
             <Link
               href="/auth/login"
-              className="hidden sm:inline-flex px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 rounded-lg hover:bg-slate-100 transition-colors"
+              className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-700 rounded-lg hover:bg-slate-100 transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/register-institution"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold shadow-md shadow-blue-700/25 transition-all hover:shadow-lg hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold shadow-md shadow-blue-700/25 transition-all hover:shadow-lg hover:-translate-y-0.5"
             >
-              Register Institution
+              <span>Register Primary School</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* ── HERO ── */}
-      <section className="relative overflow-hidden min-h-[620px] sm:min-h-[700px] lg:min-h-[760px] flex items-center justify-center border-b border-slate-200">
-
-        {/* Slides */}
-        <div className="absolute inset-0 z-0">
-          {HERO_SLIDES.map((s, i) => (
+      {/* 2. HERO SECTION WITH 10 FULL-BACKGROUND EDUCATIONAL SLIDES */}
+      <section className="relative overflow-hidden min-h-[640px] sm:min-h-[720px] flex items-center justify-center border-b border-slate-200">
+        {/* Full-width Background Slides (10 Images) */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {HERO_SLIDES.map((slide, index) => (
             <div
-              key={s.src}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${i === slide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              key={slide.src}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                currentSlide === index ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
             >
-              <Image src={s.src} alt={s.label} fill className="object-cover object-center" priority={i === 0} />
+              <Image
+                src={slide.src}
+                alt={slide.label}
+                fill
+                className="object-cover object-center scale-100 motion-safe:transition-transform motion-safe:duration-[7000ms]"
+                priority={index === 0}
+              />
             </div>
           ))}
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/72 via-slate-900/55 to-slate-950/78" />
+
+          {/* Balanced Educational Overlay: Keeps pictures clearly visible while ensuring text is 100% readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-900/60 to-slate-950/80" />
+          <div className="absolute inset-0 bg-blue-950/20 mix-blend-multiply" />
         </div>
 
-        {/* Arrows */}
-        <button onClick={prev} className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/35 hover:bg-black/55 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95" aria-label="Previous">
-          <ChevronLeft className="w-5 h-5" />
+        {/* Previous / Next Slide Chevron Navigation Buttons */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          aria-label="Previous Slide"
+        >
+          <ChevronLeft className="w-6 h-6" />
         </button>
-        <button onClick={next} className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/35 hover:bg-black/55 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95" aria-label="Next">
-          <ChevronRight className="w-5 h-5" />
+        <button
+          onClick={nextSlide}
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          aria-label="Next Slide"
+        >
+          <ChevronRight className="w-6 h-6" />
         </button>
 
-        {/* Content */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 lg:py-28 text-center flex flex-col items-center gap-7">
-
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-xs sm:text-sm font-medium">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            School &amp; University Management Platform
+        {/* Foreground Hero Content (Centered, behind text is the full background image) */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 lg:py-28 text-center flex flex-col items-center space-y-6 sm:space-y-8">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs sm:text-sm font-semibold shadow-lg">
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>Dedicated Cloud Software for Primary & Nursery Schools</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-black text-white tracking-tight leading-[1.18] drop-shadow-lg">
-            Smart Education Management
-            <br />
-            <span className="mt-1 block">
-              for <TypewriterHeading />
-            </span>
+          {/* Dynamic Typewriter Heading */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.18] drop-shadow-lg max-w-4xl">
+            Smart School Management for{' '}
+            <div className="mt-2 text-cyan-300 drop-shadow-md">
+              <TypewriterHeading />
+            </div>
           </h1>
 
-          <p className="text-base sm:text-lg text-white/82 max-w-2xl leading-relaxed">
-            Manage students, examinations, report cards, fee billing, and parent
-            communication — all from one platform, built for every type of institution.
+          {/* Subtitle */}
+          <p className="text-base sm:text-lg lg:text-xl text-slate-100 max-w-3xl font-normal leading-relaxed drop-shadow-md">
+            Built specifically for primary schools and kindergartens. Simplify pupil admissions, classroom roll-call attendance,
+            subject marks entry, photo-enabled report cards, fee & bus tracking, and instant SMS alerts to parents.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 w-full sm:w-auto">
             <Link
               href="/register-institution"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-xl shadow-blue-600/35 transition-all text-sm sm:text-base hover:-translate-y-0.5"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-xl shadow-blue-600/40 transition-all text-base hover:-translate-y-0.5"
             >
-              <Building2 className="w-4 h-4" />
-              Register Your Institution
-              <ArrowRight className="w-4 h-4" />
+              <Building2 className="w-5 h-5" />
+              <span>Register Your Primary School</span>
+              <ArrowRight className="w-5 h-5" />
             </Link>
+
             <Link
               href="/auth/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold border border-white/25 transition-all text-sm sm:text-base hover:-translate-y-0.5"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-bold border border-white/30 shadow-lg transition-all text-base hover:-translate-y-0.5"
             >
-              <Lock className="w-4 h-4" />
-              Sign In to Portal
+              <Lock className="w-5 h-5 text-white/90" />
+              <span>Sign In to School Portal</span>
             </Link>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-white/78 font-medium">
-            {[
-              { c: 'text-emerald-400', t: 'PDF Report Cards' },
-              { c: 'text-cyan-400', t: 'SMS Parent Alerts' },
-              { c: 'text-purple-400', t: 'Branded School Portal' },
-              { c: 'text-amber-400', t: 'Fee & Billing Tools' },
-            ].map(({ c, t }) => (
-              <span key={t} className="flex items-center gap-1.5 bg-white/8 px-3 py-1.5 rounded-full border border-white/12">
-                <CheckCircle2 className={`w-3.5 h-3.5 ${c}`} />
-                {t}
-              </span>
-            ))}
+          {/* Value Highlights Badges */}
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs sm:text-sm text-slate-100 font-medium">
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              Terminal Report Cards with Photos
+            </span>
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+              Instant SMS Alerts to Parents
+            </span>
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-purple-400" />
+              30-Second Classroom Attendance
+            </span>
+            <span className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 drop-shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-amber-400" />
+              Tuition, Bus & Meal Billing
+            </span>
           </div>
 
-          {/* Dot nav */}
-          <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
-            {HERO_SLIDES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setSlide(i)}
-                className={`h-2 rounded-full transition-all duration-300 ${i === slide ? 'w-6 bg-cyan-400' : 'w-2 bg-white/35 hover:bg-white/65'}`}
-                aria-label={`Slide ${i + 1}`}
-              />
-            ))}
+          {/* Slideshow Controls (10 Dots & Slide Indicator) */}
+          <div className="pt-4 flex flex-col items-center gap-2.5">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
+              {HERO_SLIDES.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    currentSlide === idx ? 'w-8 bg-cyan-400' : 'w-2.5 bg-white/40 hover:bg-white/80'
+                  }`}
+                  aria-label={`Show slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+            <div className="text-xs text-white/80 font-medium drop-shadow">
+              Primary School Spotlight <span className="font-bold text-cyan-300">{currentSlide + 1} of {HERO_SLIDES.length}</span>: {HERO_SLIDES[currentSlide].label}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
+      {/* 3. PRIMARY SCHOOL CORE MODULES / FEATURES */}
       <section id="features" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-100">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">
               <Layers className="w-3.5 h-3.5" />
-              What It Does
+              <span>Tailored for Primary Schools</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Everything your institution needs
+              Everything Your Primary School Needs Every Day
             </h2>
-            <p className="text-slate-500 text-sm sm:text-base leading-relaxed">
-              One platform connecting administrators, teachers, students, and parents.
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              Designed specifically for headteachers, class teachers, pupils, and parents — without the unnecessary complexity of college or university systems.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {PLATFORM_FEATURES.map((f, i) => {
-              const Icon = f.icon;
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {PRIMARY_FEATURES.map((item, idx) => {
+              const IconComponent = item.icon;
               return (
-                <div key={i} className="bg-slate-50 rounded-2xl border border-slate-200 p-7 hover:shadow-md hover:border-blue-200 hover:bg-white transition-all group">
-                  <div className={`w-11 h-11 rounded-xl border flex items-center justify-center mb-5 group-hover:scale-105 transition-transform ${f.color}`}>
-                    <Icon className="w-5 h-5" />
+                <div
+                  key={idx}
+                  className="bg-slate-50 rounded-2xl border border-slate-200/90 p-7 shadow-xs hover:shadow-md hover:border-blue-300 hover:bg-white transition-all flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center mb-5 group-hover:scale-105 transition-transform ${item.color}`}>
+                      <IconComponent className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2.5 group-hover:text-blue-700 transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                      {item.desc}
+                    </p>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">{f.title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -354,30 +412,39 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
+      {/* 4. HOW IT WORKS (3 SIMPLE STEPS) */}
       <section id="how-it-works" className="py-20 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider border border-emerald-100">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
               <Zap className="w-3.5 h-3.5" />
-              Getting Started
+              <span>Quick Onboarding</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Up and running in 3 steps
+              Get Your Primary School Running in 3 Steps
             </h2>
-            <p className="text-slate-500 text-sm sm:text-base leading-relaxed">
-              No servers, no hardware, no IT department needed. Just a browser and internet.
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              No complex installations or IT staff required. Start managing your classes directly from your phone, laptop, or office computer.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {ONBOARDING_STEPS.map((s, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-8 hover:border-blue-300 hover:shadow-md transition-all group">
-                <span className="text-5xl font-black text-blue-100 group-hover:text-blue-200 transition-colors block mb-5 leading-none">
-                  {s.step}
-                </span>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{s.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{s.desc}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {ONBOARDING_STEPS.map((step, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm flex flex-col justify-between relative group hover:border-blue-400 transition-all"
+              >
+                <div>
+                  <span className="text-4xl font-black text-blue-100 group-hover:text-blue-200 transition-colors block mb-4">
+                    {step.step}
+                  </span>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                    {step.desc}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -385,43 +452,55 @@ export default function LandingPage() {
           <div className="mt-12 text-center">
             <Link
               href="/register-institution"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm shadow-md shadow-blue-700/20 transition-all hover:shadow-lg hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm shadow-md shadow-blue-700/25 transition-all hover:shadow-lg hover:-translate-y-0.5"
             >
-              Get Started — Register Your Institution
+              <span>Register Your Primary School Now</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── INSTITUTION TIERS ── */}
-      <section id="institutions" className="py-20 bg-white border-b border-slate-200">
+      {/* 5. PRIMARY SCHOOL CLASSES & LEVELS */}
+      <section id="classes" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold uppercase tracking-wider border border-purple-100">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wider">
               <School className="w-3.5 h-3.5" />
-              Who It&apos;s For
+              <span>Nursery to Standard 7</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Built for every educational level
+              Pre-Configured for Every Primary Grade
             </h2>
-            <p className="text-slate-500 text-sm sm:text-base leading-relaxed">
-              Configurable workflows adapt to the exact needs of your institution.
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              From early childhood development in Nursery to competitive terminal rankings in Standard 7, each stage has custom workflows.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {SUPPORTED_LEVELS.map((l, i) => (
-              <div key={i} className="bg-slate-50 rounded-2xl border border-slate-200 p-7 hover:shadow-md hover:bg-white hover:border-blue-200 transition-all flex flex-col justify-between">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {PRIMARY_LEVELS.map((level, idx) => (
+              <div
+                key={idx}
+                className="bg-slate-50 rounded-2xl border border-slate-200 p-8 shadow-xs hover:shadow-md hover:bg-white hover:border-blue-300 transition-all flex flex-col justify-between"
+              >
                 <div>
-                  <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100 inline-block mb-4">
-                    {l.badge}
+                  <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold inline-block mb-4">
+                    {level.badge}
                   </span>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">{l.title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed mb-5">{l.desc}</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2.5">
+                    {level.title}
+                  </h3>
+                  <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6">
+                    {level.desc}
+                  </p>
                 </div>
-                <Link href="/register-institution" className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-800 transition-colors">
-                  Register under this tier <ArrowRight className="w-3 h-3" />
+
+                <Link
+                  href="/register-institution"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-800 transition-colors"
+                >
+                  <span>Set Up This Level</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             ))}
@@ -429,103 +508,103 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      {/* 6. CALL TO ACTION BANNER */}
       <section className="py-16 bg-slate-50 border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="space-y-2 text-center md:text-left max-w-xl">
-              <h3 className="text-2xl sm:text-3xl font-black leading-snug">
-                Ready to transform how your institution operates?
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="space-y-3 text-center md:text-left">
+              <h3 className="text-2xl sm:text-3xl font-black">
+                Ready to Upgrade Your Primary School Management?
               </h3>
-              <p className="text-blue-200 text-sm sm:text-base leading-relaxed">
-                Replace manual registers, printed mark sheets, and spreadsheets with a single modern platform your whole team can use from day one.
+              <p className="text-blue-100 text-sm sm:text-base max-w-2xl leading-relaxed">
+                Join forward-thinking primary and nursery schools eliminating manual paperwork, saving days of report card calculations, and keeping parents delighted.
               </p>
             </div>
             <Link
               href="/register-institution"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-white text-blue-900 font-extrabold text-sm shadow-md hover:bg-blue-50 transition-all shrink-0 hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-blue-900 font-extrabold text-sm shadow-md hover:bg-blue-50 transition-all shrink-0 hover:scale-105"
             >
-              Register Today
+              <span>Register Primary School</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-slate-900 text-slate-400 pt-14 pb-10">
+      {/* 7. FOOTER */}
+      <footer className="bg-slate-900 text-slate-300 pt-16 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-10 border-b border-slate-800">
-
-            {/* Brand */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+            {/* Col 1: Brand */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white">
-                  <GraduationCap className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold">
+                  <GraduationCap className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-base font-black text-white">UNIVERSAL ED</span>
-                  <p className="text-[11px] text-slate-500">Education Management Platform</p>
+                  <span className="text-lg font-black text-white">UNIVERSAL ED PRIMARY</span>
+                  <p className="text-[11px] text-slate-400">Primary & Nursery School Management Portal</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                A secure, multi-tenant cloud platform for managing students, examinations,
-                report cards, fee billing, and parent engagement across schools, colleges, and universities.
+              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                A dedicated cloud management platform designed specifically for primary, nursery, and kindergarten schools.
+                Pupil records, marks, terminal report cards, school fees, bus routes, and direct parent SMS.
               </p>
-              <div className="text-xs text-slate-500 space-y-1">
+              <div className="text-xs text-slate-400 space-y-1">
                 <p>📍 Dar es Salaam, Tanzania</p>
-                <p>📞 +255 779 304 500</p>
-                <p>✉️ pj0040280@gmail.com</p>
+                <p>📞 Phone: +255 779 304 500</p>
+                <p>✉️ Email: pj0040280@gmail.com</p>
               </div>
             </div>
 
-            {/* Features */}
+            {/* Col 2: Features */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Features</h4>
-              <ul className="space-y-2 text-xs text-slate-500">
-                {['Student Information System', 'Automated Report Cards', 'Fee & Billing', 'Attendance Tracking', 'Parent Portal & SMS'].map((f) => (
-                  <li key={f}><a href="#features" className="hover:text-white transition-colors">{f}</a></li>
-                ))}
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Primary Modules</h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li><a href="#features" className="hover:text-white transition-colors">Pupil Records (Baby - Std 7)</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Terminal Report Cards with Photos</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Tuition, Bus & Meal Fees</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Daily Roll-Call Attendance</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Parent SMS Notifications</a></li>
               </ul>
             </div>
 
-            {/* Institutions */}
+            {/* Col 3: Classes */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Institutions</h4>
-              <ul className="space-y-2 text-xs text-slate-500">
-                {['Primary & Nursery Schools', 'Secondary Schools', 'Colleges & Vocational', 'Universities'].map((t) => (
-                  <li key={t}><a href="#institutions" className="hover:text-white transition-colors">{t}</a></li>
-                ))}
-                <li>
-                  <Link href="/register-institution" className="text-blue-400 hover:text-blue-300 font-semibold">
-                    + Register Institution
-                  </Link>
-                </li>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Classes & Grades</h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li><a href="#classes" className="hover:text-white transition-colors">Nursery & Baby Class</a></li>
+                <li><a href="#classes" className="hover:text-white transition-colors">Pre-Unit & Kindergarten</a></li>
+                <li><a href="#classes" className="hover:text-white transition-colors">Lower Primary (Std 1 - 4)</a></li>
+                <li><a href="#classes" className="hover:text-white transition-colors">Upper Primary (Std 5 - 7)</a></li>
+                <li><Link href="/register-institution" className="text-blue-400 hover:text-blue-300 font-semibold">+ Register Primary School</Link></li>
               </ul>
             </div>
 
-            {/* Portals */}
+            {/* Col 4: Quick Portals */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Portals</h4>
-              <ul className="space-y-2 text-xs text-slate-500">
-                <li><Link href="/auth/login" className="hover:text-white transition-colors">Sign In</Link></li>
-                <li><Link href="/register-institution" className="hover:text-white transition-colors">Register Institution</Link></li>
-                <li><Link href="/admissions/apply" className="hover:text-white transition-colors">Student Admission Form</Link></li>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Portals</h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li><Link href="/auth/login" className="hover:text-white transition-colors">Teacher & Staff Sign In</Link></li>
+                <li><Link href="/register-institution" className="hover:text-white transition-colors">Register New Primary School</Link></li>
+                <li><Link href="/admissions/apply" className="hover:text-white transition-colors">Pupil Admission Application</Link></li>
               </ul>
             </div>
           </div>
 
-          <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
-            <p>© {new Date().getFullYear()} Universal Ed. All rights reserved.</p>
-            <div className="flex items-center gap-3">
-              <span>Multi-Tenant Cloud Platform</span>
-              <span>·</span>
-              <span>Built for Education</span>
+          {/* Bottom Copyright */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <p>
+              © {new Date().getFullYear()} UniversalEd Primary. All rights reserved. Commercial Primary Education Platform.
+            </p>
+            <div className="flex items-center gap-4">
+              <span>Primary School Edition</span>
+              <span>•</span>
+              <span>Modern Cloud Platform</span>
             </div>
           </div>
         </div>
       </footer>
-
     </div>
   );
 }
