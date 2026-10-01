@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   GraduationCap,
   School,
@@ -10,6 +11,7 @@ import {
   CheckCircle2,
   Lock,
   ArrowRight,
+  Award,
   ShieldCheck,
   AlertCircle,
   Info,
@@ -196,6 +198,8 @@ interface CenteredNotification {
 }
 
 export default function PrimaryPortalHomePage() {
+  const router = useRouter();
+
   // 0. Dynamic Client School Blueprint State
   const [school] = useState({
     name: 'PRIMARY & NURSERY SCHOOL',
@@ -346,13 +350,23 @@ export default function PrimaryPortalHomePage() {
 
     setTimeout(() => {
       setIsLoggingIn(false);
-      const roleObj = AUTH_CONFIG.roles.find((r) => r.id === selectedRole);
-      triggerNotification(
-        'success',
-        'Authentication Verified',
-        `Welcome to the ${school.name} ${roleObj?.label} portal. Secure session established.`
-      );
-    }, 1000);
+      const lower = cleanIdentifier.toLowerCase();
+      if (
+        lower.includes('admin') ||
+        lower.includes('headteacher') ||
+        lower.includes('academic') ||
+        lower.includes('discipline')
+      ) {
+        router.push('/admin');
+      } else {
+        const roleObj = AUTH_CONFIG.roles.find((r) => r.id === selectedRole);
+        triggerNotification(
+          'success',
+          'Authentication Verified',
+          `Welcome to the ${school.name} ${roleObj?.label} portal. Secure session established.`
+        );
+      }
+    }, 700);
   };
 
   // ---------------------------------------------------------------------------
@@ -768,7 +782,49 @@ export default function PrimaryPortalHomePage() {
               </button>
             </form>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
+            {/* Quick Blueprint Executive Demonstration Access */}
+            <div className="mt-5 p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-emerald-950 uppercase tracking-wider">
+                  Quick Blueprint Leadership Access:
+                </span>
+                <span className="text-[9px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-full border border-emerald-200">
+                  Instant Demo
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                <Link
+                  href="/admin"
+                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>School Admin</span>
+                </Link>
+                <Link
+                  href="/admin"
+                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                >
+                  <Award className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Mwalimu Mkuu</span>
+                </Link>
+                <Link
+                  href="/admin"
+                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Mwl. wa Taaluma</span>
+                </Link>
+                <Link
+                  href="/admin"
+                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                >
+                  <Shield className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Mwl. wa Nidhamu</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-3 border-t border-slate-100 text-center text-xs text-slate-500">
               <span>{AUTH_CONFIG.login.switchToRegister} </span>
               <button
                 type="button"
