@@ -21,38 +21,43 @@ import {
   Upload,
   Download,
   FileSpreadsheet,
+  ChevronLeft,
+  ChevronRight,
+  History,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession, UserAccount } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
 import { INITIAL_PUPILS, StudentMark } from '@/lib/teacher-data';
+import {
+  ClassDailyAttendanceRecord,
+  PupilDailyAttendance,
+  DailyAbsentee,
+  STORAGE_ATTENDANCE_HISTORY_KEY,
+  STORAGE_ATTENDANCE_KEY,
+  CALENDAR_MONTHS,
+  formatSwahiliDate,
+  getDeterministicPhone,
+  getInitialHistoricalSeeds,
+} from '@/lib/attendance-data';
 
-interface PupilAttendanceRow {
-  id: string;
-  admNo: string;
-  name: string;
-  gender: 'M' | 'F';
-  parentPhone: string;
-  status: 'PRESENT' | 'ABSENT' | 'PERMISSION';
-  absentReason?: string;
-  daysAbsentCount: number;
-}
-
-const STORAGE_ATTENDANCE_KEY = 'daily_attendance_submissions_v1';
 const STORAGE_REGISTERED_PUPILS_KEY = 'academic_portal_registered_pupils_v2';
 
-// Realistic parent phones deterministic helper
-function getDeterministicPhone(admNo: string, index: number): string {
-  const digits = admNo.replace(/\D/g, '');
-  const suffix = digits.slice(-3).padStart(3, '0') || (index + 1).toString().padStart(3, '0');
-  const middle = (220 + (index % 600)).toString().padStart(3, '0');
-  return `+255 754 ${middle} ${suffix}`;
+function getTodayISO(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export default function AttendancePage() {
   const [mounted, setMounted] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const rosterFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Automatic Calendar Integration: defaults to today's date
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayISO);
 
   // Sync auth session and mounted state on load
   useEffect(() => {
@@ -96,59 +101,59 @@ export default function AttendancePage() {
     return INITIAL_PUPILS;
   });
 
-  // Attendance status mapping per class & pupil
-  const [attendanceState, setAttendanceState] = useState<
-    Record<string, Record<string, { status: 'PRESENT' | 'ABSENT' | 'PERMISSION'; reason?: string }>>
-  >({});
-
-  const [searchFilter, setSearchFilter] = useState('');
-  const [isSubmittedToday, setIsSubmittedToday] = useState(false);
-  const [submittedTime, setSubmittedTime] = useState<string | null>(null);
-
-  // Check if class was already submitted today in localStorage
-  useEffect(() => {
+  // History state: map of class+date records
+  const [attendanceHistory, setAttendanceHistory] = useState<Record<string, ClassDailyAttendanceRecord>>(() => {
+    const initialSeeds = getInitialHistoricalSeeds();
+    if (typeof window === 'undefined') return initialSeeds;
     try {
-      const storedRaw = localStorage.getItem(STORAGE_ATTENDANCE_KEY);
-      if (storedRaw) {
-        const stored = JSON.parse(storedRaw);
-        if (stored[selectedClass]) {
-          setIsSubmittedToday(true);
-          setSubmittedTime(stored[selectedClass].timeSubmitted);
-        } else {
-          setIsSubmittedToday(false);
-          setSubmittedTime(null);
-        }
+      const saved = localStorage.getItem(STORAGE_ATTENDANCE_HISTORY_KEY);
+      if (saved) {
+        return { ...initialSeeds, ...JSON.parse(saved) };
       }
     } catch {}
-  }, [selectedClass]);
+    return initialSeeds;
+  });
 
-  // Build the complete pupil attendance roster for the selected class
-  const currentPupils: PupilAttendanceRow[] = useMemo(() => {
-    const rawList =
-      registeredPupils[selectedClass] ||
-      INITIAL_PUPILS[selectedClass] ||
-      INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
-      [];
+  // Active pupil roster and statuses for the currently selected class & date
+  const [activePupils, setActivePupils] = useState<PupilDailyAttendance[]>([]);
+  const [isSubmittedForDate, setIsSubmittedForDate] = useState(false);
+  const [submissionTimeForDate, setSubmissionTimeForDate] = useState<string | null>(null);
+  const [searchFilter, setSearchFilter] = useState('');
 
-    const classAttendance = attendanceState[selectedClass] || {};
+  // Key for the current selection
+  const currentRecordKey = `${selectedClass}__${selectedDate}`;
 
-    return rawList.map((p, idx) => {
-      const record = classAttendance[p.id];
-      const defaultStatus = p.attendance || (idx === 8 && rawList.length > 5 ? 'ABSENT' : 'PRESENT');
-      const defaultReason = defaultStatus === 'ABSENT' ? 'Bila taarifa (Utoro)' : undefined;
+  // Whenever selectedClass or selectedDate changes, load the matching attendance record
+  useEffect(() => {
+    const existing = attendanceHistory[currentRecordKey];
+    if (existing && existing.pupils && existing.pupils.length > 0) {
+      setActivePupils(existing.pupils);
+      setIsSubmittedForDate(existing.isSubmitted);
+      setSubmissionTimeForDate(existing.timeSubmitted || null);
+    } else {
+      // Initialize fresh roster from registered pupils
+      const baseRoster: StudentMark[] =
+        registeredPupils[selectedClass] ||
+        INITIAL_PUPILS[selectedClass] ||
+        INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
+        [];
 
-      return {
+      const initialList: PupilDailyAttendance[] = baseRoster.map((p, idx) => ({
         id: p.id,
         admNo: p.admNo,
         name: p.name,
         gender: p.gender,
         parentPhone: getDeterministicPhone(p.admNo, idx),
-        status: record ? record.status : defaultStatus,
-        absentReason: record?.reason !== undefined ? record.reason : defaultReason,
-        daysAbsentCount: defaultStatus === 'ABSENT' ? 1 : 0,
-      };
-    });
-  }, [registeredPupils, selectedClass, attendanceState]);
+        status: p.attendance || 'PRESENT',
+        absentReason: p.attendance === 'ABSENT' ? 'Bila taarifa (Utoro)' : undefined,
+        daysAbsentCount: p.attendance === 'ABSENT' ? 1 : 0,
+      }));
+
+      setActivePupils(initialList);
+      setIsSubmittedForDate(false);
+      setSubmissionTimeForDate(null);
+    }
+  }, [selectedClass, selectedDate, attendanceHistory, registeredPupils, currentRecordKey]);
 
   // Handle single attendance toggle
   const handleAttendanceChange = (
@@ -156,57 +161,76 @@ export default function AttendancePage() {
     status: 'PRESENT' | 'ABSENT' | 'PERMISSION',
     reason?: string
   ) => {
-    setAttendanceState((prev) => {
-      const classMap = { ...(prev[selectedClass] || {}) };
-      classMap[pupilId] = {
-        status,
-        reason: reason !== undefined ? reason : classMap[pupilId]?.reason,
-      };
-      return { ...prev, [selectedClass]: classMap };
-    });
+    setActivePupils((prev) =>
+      prev.map((p) => {
+        if (p.id === pupilId) {
+          return {
+            ...p,
+            status,
+            absentReason: reason !== undefined ? reason : p.absentReason,
+            daysAbsentCount: status === 'ABSENT' ? Math.max(1, p.daysAbsentCount || 1) : 0,
+          };
+        }
+        return p;
+      })
+    );
   };
 
   // 1-Click: Mark All Present
   const handleMarkAllPresent = () => {
-    const updatedMap: Record<string, { status: 'PRESENT'; reason: undefined }> = {};
-    currentPupils.forEach((p) => {
-      updatedMap[p.id] = { status: 'PRESENT', reason: undefined };
-    });
-
-    setAttendanceState((prev) => ({
-      ...prev,
-      [selectedClass]: updatedMap,
-    }));
+    setActivePupils((prev) =>
+      prev.map((p) => ({
+        ...p,
+        status: 'PRESENT' as const,
+        absentReason: undefined,
+        daysAbsentCount: 0,
+      }))
+    );
 
     notifyUser(
       'info',
       'Wote Wamewekwa Wapo',
-      `Wanafunzi wote ${currentPupils.length} wa ${selectedClass} wamewekwa kama Waliopo (Present). Unaweza sasa kubofya waliokosekana tu.`
+      `Wanafunzi wote ${activePupils.length} wa ${selectedClass} kwa tarehe ${formatSwahiliDate(selectedDate)} wamewekwa kama Waliopo (Present).`
     );
   };
 
-  const presentCount = currentPupils.filter((p) => p.status === 'PRESENT').length;
-  const absentCount = currentPupils.filter((p) => p.status === 'ABSENT').length;
-  const permCount = currentPupils.filter((p) => p.status === 'PERMISSION').length;
-  const totalCount = currentPupils.length;
+  // Navigate Date Helpers
+  const handleShiftDate = (days: number) => {
+    try {
+      const [y, m, d] = selectedDate.split('-').map(Number);
+      const curr = new Date(y, m - 1, d);
+      curr.setDate(curr.getDate() + days);
+      const newY = curr.getFullYear();
+      const newM = String(curr.getMonth() + 1).padStart(2, '0');
+      const newD = String(curr.getDate()).padStart(2, '0');
+      setSelectedDate(`${newY}-${newM}-${newD}`);
+    } catch {}
+  };
+
+  const handleSelectMonth = (monthVal: string) => {
+    const [y] = selectedDate.split('-');
+    setSelectedDate(`${y}-${monthVal}-01`);
+  };
+
+  const handleResetToToday = () => {
+    setSelectedDate(getTodayISO());
+  };
+
+  // Live computed metrics for current active date
+  const presentCount = activePupils.filter((p) => p.status === 'PRESENT').length;
+  const absentCount = activePupils.filter((p) => p.status === 'ABSENT').length;
+  const permCount = activePupils.filter((p) => p.status === 'PERMISSION').length;
+  const totalCount = activePupils.length;
   const attendanceRate = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
-  const todayDateFormatted = useMemo(() => {
-    const now = new Date();
-    return now.toLocaleDateString('sw-TZ', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }, []);
+  const isToday = selectedDate === getTodayISO();
+  const selectedDateFormatted = useMemo(() => formatSwahiliDate(selectedDate), [selectedDate]);
 
-  // SUBMIT ATTENDANCE DIRECTLY TO HEADMASTER AND DISCIPLINE TEACHER
+  // SUBMIT ATTENDANCE FOR THE SELECTED DATE TO LEADERSHIP
   const handleSubmitAttendanceToLeadership = () => {
     const timeNow = new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' });
-    const dateNow = new Date().toISOString().split('T')[0];
 
-    const absenteesList = currentPupils
+    const absenteesList: DailyAbsentee[] = activePupils
       .filter((p) => p.status === 'ABSENT')
       .map((p) => ({
         admNo: p.admNo,
@@ -214,14 +238,14 @@ export default function AttendancePage() {
         gender: p.gender,
         daysAbsent: p.daysAbsentCount || 1,
         reason: p.absentReason || 'Bila taarifa (Utoro)',
-        parentNotified: false,
         parentPhone: p.parentPhone,
+        parentNotified: false,
       }));
 
-    const submissionPayload = {
-      id: `att-${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '')}-${dateNow}`,
-      date: dateNow,
-      dateFormatted: todayDateFormatted,
+    const submissionPayload: ClassDailyAttendanceRecord = {
+      id: `att-${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '')}-${selectedDate}`,
+      date: selectedDate,
+      dateFormatted: selectedDateFormatted,
       timeSubmitted: timeNow,
       className: selectedClass,
       classTeacherName: currentUser?.fullName || 'Mwalimu wa Darasa',
@@ -232,10 +256,21 @@ export default function AttendancePage() {
       permissionCount: permCount,
       attendanceRate,
       status: 'PENDING_CONFIRMATION',
+      isSubmitted: true,
+      pupils: activePupils,
       absentees: absenteesList,
     };
 
+    // Update in history state & localStorage
+    const updatedHistory = {
+      ...attendanceHistory,
+      [currentRecordKey]: submissionPayload,
+    };
+    setAttendanceHistory(updatedHistory);
     try {
+      localStorage.setItem(STORAGE_ATTENDANCE_HISTORY_KEY, JSON.stringify(updatedHistory));
+
+      // Also sync to legacy single-day submission key for compatibility
       const existingRaw = localStorage.getItem(STORAGE_ATTENDANCE_KEY);
       let submissions = existingRaw ? JSON.parse(existingRaw) : {};
       submissions[selectedClass] = submissionPayload;
@@ -244,13 +279,13 @@ export default function AttendancePage() {
       console.error('Failed to store attendance submission', err);
     }
 
-    setIsSubmittedToday(true);
-    setSubmittedTime(timeNow);
+    setIsSubmittedForDate(true);
+    setSubmissionTimeForDate(timeNow);
 
     notifyUser(
       'success',
       'Attendance Imewasilishwa Kikamilifu!',
-      `Attendance ya wanafunzi ${totalCount} wa ${selectedClass} imewasilishwa kwa Mwalimu Mkuu na Mwalimu wa Nidhamu. Wanafunzi watoro: ${absentCount}.`
+      `Attendance ya wanafunzi ${totalCount} wa ${selectedClass} kwa tarehe ${selectedDateFormatted} imewasilishwa kwa Mwalimu Mkuu na Mwalimu wa Nidhamu. Watoro: ${absentCount}.`
     );
   };
 
@@ -319,13 +354,14 @@ export default function AttendancePage() {
 
   // Download Attendance CSV
   const handleDownloadCSV = () => {
-    const headers = ['Namba', 'Jina la Mwanafunzi', 'Namba ya Usajili', 'Jinsia', 'Simu ya Mzazi', 'Hali ya Attendance', 'Sababu'];
-    const rows = currentPupils.map((p, i) => [
+    const headers = ['Namba', 'Jina la Mwanafunzi', 'Namba ya Usajili', 'Jinsia', 'Simu ya Mzazi', 'Tarehe', 'Hali ya Attendance', 'Sababu'];
+    const rows = activePupils.map((p, i) => [
       i + 1,
       `"${p.name}"`,
       p.admNo,
       p.gender,
       p.parentPhone,
+      selectedDate,
       p.status,
       `"${p.absentReason || ''}"`,
     ]);
@@ -333,7 +369,7 @@ export default function AttendancePage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Attendance_${selectedClass.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Attendance_${selectedClass.replace(/\s+/g, '_')}_${selectedDate}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -341,15 +377,17 @@ export default function AttendancePage() {
 
   // Filtered pupils list for table search
   const displayedPupils = useMemo(() => {
-    if (!searchFilter.trim()) return currentPupils;
+    if (!searchFilter.trim()) return activePupils;
     const q = searchFilter.toLowerCase();
-    return currentPupils.filter((p) => p.name.toLowerCase().includes(q) || p.admNo.toLowerCase().includes(q));
-  }, [currentPupils, searchFilter]);
+    return activePupils.filter((p) => p.name.toLowerCase().includes(q) || p.admNo.toLowerCase().includes(q));
+  }, [activePupils, searchFilter]);
+
+  const currentMonthValue = selectedDate.split('-')[1] || '10';
 
   return (
     <TeacherShell
       pageTitle="Attendance"
-      pageDescription="Rejista ya attendance ya kila siku kwa madarasa unayofundisha. Chukua attendance na wasilisha kwa Mwalimu Mkuu na Mwalimu wa Nidhamu."
+      pageDescription="Rejista ya attendance ya kila siku kwa madarasa unayofundisha. Kalenda inajiupdate kiotomatiki kwa tarehe ya leo na inaruhusu kutazama kumbukumbu za tarehe au miezi ya nyuma."
     >
       <div className="space-y-6 animate-fade-in">
         {/* Hidden File Input for Excel/CSV Student Roster Upload */}
@@ -362,7 +400,97 @@ export default function AttendancePage() {
         />
 
         {/* ===================================================================== */}
-        {/* 1. TOP STATS CARDS */}
+        {/* 1. DYNAMIC CALENDAR & HISTORICAL DATE CONTROLLER (AUTO UPDATES TO TODAY) */}
+        {/* ===================================================================== */}
+        <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+              <Calendar className="w-4 h-4 text-emerald-700" />
+              <span>Kalenda ya Tarehe:</span>
+            </span>
+
+            {/* Previous Day */}
+            <button
+              type="button"
+              onClick={() => handleShiftDate(-1)}
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors cursor-pointer"
+              title="Siku Iliyopita"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Interactive HTML5 Date Input */}
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-3 py-1.5 rounded-xl bg-emerald-50/70 border border-emerald-300 text-xs font-black text-emerald-950 font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
+            />
+
+            {/* Next Day */}
+            <button
+              type="button"
+              onClick={() => handleShiftDate(1)}
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors cursor-pointer"
+              title="Siku Inayofuata"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Jump to Today */}
+            <button
+              type="button"
+              onClick={handleResetToToday}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                isToday
+                  ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+              }`}
+            >
+              ⚡ Leo
+            </button>
+
+            {/* Month Quick Selector */}
+            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-xl">
+              <span className="text-[11px] font-bold text-slate-500">Mwezi:</span>
+              <select
+                value={currentMonthValue}
+                onChange={(e) => handleSelectMonth(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
+              >
+                {CALENDAR_MONTHS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Current Date Badge and History Indicator */}
+          <div className="flex items-center gap-2">
+            <span
+              suppressHydrationWarning
+              className={`px-3 py-1 rounded-full text-xs font-black border flex items-center gap-1.5 ${
+                isToday
+                  ? 'bg-emerald-100 text-emerald-950 border-emerald-300'
+                  : 'bg-amber-100 text-amber-950 border-amber-300'
+              }`}
+            >
+              {isToday ? (
+                <span>✓ Leo: {mounted ? selectedDateFormatted : selectedDate}</span>
+              ) : (
+                <>
+                  <History className="w-3.5 h-3.5 text-amber-800" />
+                  <span>Kumbukumbu ya Nyuma: {mounted ? selectedDateFormatted : selectedDate}</span>
+                </>
+              )}
+            </span>
+          </div>
+        </div>
+
+        {/* ===================================================================== */}
+        {/* 2. TOP STATS CARDS */}
         {/* ===================================================================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
@@ -383,7 +511,7 @@ export default function AttendancePage() {
 
           <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
             <span className="text-[10px] text-rose-700 font-bold uppercase tracking-wider block">
-              Watoro Leo (Absent)
+              Watoro ({selectedDate})
             </span>
             <span className="text-2xl font-black text-rose-600 block mt-1">{absentCount}</span>
             <span className="text-[11px] text-rose-700 font-semibold">Zinafika kwa Mkuu &amp; Nidhamu</span>
@@ -399,7 +527,7 @@ export default function AttendancePage() {
         </div>
 
         {/* ===================================================================== */}
-        {/* 2. ATTENDANCE REGISTER CONTROLS & ACTIONS BAR */}
+        {/* 3. ATTENDANCE REGISTER CONTROLS & ACTIONS BAR */}
         {/* ===================================================================== */}
         <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-6 shadow-sm space-y-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-emerald-100 pb-4">
@@ -412,12 +540,16 @@ export default function AttendancePage() {
                   suppressHydrationWarning
                   className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 text-[10px] font-black border border-emerald-300"
                 >
-                  {mounted ? todayDateFormatted : 'Attendance ya Leo'}
+                  {mounted ? selectedDateFormatted : selectedDate}
                 </span>
-                {isSubmittedToday && (
+                {isSubmittedForDate ? (
                   <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-950 text-[10px] font-black border border-blue-300 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3 text-blue-700" />
-                    <span>Imewasilishwa kwa Mkuu &amp; Nidhamu (Saa {submittedTime})</span>
+                    <span>Imewasilishwa kwa Mkuu &amp; Nidhamu (Saa {submissionTimeForDate})</span>
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 text-[10px] font-bold border border-amber-300">
+                    ⏳ Bado Haijawasilishwa Tarehe Hii
                   </span>
                 )}
               </div>
@@ -468,7 +600,7 @@ export default function AttendancePage() {
                 type="button"
                 onClick={handleDownloadCSV}
                 className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-300 flex items-center gap-1.5 transition-colors cursor-pointer"
-                title="Pakua ripoti ya Attendance ya darasa hili (CSV)"
+                title="Pakua ripoti ya Attendance ya tarehe hii (CSV)"
               >
                 <Download className="w-3.5 h-3.5 text-slate-600" />
                 <span>Pakua CSV</span>
@@ -478,7 +610,7 @@ export default function AttendancePage() {
                 type="button"
                 onClick={handleSubmitAttendanceToLeadership}
                 className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
-                title="Tuma taarifa za attendance ya leo moja kwa moja kwa Mwalimu Mkuu na Mwalimu wa Nidhamu"
+                title="Tuma taarifa za attendance ya tarehe hii moja kwa moja kwa Mwalimu Mkuu na Mwalimu wa Nidhamu"
               >
                 <Send className="w-3.5 h-3.5 text-amber-300" />
                 <span>Wasilisha Attendance</span>
@@ -531,7 +663,7 @@ export default function AttendancePage() {
                       <div>{pupil.name}</div>
                       {pupil.status === 'ABSENT' && (
                         <span className="text-[10px] text-rose-600 font-bold">
-                          ⚠️ Hayupo darasani leo
+                          ⚠️ Hayupo darasani tarehe {selectedDate}
                         </span>
                       )}
                     </td>

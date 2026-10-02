@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Shield,
@@ -23,11 +23,22 @@ import {
   Building2,
   Calendar,
   X,
+  ChevronLeft,
+  ChevronRight,
+  History,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
 import { INITIAL_INCIDENTS, DisciplineIncident } from '@/lib/teacher-data';
+import {
+  ClassDailyAttendanceRecord,
+  STORAGE_ATTENDANCE_HISTORY_KEY,
+  STORAGE_ATTENDANCE_KEY,
+  CALENDAR_MONTHS,
+  formatSwahiliDate,
+  getInitialHistoricalSeeds,
+} from '@/lib/attendance-data';
 
 // =============================================================================
 // INTERFACES FOR DAILY ATTENDANCE & TRUANCY TRANSMISSION
@@ -60,119 +71,36 @@ export interface ClassDailyAttendanceFeed {
   absentees: AbsentPupilDetail[];
 }
 
-const STORAGE_ATTENDANCE_KEY = 'daily_attendance_submissions_v1';
 const STORAGE_RECORDS_KEY = 'school_records_documents_v1';
 
-// Default initial feeds for the 4 core classes
-const INITIAL_DAILY_FEEDS: ClassDailyAttendanceFeed[] = [
-  {
-    id: 'att-std6-2026-10-02',
-    className: 'Standard 6 (Grade 6)',
-    classTeacherName: 'Mwl. David Mrema (Mwalimu wa Darasa)',
-    date: '2026-10-02',
-    timeSubmitted: '07:45 Asubuhi',
-    totalStudents: 35,
-    presentCount: 33,
-    absentCount: 2,
-    attendanceRate: 94.3,
-    status: 'PENDING_CONFIRMATION',
-    absentees: [
-      {
-        admNo: 'PUP-2026-066',
-        name: 'Zuwena Athumani',
-        gender: 'F',
-        daysAbsent: 1,
-        reason: 'Bila taarifa (Hakuna taarifa kutoka kwa mzazi)',
-        parentPhone: '+255 754 112 006',
-        parentNotified: false,
-      },
-      {
-        admNo: 'PUP-2026-073',
-        name: 'Ismail Ally Seif',
-        gender: 'M',
-        daysAbsent: 2,
-        reason: 'Hakuna taarifa (Utoro wa siku ya pili)',
-        parentPhone: '+255 754 112 013',
-        parentNotified: false,
-      },
-    ],
-  },
-  {
-    id: 'att-std4-2026-10-02',
-    className: 'Standard 4 (Grade 4)',
-    classTeacherName: 'Mwl. Rehema Mushi (Mwalimu wa Darasa)',
-    date: '2026-10-02',
-    timeSubmitted: '07:50 Asubuhi',
-    totalStudents: 35,
-    presentCount: 34,
-    absentCount: 1,
-    attendanceRate: 97.1,
-    status: 'PENDING_CONFIRMATION',
-    absentees: [
-      {
-        admNo: 'SFNA-2026-0114',
-        name: 'Saidi Mohamed (Candidate)',
-        gender: 'M',
-        daysAbsent: 3,
-        reason: 'Utoro sugu wa siku 3 mfululizo bila taarifa',
-        parentPhone: '+255 754 441 003',
-        parentNotified: true,
-      },
-    ],
-  },
-  {
-    id: 'att-std5-2026-10-02',
-    className: 'Standard 5 (Grade 5)',
-    classTeacherName: 'Mwl. Emmanuel Lyimo (Mwalimu wa Darasa)',
-    date: '2026-10-02',
-    timeSubmitted: '08:00 Asubuhi',
-    totalStudents: 35,
-    presentCount: 34,
-    absentCount: 1,
-    attendanceRate: 97.1,
-    status: 'PENDING_CONFIRMATION',
-    absentees: [
-      {
-        admNo: 'PUP-2026-004',
-        name: 'Dorothy Michael',
-        gender: 'F',
-        daysAbsent: 2,
-        reason: 'Kuchelewa na kutofika darasani bila taarifa',
-        parentPhone: '+255 754 331 004',
-        parentNotified: false,
-      },
-    ],
-  },
-  {
-    id: 'att-std7-2026-10-02',
-    className: 'Standard 7 (Grade 7)',
-    classTeacherName: 'Mwl. Beatrice Kimaro (Academic Master)',
-    date: '2026-10-02',
-    timeSubmitted: '07:40 Asubuhi',
-    totalStudents: 35,
-    presentCount: 34,
-    absentCount: 1,
-    attendanceRate: 97.1,
-    status: 'PENDING_CONFIRMATION',
-    absentees: [
-      {
-        admNo: 'PSLE-2026-0436',
-        name: 'Ian Geoffrey (Candidate)',
-        gender: 'M',
-        daysAbsent: 1,
-        reason: 'Hakuna taarifa (Mtoro asubuhi ya leo)',
-        parentPhone: '+255 754 221 009',
-        parentNotified: false,
-      },
-    ],
-  },
-];
+function getTodayISO(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export default function DisciplineAndAttendancePage() {
   const currentUser = getCurrentSession();
+  const [mounted, setMounted] = useState(false);
 
-  // Daily Feeds State
-  const [dailyFeeds, setDailyFeeds] = useState<ClassDailyAttendanceFeed[]>(INITIAL_DAILY_FEEDS);
+  // Calendar State: defaults to today's date
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayISO);
+
+  // Attendance History across dates and classes
+  const [attendanceHistory, setAttendanceHistory] = useState<Record<string, ClassDailyAttendanceRecord>>(() => {
+    const initialSeeds = getInitialHistoricalSeeds();
+    if (typeof window === 'undefined') return initialSeeds;
+    try {
+      const saved = localStorage.getItem(STORAGE_ATTENDANCE_HISTORY_KEY);
+      if (saved) {
+        return { ...initialSeeds, ...JSON.parse(saved) };
+      }
+    } catch {}
+    return initialSeeds;
+  });
+
   const [incidents, setIncidents] = useState<DisciplineIncident[]>(INITIAL_INCIDENTS);
   const [activeNotice, setActiveNotice] = useState<string | null>(null);
 
@@ -183,32 +111,81 @@ export default function DisciplineAndAttendancePage() {
   const [newIssue, setNewIssue] = useState('Utoro sugu bila taarifa ya mzazi');
   const [newAction, setNewAction] = useState('Barua ya wito kwa mzazi imetolewa');
 
-  // Load submissions from localStorage if available
   useEffect(() => {
-    try {
-      const storedRaw = localStorage.getItem(STORAGE_ATTENDANCE_KEY);
-      if (storedRaw) {
-        const stored = JSON.parse(storedRaw);
-        setDailyFeeds((prev) => {
-          const updated = [...prev];
-          Object.values(stored).forEach((sub: any) => {
-            const idx = updated.findIndex((f) => f.className === sub.className);
-            if (idx !== -1) {
-              updated[idx] = {
-                ...updated[idx],
-                presentCount: sub.presentCount,
-                absentCount: sub.absentCount,
-                attendanceRate: sub.attendanceRate,
-                timeSubmitted: sub.timeSubmitted,
-                absentees: sub.absentees || updated[idx].absentees,
-              };
-            }
-          });
-          return updated;
-        });
-      }
-    } catch {}
+    setMounted(true);
   }, []);
+
+  // Compute daily feeds for the currently selected calendar date
+  const dateFeeds: ClassDailyAttendanceFeed[] = useMemo(() => {
+    // Collect all records matching selectedDate
+    const matching = Object.values(attendanceHistory).filter((f) => f.date === selectedDate);
+    if (matching.length > 0) {
+      return matching.map((m) => ({
+        id: m.id,
+        className: m.className,
+        classTeacherName: m.classTeacherName,
+        date: m.date,
+        timeSubmitted: m.timeSubmitted,
+        totalStudents: m.totalStudents,
+        presentCount: m.presentCount,
+        absentCount: m.absentCount,
+        attendanceRate: m.attendanceRate,
+        status: m.status,
+        confirmedBy: m.confirmedBy,
+        confirmedAt: m.confirmedAt,
+        recordRefNo: m.recordRefNo,
+        absentees: m.absentees.map((a) => ({
+          admNo: a.admNo,
+          name: a.name,
+          gender: a.gender,
+          daysAbsent: a.daysAbsent,
+          reason: a.reason,
+          parentPhone: a.parentPhone,
+          parentNotified: a.parentNotified,
+        })),
+      }));
+    }
+
+    // Fallback if today's date has submissions in legacy STORAGE_ATTENDANCE_KEY
+    if (typeof window !== 'undefined' && selectedDate === getTodayISO()) {
+      try {
+        const storedRaw = localStorage.getItem(STORAGE_ATTENDANCE_KEY);
+        if (storedRaw) {
+          const stored = JSON.parse(storedRaw);
+          const list = Object.values(stored) as ClassDailyAttendanceFeed[];
+          if (list.length > 0) return list;
+        }
+      } catch {}
+    }
+
+    return [];
+  }, [attendanceHistory, selectedDate]);
+
+  // Navigate Date Helpers
+  const handleShiftDate = (days: number) => {
+    try {
+      const [y, m, d] = selectedDate.split('-').map(Number);
+      const curr = new Date(y, m - 1, d);
+      curr.setDate(curr.getDate() + days);
+      const newY = curr.getFullYear();
+      const newM = String(curr.getMonth() + 1).padStart(2, '0');
+      const newD = String(curr.getDate()).padStart(2, '0');
+      setSelectedDate(`${newY}-${newM}-${newD}`);
+    } catch {}
+  };
+
+  const handleSelectMonth = (monthVal: string) => {
+    const [y] = selectedDate.split('-');
+    setSelectedDate(`${y}-${monthVal}-01`);
+  };
+
+  const handleResetToToday = () => {
+    setSelectedDate(getTodayISO());
+  };
+
+  const isToday = selectedDate === getTodayISO();
+  const selectedDateFormatted = useMemo(() => formatSwahiliDate(selectedDate), [selectedDate]);
+  const currentMonthValue = selectedDate.split('-')[1] || '10';
 
   // Save confirmed attendance document to School Records Archive
   const saveConfirmedAttendanceToRecords = (feed: ClassDailyAttendanceFeed, confirmedByStr: string, refNo: string) => {
@@ -248,79 +225,93 @@ export default function DisciplineAndAttendancePage() {
         : `${currentUser?.fullName || 'Uongozi wa Shule'}`;
 
     const refNo = `REC-ATT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-
     let confirmedClass = '';
 
-    setDailyFeeds((prev) =>
-      prev.map((f) => {
-        if (f.id === feedId) {
-          confirmedClass = f.className;
-          // Archive to School Records
-          saveConfirmedAttendanceToRecords(f, userTitle, refNo);
+    const updatedHistory = { ...attendanceHistory };
+    Object.keys(updatedHistory).forEach((key) => {
+      const item = updatedHistory[key];
+      if (item.id === feedId || (item.date === selectedDate && feedId.includes(item.className.toLowerCase().replace(/[^a-z0-9]/g, '')))) {
+        confirmedClass = item.className;
+        updatedHistory[key] = {
+          ...item,
+          status: 'CONFIRMED_AND_RECORDED',
+          confirmedBy: userTitle,
+          confirmedAt: timeNow,
+          recordRefNo: refNo,
+        };
 
-          // If there is any student with 3+ days absent, auto add to Incident register
-          f.absentees.forEach((abs) => {
-            if (abs.daysAbsent >= 3) {
-              const alreadyIn = incidents.some((inc) => inc.pupilName.includes(abs.name));
-              if (!alreadyIn) {
-                setIncidents((curr) => [
-                  {
-                    id: `inc-auto-${Date.now()}-${abs.admNo}`,
-                    date: f.date,
-                    pupilName: abs.name,
-                    class: f.className,
-                    issue: `Utoro sugu (${abs.daysAbsent} siku mfululizo bila taarifa)`,
-                    actionTaken: 'Wito wa dharura kwa mzazi kupitia SMS & Barua',
-                    parentContacted: true,
-                    status: 'PENDING',
-                  },
-                  ...curr,
-                ]);
-              }
-            }
-          });
-
-          return {
-            ...f,
-            status: 'CONFIRMED_AND_RECORDED' as const,
+        saveConfirmedAttendanceToRecords(
+          {
+            ...item,
+            status: 'CONFIRMED_AND_RECORDED',
             confirmedBy: userTitle,
             confirmedAt: timeNow,
             recordRefNo: refNo,
-          };
-        }
-        return f;
-      })
-    );
+          },
+          userTitle,
+          refNo
+        );
 
-    // Centered Light Blue Notification for PASS
+        // Auto incident log for students with 3+ days absent
+        item.absentees.forEach((abs) => {
+          if (abs.daysAbsent >= 3) {
+            const alreadyIn = incidents.some((inc) => inc.pupilName.includes(abs.name));
+            if (!alreadyIn) {
+              setIncidents((curr) => [
+                {
+                  id: `inc-auto-${Date.now()}-${abs.admNo}`,
+                  date: item.date,
+                  pupilName: abs.name,
+                  class: item.className,
+                  issue: `Utoro sugu (${abs.daysAbsent} siku mfululizo bila taarifa)`,
+                  actionTaken: 'Wito wa dharura kwa mzazi kupitia SMS & Barua',
+                  parentContacted: true,
+                  status: 'PENDING',
+                },
+                ...curr,
+              ]);
+            }
+          }
+        });
+      }
+    });
+
+    setAttendanceHistory(updatedHistory);
+    try {
+      localStorage.setItem(STORAGE_ATTENDANCE_HISTORY_KEY, JSON.stringify(updatedHistory));
+    } catch {}
+
     notifyUser(
       'success',
       'Taarifa ya Utoro Imethibitishwa na Kurekodiwa!',
-      `Uhakiki wa mahudhurio ya ${confirmedClass} umekamilika. Taarifa imehifadhiwa rasmi kwenye Masijala ya Nyaraka za Shule (Records Archive) na kurekodiwa katika Daftari Kuu.`
+      `Uhakiki wa mahudhurio ya ${confirmedClass || 'darasa'} kwa tarehe ${selectedDateFormatted} umekamilika. Taarifa imehifadhiwa rasmi kwenye Masijala ya Nyaraka za Shule (Ref: ${refNo}).`
     );
 
     setActiveNotice(
-      `Mahudhurio ya ${confirmedClass} yamethibitishwa na kuhifadhiwa kwenye Masijala ya Shule (Ref: ${refNo}).`
+      `Mahudhurio ya ${confirmedClass} (${selectedDateFormatted}) yamethibitishwa na kuhifadhiwa kwenye Masijala ya Shule (Ref: ${refNo}).`
     );
   };
 
   // ACTION 2: SEND SMS SUMMONS TO ABSENT PUPIL'S PARENT
   const handleSendParentSMS = (feedId: string, pupilName: string, phone: string) => {
-    setDailyFeeds((prev) =>
-      prev.map((f) => {
-        if (f.id === feedId) {
-          return {
-            ...f,
-            absentees: f.absentees.map((p) =>
-              p.name === pupilName ? { ...p, parentNotified: true } : p
-            ),
-          };
-        }
-        return f;
-      })
-    );
+    const updatedHistory = { ...attendanceHistory };
+    Object.keys(updatedHistory).forEach((key) => {
+      const item = updatedHistory[key];
+      if (item.id === feedId || item.date === selectedDate) {
+        updatedHistory[key] = {
+          ...item,
+          absentees: item.absentees.map((a) =>
+            a.name === pupilName ? { ...a, parentNotified: true } : a
+          ),
+        };
+      }
+    });
 
-    // Centered Light Blue Notification for PASS
+    setAttendanceHistory(updatedHistory);
+    try {
+      localStorage.setItem(STORAGE_ATTENDANCE_HISTORY_KEY, JSON.stringify(updatedHistory));
+    } catch {}
+
     notifyUser(
       'success',
       'Ujumbe wa SMS Umetumwa kwa Mzazi!',
@@ -367,12 +358,14 @@ export default function DisciplineAndAttendancePage() {
     );
   };
 
-  // Compute Overall Live School Attendance Metrics
-  const totalSchoolPupils = dailyFeeds.reduce((acc, f) => acc + f.totalStudents, 0);
-  const totalSchoolPresent = dailyFeeds.reduce((acc, f) => acc + f.presentCount, 0);
-  const totalSchoolAbsent = dailyFeeds.reduce((acc, f) => acc + f.absentCount, 0);
+  // Compute Live School Attendance Metrics for the selected date
+  const totalSchoolPupils = dateFeeds.reduce((acc, f) => acc + f.totalStudents, 0) || 140;
+  const totalSchoolPresent = dateFeeds.reduce((acc, f) => acc + f.presentCount, 0);
+  const totalSchoolAbsent = dateFeeds.reduce((acc, f) => acc + f.absentCount, 0);
   const schoolAttendancePercent =
-    totalSchoolPupils > 0 ? ((totalSchoolPresent / totalSchoolPupils) * 100).toFixed(1) : '96.4';
+    totalSchoolPupils > 0 && dateFeeds.length > 0
+      ? ((totalSchoolPresent / totalSchoolPupils) * 100).toFixed(1)
+      : '96.4';
 
   return (
     <TeacherShell
@@ -390,7 +383,7 @@ export default function DisciplineAndAttendancePage() {
             <button
               type="button"
               onClick={() => setActiveNotice(null)}
-              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
+              className="text-xs font-bold text-emerald-900 hover:underline shrink-0 cursor-pointer"
             >
               Funga
             </button>
@@ -398,24 +391,26 @@ export default function DisciplineAndAttendancePage() {
         )}
 
         {/* ===================================================================== */}
-        {/* 1. TOP SUMMARY METRICS (SCHOOL-WIDE LIVE ATTENDANCE & TRUANCY) */}
+        {/* 1. TOP SUMMARY METRICS (SYNCED TO SELECTED DATE) */}
         {/* ===================================================================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
-              Mahudhurio ya Shule Nzima Leo
+              Mahudhurio ya Shule ({selectedDate})
             </span>
             <span className="text-2xl font-black text-emerald-800 block mt-1">
-              {schoolAttendancePercent}% Leo
+              {schoolAttendancePercent}%
             </span>
             <span className="text-[11px] text-emerald-700 font-bold">
-              Wanafunzi {totalSchoolPresent} kati ya {totalSchoolPupils}
+              {dateFeeds.length > 0
+                ? `Wanafunzi ${totalSchoolPresent} kati ya ${totalSchoolPupils}`
+                : 'Kulingana na taarifa za siku hii'}
             </span>
           </div>
 
           <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
             <span className="text-[10px] text-rose-700 font-bold uppercase tracking-wider block">
-              Wanafunzi Watoro Leo
+              Wanafunzi Watoro ({selectedDate})
             </span>
             <span className="text-2xl font-black text-rose-600 block mt-1">
               {totalSchoolAbsent} Wanafunzi
@@ -430,7 +425,7 @@ export default function DisciplineAndAttendancePage() {
               Wito wa Wazazi &amp; SMS
             </span>
             <span className="text-2xl font-black text-amber-600 block mt-1">
-              {dailyFeeds.reduce((acc, f) => acc + f.absentees.filter((a) => a.parentNotified).length, 0) + 3} Ujumbe
+              {dateFeeds.reduce((acc, f) => acc + f.absentees.filter((a) => a.parentNotified).length, 0) + 3} Ujumbe
             </span>
             <span className="text-[11px] text-amber-700 font-semibold">
               Zimetumwa kwa njia ya SMS &amp; Barua
@@ -451,7 +446,97 @@ export default function DisciplineAndAttendancePage() {
         </div>
 
         {/* ===================================================================== */}
-        {/* 2. DAILY LIVE TRUANCY & ATTENDANCE TRANSMISSION FEED (DIRECT FROM TEACHERS) */}
+        {/* 2. DYNAMIC CALENDAR & HISTORICAL DATE CONTROLLER (AUTO UPDATES TO TODAY) */}
+        {/* ===================================================================== */}
+        <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+              <Calendar className="w-4 h-4 text-emerald-700" />
+              <span>Chagua Tarehe ya Kutazama:</span>
+            </span>
+
+            {/* Previous Day */}
+            <button
+              type="button"
+              onClick={() => handleShiftDate(-1)}
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors cursor-pointer"
+              title="Siku Iliyopita"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Interactive Date Picker */}
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-3 py-1.5 rounded-xl bg-emerald-50/70 border border-emerald-300 text-xs font-black text-emerald-950 font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
+            />
+
+            {/* Next Day */}
+            <button
+              type="button"
+              onClick={() => handleShiftDate(1)}
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors cursor-pointer"
+              title="Siku Inayofuata"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Reset to Today */}
+            <button
+              type="button"
+              onClick={handleResetToToday}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                isToday
+                  ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+              }`}
+            >
+              ⚡ Leo
+            </button>
+
+            {/* Month Quick Selector */}
+            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-xl">
+              <span className="text-[11px] font-bold text-slate-500">Mwezi:</span>
+              <select
+                value={currentMonthValue}
+                onChange={(e) => handleSelectMonth(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
+              >
+                {CALENDAR_MONTHS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Status Badge */}
+          <div className="flex items-center gap-2">
+            <span
+              suppressHydrationWarning
+              className={`px-3 py-1 rounded-full text-xs font-black border flex items-center gap-1.5 ${
+                isToday
+                  ? 'bg-emerald-100 text-emerald-950 border-emerald-300'
+                  : 'bg-amber-100 text-amber-950 border-amber-300'
+              }`}
+            >
+              {isToday ? (
+                <span>✓ Leo: {mounted ? selectedDateFormatted : selectedDate}</span>
+              ) : (
+                <>
+                  <History className="w-3.5 h-3.5 text-amber-800" />
+                  <span>Kumbukumbu ya Nyuma: {mounted ? selectedDateFormatted : selectedDate}</span>
+                </>
+              )}
+            </span>
+          </div>
+        </div>
+
+        {/* ===================================================================== */}
+        {/* 3. DAILY LIVE TRUANCY & ATTENDANCE TRANSMISSION FEED (DIRECT FROM TEACHERS) */}
         {/* ===================================================================== */}
         <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-6 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-100 pb-4">
@@ -462,229 +547,229 @@ export default function DisciplineAndAttendancePage() {
                   <span>Mapokezi ya Kila Siku (Daily Attendance Feed)</span>
                 </span>
                 <span className="text-xs font-mono text-slate-500">
-                  Madarasa Yote 4 Yamewasilisha
+                  {dateFeeds.length} Madarasa Yamewasilisha
                 </span>
               </div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 mt-1">
-                Taarifa za Utoro Zilizowasilishwa na Walimu wa Madarasa Leo
+                Taarifa za Utoro na Mahudhurio: {mounted ? selectedDateFormatted : selectedDate}
               </h2>
               <p className="text-xs text-slate-600 mt-0.5">
-                Kila mwalimu wa darasa anapojaza mahudhurio, ripoti inafika hapa moja kwa moja kwa Mwalimu Mkuu na Mwalimu wa Nidhamu. Bofya "Thibitisha Kuona &amp; Hifadhi Kwenye Records" ili kurekodi rasmi kwenye Masijala ya Shule.
+                Kila mwalimu wa darasa anapojaza attendance, ripoti inafika hapa moja kwa moja kwa Mwalimu Mkuu na Mwalimu wa Nidhamu. Bofya &quot;Thibitisha Kuona &amp; Hifadhi Kwenye Records&quot; ili kurekodi rasmi kwenye Masijala ya Shule.
               </p>
             </div>
 
             <Link
               href="/teacher/attendance"
-              className="px-4 py-2 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs self-start sm:self-auto"
+              className="px-4 py-2 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs self-start sm:self-auto cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Fungua Rejista ya Darasa</span>
+              <span>Fungua Rejista ya Attendance</span>
             </Link>
           </div>
 
           {/* Daily Class Feeds Grid */}
-          <div className="space-y-4">
-            {dailyFeeds.map((feed) => {
-              const isConfirmed = feed.status === 'CONFIRMED_AND_RECORDED';
-              return (
-                <div
-                  key={feed.id}
-                  className={`p-5 rounded-3xl border transition-all ${
-                    isConfirmed
-                      ? 'bg-emerald-50/40 border-emerald-300 shadow-xs'
-                      : 'bg-white border-slate-200 shadow-xs hover:border-emerald-300'
-                  }`}
-                >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    {/* Class Info */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-black text-slate-900">{feed.className}</h3>
-                        <span className="text-xs text-slate-500 font-medium">• {feed.classTeacherName}</span>
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                          Saa {feed.timeSubmitted}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="text-emerald-800 font-bold">
-                          Waliopo: <strong>{feed.presentCount}/{feed.totalStudents}</strong> ({feed.attendanceRate}%)
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-rose-700 font-bold">
-                          Watoro Leo: <strong>{feed.absentCount} Wanafunzi</strong>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Status & Confirmation Actions */}
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      {isConfirmed ? (
+          {dateFeeds.length > 0 ? (
+            <div className="space-y-4">
+              {dateFeeds.map((feed) => {
+                const isConfirmed = feed.status === 'CONFIRMED_AND_RECORDED';
+                return (
+                  <div
+                    key={feed.id}
+                    className={`p-5 rounded-3xl border transition-all ${
+                      isConfirmed
+                        ? 'bg-emerald-50/40 border-emerald-300 shadow-xs'
+                        : 'bg-white border-slate-200 shadow-xs hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      {/* Class Info */}
+                      <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="px-3 py-1.5 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 font-bold text-xs flex items-center gap-1.5">
-                            <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                            <span>Imethibitishwa &amp; Kuhifadhiwa Records</span>
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-500">
-                            {feed.confirmedBy?.split('(')[0]} ({feed.confirmedAt})
+                          <h3 className="text-sm font-black text-slate-900">{feed.className}</h3>
+                          <span className="text-xs text-slate-500 font-medium">• {feed.classTeacherName}</span>
+                          <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                            Saa {feed.timeSubmitted}
                           </span>
                         </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleConfirmAndArchiveAttendance(feed.id)}
-                          className="px-4 py-2.5 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
-                          title="Thibitisha kwamba umeona ripoti hii ya utoro na ihifadhi rasmi kama kumbukumbu kwenye Masijala ya Shule"
-                        >
-                          <FileCheck className="w-4 h-4 text-amber-300" />
-                          <span>Thibitisha Kuona &amp; Hifadhi Kwenye Records</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Absentees Detail List (Wanafunzi Watoro wa Darasa Hili) */}
-                  {feed.absentees.length > 0 ? (
-                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                        Orodha ya Wanafunzi Watoro na Hatua za Dharura:
-                      </span>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-emerald-800 font-bold">
+                            Waliopo: <strong>{feed.presentCount}/{feed.totalStudents}</strong> ({feed.attendanceRate}%)
+                          </span>
+                          <span className="text-slate-300">•</span>
+                          <span className="text-rose-700 font-bold">
+                            Watoro: <strong>{feed.absentCount} Wanafunzi</strong>
+                          </span>
+                        </div>
+                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                        {feed.absentees.map((pupil) => (
-                          <div
-                            key={pupil.admNo}
-                            className="p-3 rounded-2xl bg-rose-50/60 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                          >
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <strong className="text-slate-900 font-black">{pupil.name}</strong>
-                                <span className="text-[10px] font-mono text-slate-500">({pupil.admNo})</span>
-                                <span className="px-1.5 py-0.2 rounded bg-rose-200 text-rose-900 font-bold text-[9px]">
-                                  Siku {pupil.daysAbsent}
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-rose-800 font-medium mt-0.5">
-                                Sababu: {pupil.reason}
-                              </p>
-                              <span className="text-[10px] font-mono text-slate-500 block mt-0.5">
-                                Simu ya Mzazi: {pupil.parentPhone}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              {pupil.parentNotified ? (
-                                <span className="px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px] flex items-center gap-1">
-                                  <Check className="w-3 h-3 text-emerald-700" />
-                                  <span>SMS Imetumwa</span>
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleSendParentSMS(feed.id, pupil.name, pupil.parentPhone)}
-                                  className="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-[10px] shadow-xs flex items-center gap-1 transition-colors"
-                                  title="Tuma ujumbe wa SMS kwa mzazi wa mwanafunzi huyu kutoa taarifa ya utoro"
-                                >
-                                  <Send className="w-3 h-3 text-emerald-200" />
-                                  <span>Tuma SMS ya Utoro</span>
-                                </button>
-                              )}
-                            </div>
+                      {/* Status & Confirmation Actions */}
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        {isConfirmed ? (
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1.5 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 font-bold text-xs flex items-center gap-1.5">
+                              <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                              <span>Imethibitishwa &amp; Kuhifadhiwa Records</span>
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-500">
+                              {feed.confirmedBy?.split('(')[0]} ({feed.confirmedAt})
+                            </span>
                           </div>
-                        ))}
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleConfirmAndArchiveAttendance(feed.id)}
+                            className="px-4 py-2.5 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
+                            title="Thibitisha kwamba umeona ripoti hii ya utoro na ihifadhi rasmi kama kumbukumbu kwenye Masijala ya Shule"
+                          >
+                            <FileCheck className="w-4 h-4 text-amber-300" />
+                            <span>Thibitisha Kuona &amp; Hifadhi Kwenye Records</span>
+                          </button>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <div className="mt-2 text-xs text-emerald-800 font-medium flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Hakuna mwanafunzi mtoro leo katika darasa hili. Wote wapo darasani.</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+
+                    {/* Absentees Detail List */}
+                    {feed.absentees.length > 0 ? (
+                      <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                          Orodha ya Wanafunzi Watoro na Hatua za Dharura:
+                        </span>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                          {feed.absentees.map((pupil) => (
+                            <div
+                              key={pupil.admNo}
+                              className="p-3 rounded-2xl bg-rose-50/60 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                            >
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <strong className="text-slate-900 font-black">{pupil.name}</strong>
+                                  <span className="text-[10px] font-mono text-slate-500">({pupil.admNo})</span>
+                                  <span className="px-1.5 py-0.2 rounded bg-rose-200 text-rose-900 font-bold text-[9px]">
+                                    Siku {pupil.daysAbsent}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-rose-800 font-medium mt-0.5">
+                                  Sababu: {pupil.reason}
+                                </p>
+                                <span className="text-[10px] font-mono text-slate-500 block mt-0.5">
+                                  Simu ya Mzazi: {pupil.parentPhone}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {pupil.parentNotified ? (
+                                  <span className="px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px] flex items-center gap-1">
+                                    <Check className="w-3 h-3 text-emerald-700" />
+                                    <span>SMS Imetumwa</span>
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSendParentSMS(feed.id, pupil.name, pupil.parentPhone)}
+                                    className="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-[10px] shadow-xs flex items-center gap-1 transition-colors cursor-pointer"
+                                    title="Tuma ujumbe wa SMS kwa mzazi wa mwanafunzi huyu kutoa taarifa ya utoro"
+                                  >
+                                    <Send className="w-3 h-3 text-emerald-200" />
+                                    <span>Tuma SMS ya Utoro</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-xs text-emerald-800 font-medium flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Hakuna mwanafunzi mtoro tarehe hii katika darasa hili. Wote walikuwepo darasani.</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-8 text-center bg-slate-50/70 border border-dashed border-slate-300 rounded-2xl space-y-2">
+              <Calendar className="w-8 h-8 text-slate-400 mx-auto" />
+              <h4 className="text-sm font-bold text-slate-700">
+                Hakuna Taarifa za Attendance Zilizowasilishwa Tarehe Hii
+              </h4>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Hakuna mwalimu wa darasa aliyewasilisha attendance kwa tarehe {mounted ? selectedDateFormatted : selectedDate}. Unaweza kubofya kitufe cha &quot;Fungua Rejista ya Attendance&quot; kujaza au kuwasilisha.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ===================================================================== */}
-        {/* 3. OFFICIAL DISCIPLINARY INCIDENTS & SUMMONS REGISTER */}
+        {/* 4. DISCIPLINE INCIDENTS & TRUANCY SUMMONS LOG */}
         {/* ===================================================================== */}
         <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-6 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-100 pb-4">
             <div>
               <h3 className="text-base font-black text-slate-900">
-                Daftari Rasmi la Makosa ya Nidhamu &amp; Hatua Zilizochukuliwa
+                Daftari Kuu la Matukio ya Nidhamu &amp; Wito wa Wazazi
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Rekodi zote za utoro sugu, ukiukwaji wa miiko ya shule, na wito rasmi wa wazazi huandikwa hapa kwa hatua za kinidhamu.
+                Kumbukumbu za utoro sugu, barua za wito, mazungumzo na wazazi, na maamuzi ya kamati ya nidhamu.
               </p>
             </div>
 
             <button
               type="button"
               onClick={() => setShowNewIncidentModal(true)}
-              className="px-4 py-2 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all self-start sm:self-auto hover:scale-[1.02]"
+              className="px-4 py-2 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
             >
-              <Shield className="w-3.5 h-3.5 text-amber-300" />
+              <AlertTriangle className="w-4 h-4 text-amber-300" />
               <span>Sajili Tukio Jipya la Nidhamu</span>
             </button>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-4">Tarehe</th>
+                  <th className="py-3 px-3 text-center">#</th>
+                  <th className="py-3 px-3">Tarehe</th>
                   <th className="py-3 px-4">Jina la Mwanafunzi</th>
                   <th className="py-3 px-3">Darasa</th>
-                  <th className="py-3 px-4">Kosa / Suala Lililoripotiwa</th>
+                  <th className="py-3 px-4">Suala / Kosa</th>
                   <th className="py-3 px-4">Hatua Iliyochukuliwa</th>
-                  <th className="py-3 px-3 text-center">Mzazi Amejulishwa?</th>
                   <th className="py-3 px-3 text-center">Hali</th>
                   <th className="py-3 px-3 text-center">Kitendo</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {incidents.map((inc) => (
+                {incidents.map((inc, i) => (
                   <tr key={inc.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-mono text-slate-500">{inc.date}</td>
+                    <td className="py-3 px-3 text-center font-mono text-slate-400">{i + 1}</td>
+                    <td className="py-3 px-3 font-mono text-slate-600 text-[11px] whitespace-nowrap">{inc.date}</td>
                     <td className="py-3 px-4 font-bold text-slate-900">{inc.pupilName}</td>
-                    <td className="py-3 px-3 text-slate-600 font-medium">{inc.class}</td>
-                    <td className="py-3 px-4 text-rose-700 font-semibold">{inc.issue}</td>
-                    <td className="py-3 px-4 text-slate-700">{inc.actionTaken}</td>
+                    <td className="py-3 px-3 font-semibold text-emerald-800">{inc.class}</td>
+                    <td className="py-3 px-4 text-slate-700 font-medium">{inc.issue}</td>
+                    <td className="py-3 px-4 text-slate-600">{inc.actionTaken}</td>
                     <td className="py-3 px-3 text-center">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          inc.parentContacted
-                            ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {inc.parentContacted ? 'Ndio (SMS)' : 'Bado'}
-                      </span>
+                      {inc.status === 'RESOLVED' ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px]">
+                          Imetatuliwa
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px]">
+                          Inashughulikiwa
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-3 text-center">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${
-                          inc.status === 'RESOLVED'
-                            ? 'bg-emerald-100 text-emerald-950 border-emerald-300'
-                            : 'bg-amber-100 text-amber-950 border-amber-300'
-                        }`}
-                      >
-                        {inc.status === 'RESOLVED' ? 'YAMETATULIWA' : 'INASHUGHULIKIWA'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      {inc.status !== 'RESOLVED' ? (
+                      {inc.status === 'PENDING' && (
                         <button
                           type="button"
                           onClick={() => handleResolveIncident(inc.id)}
-                          className="px-2.5 py-1 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[10px] transition-colors shadow-2xs"
+                          className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-emerald-100 text-emerald-900 font-bold text-[10px] border border-slate-200 transition-colors cursor-pointer"
                         >
-                          Funga Suala
+                          Tatua Kesi
                         </button>
-                      ) : (
-                        <span className="text-slate-400 font-medium text-[11px]">—</span>
                       )}
                     </td>
                   </tr>
@@ -694,45 +779,47 @@ export default function DisciplineAndAttendancePage() {
           </div>
         </div>
 
-        {/* ===================================================================== */}
-        {/* MODAL: SAJILI TUKIO JIPYA LA NIDHAMU */}
-        {/* ===================================================================== */}
+        {/* Modal: New Discipline Incident */}
         {showNewIncidentModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-            <div className="bg-white rounded-3xl max-w-lg w-full border border-emerald-200 shadow-2xl p-6 space-y-4">
+          <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-emerald-200 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-emerald-700" />
-                  <h3 className="text-base font-black text-slate-900">Sajili Kosa la Nidhamu</h3>
-                </div>
+                <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  <span>Sajili Tukio Jipya la Nidhamu</span>
+                </h3>
                 <button
                   type="button"
                   onClick={() => setShowNewIncidentModal(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                  className="p-1 rounded-xl hover:bg-slate-100 text-slate-400 cursor-pointer"
                 >
-                  ✕
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               <form onSubmit={handleCreateNewIncident} className="space-y-3 text-xs">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Jina la Mwanafunzi</label>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
+                    Jina la Mwanafunzi:
+                  </label>
                   <input
                     type="text"
                     required
                     value={newPupilName}
                     onChange={(e) => setNewPupilName(e.target.value)}
-                    placeholder="Mfn. Baraka Juma Mshana"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
+                    placeholder="Mfano: Kelvin Shirima"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Darasa</label>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
+                    Darasa:
+                  </label>
                   <select
                     value={newClass}
                     onChange={(e) => setNewClass(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium cursor-pointer"
                   >
                     <option value="Standard 7 (Grade 7)">Standard 7 (Grade 7)</option>
                     <option value="Standard 6 (Grade 6)">Standard 6 (Grade 6)</option>
@@ -742,40 +829,44 @@ export default function DisciplineAndAttendancePage() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Kosa / Suala Lililotokea</label>
-                  <textarea
-                    rows={2}
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
+                    Kosa / Suala:
+                  </label>
+                  <input
+                    type="text"
                     required
                     value={newIssue}
                     onChange={(e) => setNewIssue(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Hatua Iliyochukuliwa / Inayopendekezwa</label>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
+                    Hatua Iliyochukuliwa:
+                  </label>
                   <input
                     type="text"
                     required
                     value={newAction}
                     onChange={(e) => setNewAction(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => setShowNewIncidentModal(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
+                    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 cursor-pointer"
                   >
                     Ghairi
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md"
+                    className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold cursor-pointer"
                   >
-                    Hifadhi Kwenye Daftari
+                    Hifadhi Tukio
                   </button>
                 </div>
               </form>
