@@ -214,7 +214,6 @@ export default function PrimaryPortalHomePage() {
 
   // 1. Splash Screen State: 5-second logo screen with pupils/students background
   const [showSplash, setShowSplash] = useState(true);
-  const [progress, setProgress] = useState(0);
 
   // 2. Active Mode: 'login' | 'register'
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -283,24 +282,14 @@ export default function PrimaryPortalHomePage() {
   }, []);
 
   // ---------------------------------------------------------------------------
-  // 5-SECOND SPLASH SCREEN CHOREOGRAPHY
+  // 5-SECOND SPLASH SCREEN CHOREOGRAPHY (AUTOMATIC TRANSITION TO LOGIN)
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    const startTime = Date.now();
-    const duration = AUTH_CONFIG.splash.durationMs;
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 5000);
 
-    const timer = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const pct = Math.min(100, Math.floor((elapsed / duration) * 100));
-      setProgress(pct);
-
-      if (elapsed >= duration) {
-        clearInterval(timer);
-        setShowSplash(false);
-      }
-    }, 50);
-
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, []);
 
   const skipSplash = () => {
@@ -562,30 +551,14 @@ export default function PrimaryPortalHomePage() {
               &quot;{school.motto}&quot;
             </p>
 
-            {/* 5-Second Progress Indicator */}
-            <div className="w-full max-w-xs mt-8 space-y-2">
-              <div className="w-full h-2.5 rounded-full bg-white/10 backdrop-blur-md overflow-hidden p-0.5 border border-emerald-400/40 shadow-inner">
-                <div
-                  className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-400 rounded-full transition-all duration-100 ease-out shadow-sm"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-emerald-200 font-semibold px-1">
-                <span>Inafungua Ukurasa wa Kuingia (Login)...</span>
-                <span className="font-mono text-amber-300 font-bold">
-                  {Math.max(1, Math.round((5000 - (progress / 100) * 5000) / 1000))}s
-                </span>
-              </div>
-            </div>
-
-            {/* Skip Button */}
+            {/* Direct Enter Button (Optional quick bypass before 5-second auto transition) */}
             <button
               onClick={skipSplash}
               type="button"
-              className="mt-6 inline-flex items-center gap-2 text-xs text-white hover:text-amber-300 font-bold px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all shadow-md group"
+              className="mt-8 inline-flex items-center gap-2 text-xs text-white hover:text-amber-300 font-bold px-6 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all shadow-md group"
             >
-              <span>{AUTH_CONFIG.splash.skipButton}</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              <span>Ingia Moja kwa Moja (Sign In)</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-amber-300" />
             </button>
           </div>
         </div>
