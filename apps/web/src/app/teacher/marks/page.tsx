@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession } from '@/lib/auth-session';
-import { notifyUser } from '@/lib/notifications';
 import { INITIAL_PUPILS, StudentMark, calculateGrade, getRemarksForGrade } from '@/lib/teacher-data';
 
 export default function SubjectMarksPage() {
@@ -296,62 +295,6 @@ export default function SubjectMarksPage() {
     setEditingStudent(null);
   };
 
-  // 7. Submit Subject Broadsheet to Academic Master
-  const handleSubmitToAcademicMaster = () => {
-    if (!isExcelUploaded) {
-      notifyUser(
-        'error',
-        'Maksi Hazijapakiwa Bado!',
-        'Tafadhali pakia kwanza faili la Excel lenye alama za wanafunzi kabla ya kuwasilisha kwa Mwalimu wa Taaluma.'
-      );
-      return;
-    }
-
-    const submissionKey = 'academic_subject_submissions_v1';
-    try {
-      const existingRaw = typeof window !== 'undefined' ? localStorage.getItem(submissionKey) : null;
-      let submissions = existingRaw ? JSON.parse(existingRaw) : {};
-
-      const subjectEntry = {
-        className: selectedClass,
-        subjectName: selectedSubject,
-        teacherName: currentUser?.fullName || 'Mwalimu wa Somo',
-        teacherStaffId: currentUser?.identifier || 'TCH-2026-001',
-        studentsCount: classPupils.length,
-        averageMark: averageScore,
-        submittedAt: new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }),
-        submittedDate: new Date().toISOString().split('T')[0],
-        fileName: uploadedFileName || `matokeo_${selectedSubject.toLowerCase().replace(/\s+/g, '_')}.xlsx`,
-        status: 'SUBMITTED',
-        pupils: classPupils.map((p) => ({
-          admNo: p.admNo,
-          name: p.name,
-          gender: p.gender,
-          finalMark: p.mark,
-          grade: p.grade,
-        })),
-      };
-
-      const entryId = `${selectedClass}_${selectedSubject}`;
-      submissions[entryId] = subjectEntry;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(submissionKey, JSON.stringify(submissions));
-      }
-    } catch (err) {
-      console.error('Failed to save subject submission', err);
-    }
-
-    notifyUser(
-      'success',
-      'Broadsheet ya Somo Imewasilishwa kwa Mwl. Taaluma!',
-      `Alama za somo la ${selectedSubject} (${selectedClass}) kwa wanafunzi wote ${classPupils.length} zimewasilishwa rasmi kwa Mwalimu wa Taaluma tayari kwa kuunganishwa kwenye Broadsheet Kuu ya Shule.`
-    );
-
-    setActiveNotice(
-      `Alama za somo la ${selectedSubject} (${selectedClass}) zimewasilishwa kikamilifu kwa Mwalimu wa Taaluma.`
-    );
-  };
-
   // Live Statistics
   const totalStudents = classPupils.length;
   const gradeACount = isExcelUploaded ? classPupils.filter((p) => p.grade === 'A').length : 0;
@@ -508,12 +451,15 @@ export default function SubjectMarksPage() {
 
                   <button
                     type="button"
-                    onClick={handleSubmitToAcademicMaster}
-                    className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
-                    title="Tuma broadsheet ya somo hili kwa Mwalimu wa Taaluma ili aiunganishe na masomo mengine"
+                    onClick={() =>
+                      setActiveNotice(
+                        `Matokeo rasmi ya ${selectedClass} (${selectedSubject}) yameidhinishwa na kuwasilishwa kwenye Broadsheet ya Shule!`
+                      )
+                    }
+                    className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-2 transition-all"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                    <span>Wasilisha Broadsheet ya Somo kwa Mwl. Taaluma</span>
+                    <span>Hifadhi Kwenye Broadsheet</span>
                   </button>
                 </>
               )}
