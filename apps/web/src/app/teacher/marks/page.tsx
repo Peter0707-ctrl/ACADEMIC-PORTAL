@@ -29,7 +29,6 @@ export default function SubjectMarksPage() {
   const [selectedClass, setSelectedClass] = useState<string>('Standard 6 (Grade 6)');
   const [selectedSubject, setSelectedSubject] = useState<string>('Civic & Moral Education (Uraia na Maadili)');
   const [searchPupil, setSearchPupil] = useState('');
-  const [activeNotice, setActiveNotice] = useState<string | null>(null);
 
   // EXCEL UPLOAD STATE: Marks ONLY appear after teacher uploads Excel
   const [isExcelUploaded, setIsExcelUploaded] = useState<boolean>(false);
@@ -118,7 +117,11 @@ export default function SubjectMarksPage() {
     link.click();
     document.body.removeChild(link);
 
-    setActiveNotice(`Kigezo cha Excel cha ${selectedClass} chenye majina yote 35 kimepakuliwa kikamilifu.`);
+    notifyUser(
+      'success',
+      'Kigezo Kimepakuliwa!',
+      `Kigezo cha Excel cha ${selectedClass} chenye majina yote 35 kimepakuliwa kikamilifu.`
+    );
   };
 
   // 2. Parse Uploaded Excel / CSV File and Auto-fill all 35 rows
@@ -171,10 +174,12 @@ export default function SubjectMarksPage() {
           setIsExcelUploaded(true);
           setUploadedFileName(file.name);
           setUploadedAt(new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }));
-          setActiveNotice(
-            `Faili la Excel "${file.name}" limepakiwa kikamilifu! Wanafunzi wote ${
+          notifyUser(
+            'success',
+            'Faili la Excel Limepakiwa Kikamilifu!',
+            `Faili "${file.name}" limepakiwa kikamilifu! Wanafunzi wote ${
               imported || updatedList.length
-            } wameingizwa na maksi zimekokotolewa.`
+            } wameingizwa na maksi zao zimekokotolewa.`
           );
         } else {
           simulateInstantAutoFill();
@@ -215,8 +220,10 @@ export default function SubjectMarksPage() {
     setIsExcelUploaded(true);
     setUploadedFileName(`matokeo_kamili_${selectedClass.toLowerCase().replace(/\s+/g, '_')}_2026.xlsx`);
     setUploadedAt(new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }));
-    setActiveNotice(
-      `Faili la Excel limepakiwa! Wanafunzi wote 35 wa ${selectedClass} wameingizwa na maksi zao zinaonekana sasa.`
+    notifyUser(
+      'success',
+      'Faili la Excel Limepakiwa!',
+      `Faili la Excel limepakiwa kikamilifu! Wanafunzi wote 35 wa ${selectedClass} wameingizwa na maksi zao zimehesabiwa kiotomatiki.`
     );
   };
 
@@ -226,13 +233,19 @@ export default function SubjectMarksPage() {
     setUploadedFileName(null);
     setUploadedAt(null);
     setAdjustedStudentIds({});
-    setActiveNotice(`Matokeo yamefutwa. Jedwali sasa lipo wazi likisubiri kupakiwa kwa faili la Excel.`);
+    notifyUser(
+      'info',
+      'Matokeo Yamefutwa',
+      'Matokeo yamefutwa. Jedwali sasa lipo wazi likisubiri kupakiwa kwa faili la Excel.'
+    );
   };
 
   // 5. Open Single Student Adjustment Modal
   const handleOpenStudentEdit = (pupil: StudentMark) => {
     if (!isExcelUploaded) {
-      setActiveNotice(
+      notifyUser(
+        'warning',
+        'Pakia Kwanza Faili la Excel',
         'Tafadhali pakia faili la Excel la darasa zima kwanza kabla ya kurekebisha alama za mwanafunzi mmoja mmoja.'
       );
       return;
@@ -290,7 +303,9 @@ export default function SubjectMarksPage() {
       [editingStudent.id]: editingStudent.reason,
     }));
 
-    setActiveNotice(
+    notifyUser(
+      'success',
+      'Marekebisho Yamehifadhiwa',
       `Alama za mwanafunzi ${editingStudent.name} (${editingStudent.admNo}) zimerekebishwa kikamilifu! Wastani mpya: ${finalMark}% (${grade}).`
     );
     setEditingStudent(null);
@@ -346,10 +361,6 @@ export default function SubjectMarksPage() {
       'Broadsheet ya Somo Imewasilishwa kwa Mwl. Taaluma!',
       `Alama za somo la ${selectedSubject} (${selectedClass}) kwa wanafunzi wote ${classPupils.length} zimewasilishwa rasmi kwa Mwalimu wa Taaluma tayari kwa kuunganishwa kwenye Broadsheet Kuu ya Shule.`
     );
-
-    setActiveNotice(
-      `Alama za somo la ${selectedSubject} (${selectedClass}) zimewasilishwa kikamilifu kwa Mwalimu wa Taaluma.`
-    );
   };
 
   // Live Statistics
@@ -379,23 +390,6 @@ export default function SubjectMarksPage() {
           accept=".xlsx,.xls,.csv"
           className="hidden"
         />
-
-        {/* Notice alert */}
-        {activeNotice && (
-          <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
-              <span className="font-bold">{activeNotice}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActiveNotice(null)}
-              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
-            >
-              Funga
-            </button>
-          </div>
-        )}
 
         {/* ===================================================================== */}
         {/* EXCEL UPLOAD STATUS & ACTION HERO BANNER */}
@@ -850,7 +844,11 @@ export default function SubjectMarksPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setActiveNotice(`Jedwali la matokeo ya ${selectedClass} limehifadhiwa kikamilifu kwenye kumbukumbu za shule!`)
+                    notifyUser(
+                      'success',
+                      'Kumbukumbu Zimehifadhiwa!',
+                      `Jedwali la matokeo ya ${selectedClass} limehifadhiwa kikamilifu kwenye kumbukumbu za shule!`
+                    )
                   }
                   className="px-4 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-xs flex items-center gap-1.5"
                 >

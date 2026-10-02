@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession } from '@/lib/auth-session';
+import { notifyUser } from '@/lib/notifications';
 
 interface Announcement {
   id: string;
@@ -65,7 +66,6 @@ const INITIAL_ANNOUNCEMENTS: Announcement[] = [
 export default function SchoolAnnouncementsPage() {
   const currentUser = getCurrentSession();
   const [announcements, setAnnouncements] = useState<Announcement[]>(INITIAL_ANNOUNCEMENTS);
-  const [activeNotice, setActiveNotice] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
   // Form State
@@ -93,7 +93,11 @@ export default function SchoolAnnouncementsPage() {
     setShowAddModal(false);
     setNewTitle('');
     setNewContent('');
-    setActiveNotice(`Tangazo "${created.title}" limeidhinishwa na kutangazwa rasmi kwa ${created.targetAudience}.`);
+    notifyUser(
+      'success',
+      'Tangazo Limeidhinishwa na Kutangazwa!',
+      `Tangazo "${created.title}" limeidhinishwa na kutangazwa rasmi kwa ${created.targetAudience}.`
+    );
   };
 
   return (
@@ -103,22 +107,6 @@ export default function SchoolAnnouncementsPage() {
       requiredRole="HEADTEACHER"
     >
       <div className="space-y-6 animate-fade-in">
-        {/* Notice alert */}
-        {activeNotice && (
-          <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
-              <span className="font-bold">{activeNotice}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActiveNotice(null)}
-              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
-            >
-              Funga
-            </button>
-          </div>
-        )}
 
         {/* Header Action Banner */}
         <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">

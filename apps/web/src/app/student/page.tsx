@@ -32,6 +32,7 @@ import {
   X,
 } from 'lucide-react';
 import { getCurrentSession } from '@/lib/auth-session';
+import { notifyUser } from '@/lib/notifications';
 
 type StudentTab =
   | 'DASHBOARD'
@@ -48,7 +49,6 @@ type StudentTab =
 
 export default function StudentPortal() {
   const [activeTab, setActiveTab] = useState<StudentTab>('DASHBOARD');
-  const [activeNotice, setActiveNotice] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Student Profile Data
@@ -118,7 +118,11 @@ export default function StudentPortal() {
       status: 'INASUBIRI UHAKIKI WA MWALIMU WA DARASA',
     };
     setRequestsList([newReq, ...requestsList]);
-    setActiveNotice(`Ombi lako la ruhusa limetumwa kwa Mwalimu wa Darasa na Mwalimu Mkuu.`);
+    notifyUser(
+      'success',
+      'Ombi Limetumwa!',
+      'Ombi lako la ruhusa limetumwa kwa Mwalimu wa Darasa na Mwalimu Mkuu kwa mapitio.'
+    );
   };
 
   return (
@@ -445,23 +449,6 @@ export default function StudentPortal() {
           </div>
         </header>
 
-        {/* Notice alert */}
-        {activeNotice && (
-          <div className="mx-4 sm:mx-8 mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
-              <span className="font-bold">{activeNotice}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActiveNotice(null)}
-              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
-            >
-              Funga
-            </button>
-          </div>
-        )}
-
         {/* Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
           {/* ================================================================= */}
@@ -694,7 +681,13 @@ export default function StudentPortal() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setActiveNotice('Ripoti rasmi inapakuliwa...')}
+                    onClick={() =>
+                      notifyUser(
+                        'success',
+                        'Upakuaji wa Ripoti ya Matokeo',
+                        'Ripoti rasmi ya matokeo ya mwanafunzi inapakuliwa ikiwa na muhuri halisi wa Mwalimu Mkuu.'
+                      )
+                    }
                     className="px-4 py-2 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 self-start sm:self-auto"
                   >
                     <Download className="w-4 h-4" />
@@ -802,7 +795,13 @@ export default function StudentPortal() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setActiveNotice('Kitambulisho kinapakuliwa...')}
+                      onClick={() =>
+                        notifyUser(
+                          'success',
+                          'Kitambulisho cha Mwanafunzi',
+                          'Kitambulisho cha mwanafunzi chenye QR Code rasmi kinapakuliwa kwa muundo wa PDF...'
+                        )
+                      }
                       className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 font-bold text-emerald-900"
                     >
                       Pakua
@@ -816,7 +815,13 @@ export default function StudentPortal() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setActiveNotice('Cheti cha NECTA kinapakuliwa...')}
+                      onClick={() =>
+                        notifyUser(
+                          'success',
+                          'Cheti cha Usajili wa NECTA',
+                          'Cheti cha usajili wa mtihani wa Taifa (PSLE Slip) kinapakuliwa kikamilifu...'
+                        )
+                      }
                       className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 font-bold text-emerald-900"
                     >
                       Pakua

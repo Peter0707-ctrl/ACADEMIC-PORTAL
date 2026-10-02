@@ -409,41 +409,169 @@ export default function UnifiedAcademicERPPortal() {
             </div>
           </div>
 
-          {/* Active Teacher Profile & Teaching Allocation Card */}
-          <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/90 shadow-2xs space-y-2.5">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
-                {currentUser?.fullName?.replace(/^(Mwl\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, '').trim().slice(0, 2).toUpperCase() || 'MW'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="text-xs font-black text-slate-900 block truncate">
-                  {currentUser?.fullName}
-                </span>
-                <span className="text-[10px] text-emerald-800 font-bold block truncate">
-                  {currentUser?.identifier === 'HT-2026-002' ? 'Makamu Mkuu wa Shule' :
-                   currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' :
-                   currentUser?.identifier === 'ACAD-2026-002' ? 'Msaidizi wa Taaluma' :
-                   currentUser?.role === 'ACADEMIC' ? 'Mwalimu wa Taaluma' :
-                   currentUser?.role === 'DISCIPLINE' ? 'Mwalimu wa Nidhamu' :
-                   'Class Teacher'} • {currentUser?.identifier}
-                </span>
-              </div>
+          {/* ================================================================= */}
+          {/* SECTION A: CHAGUA NAFASI / AKAUNTI (HORIZONTAL BUTTONS GOING DOWN) */}
+          {/* ================================================================= */}
+          <div className="space-y-2">
+            <div className="px-1 flex items-center justify-between">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                Chagua Akaunti / Nafasi ya Kazi:
+              </span>
+              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                Role-Based
+              </span>
             </div>
 
-            {/* Teaching Subjects Allocation */}
-            <div className="pt-2 border-t border-emerald-200/60 space-y-1">
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-slate-500 font-bold uppercase tracking-wider">Upande wa Ualimu:</span>
-                <span className="px-1.5 py-0.2 rounded-md bg-emerald-200 text-emerald-950 font-bold text-[9px]">
-                  Anafundisha
-                </span>
-              </div>
-              <div className="text-xs font-bold text-slate-800">
-                📚 {currentUser?.assignedClasses?.join(', ') || currentUser?.assignedClass || 'Madarasa Yote'}
-              </div>
-              <div className="text-[11px] text-emerald-900 font-medium">
-                📖 {currentUser?.subjects?.join(', ') || 'Masomo ya Msingi'}
-              </div>
+            <div className="space-y-1.5">
+              {/* 1. Mwalimu Mkuu */}
+              {accounts.filter((a) => a.role === 'HEADTEACHER').map((acc) => {
+                const isSelected = currentUser?.id === acc.id;
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => handleSelectAccount(acc)}
+                    className={`w-full p-2.5 rounded-2xl transition-all flex items-center justify-between text-left group border ${
+                      isSelected
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-md shadow-emerald-900/20 ring-1 ring-emerald-500/30'
+                        : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-slate-200 hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-emerald-800 text-amber-300' : 'bg-amber-100 text-amber-800'}`}>
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div className="truncate">
+                        <span className="font-bold text-xs block truncate">{acc.fullName}</span>
+                        <span className={`text-[10px] block truncate ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
+                          Mwalimu Mkuu • {acc.identifier}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-slate-400 group-hover:text-emerald-700'}`} />
+                  </button>
+                );
+              })}
+
+              {/* 2. Mwalimu wa Taaluma */}
+              {accounts.filter((a) => a.role === 'ACADEMIC').map((acc) => {
+                const isSelected = currentUser?.id === acc.id;
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => handleSelectAccount(acc)}
+                    className={`w-full p-2.5 rounded-2xl transition-all flex items-center justify-between text-left group border ${
+                      isSelected
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-md shadow-emerald-900/20 ring-1 ring-emerald-500/30'
+                        : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-slate-200 hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-emerald-800 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <div className="truncate">
+                        <span className="font-bold text-xs block truncate">{acc.fullName}</span>
+                        <span className={`text-[10px] block truncate ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
+                          Mwl. wa Taaluma • {acc.identifier}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-slate-400 group-hover:text-emerald-700'}`} />
+                  </button>
+                );
+              })}
+
+              {/* 3. Mwalimu wa Nidhamu */}
+              {accounts.filter((a) => a.role === 'DISCIPLINE').map((acc) => {
+                const isSelected = currentUser?.id === acc.id;
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => handleSelectAccount(acc)}
+                    className={`w-full p-2.5 rounded-2xl transition-all flex items-center justify-between text-left group border ${
+                      isSelected
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-md shadow-emerald-900/20 ring-1 ring-emerald-500/30'
+                        : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-slate-200 hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-emerald-800 text-emerald-300' : 'bg-emerald-100 text-emerald-800'}`}>
+                        <Shield className="w-4 h-4" />
+                      </div>
+                      <div className="truncate">
+                        <span className="font-bold text-xs block truncate">{acc.fullName}</span>
+                        <span className={`text-[10px] block truncate ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
+                          Mwl. wa Nidhamu • {acc.identifier}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-slate-400 group-hover:text-emerald-700'}`} />
+                  </button>
+                );
+              })}
+
+              {/* 4. Mwalimu wa Darasa (Class Teacher) */}
+              {accounts.filter((a) => a.role === 'TEACHER').slice(0, 1).map((acc) => {
+                const isSelected = currentUser?.id === acc.id;
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => handleSelectAccount(acc)}
+                    className={`w-full p-2.5 rounded-2xl transition-all flex items-center justify-between text-left group border ${
+                      isSelected
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-md shadow-emerald-900/20 ring-1 ring-emerald-500/30'
+                        : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-slate-200 hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <div className="truncate">
+                        <span className="font-bold text-xs block truncate">{acc.fullName}</span>
+                        <span className={`text-[10px] block truncate ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
+                          Mwalimu wa Darasa • {acc.identifier}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-slate-400 group-hover:text-emerald-700'}`} />
+                  </button>
+                );
+              })}
+
+              {/* 5. School System Admin */}
+              {accounts.filter((a) => a.role === 'ADMIN').map((acc) => {
+                const isSelected = currentUser?.id === acc.id;
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => handleSelectAccount(acc)}
+                    className={`w-full p-2.5 rounded-2xl transition-all flex items-center justify-between text-left group border ${
+                      isSelected
+                        ? 'bg-slate-900 text-white border-slate-950 shadow-md shadow-slate-900/20'
+                        : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-slate-800 text-emerald-400' : 'bg-slate-200 text-slate-800'}`}>
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <div className="truncate">
+                        <span className="font-bold text-xs block truncate">{acc.fullName}</span>
+                        <span className={`text-[10px] block truncate ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                          System Admin (IT) • {acc.identifier}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -675,69 +803,13 @@ export default function UnifiedAcademicERPPortal() {
             </div>
           </div>
 
-          {/* Context teaching card for Headmaster & Academics (Teaching Side Quick Access) */}
+          {/* Context teaching pill for Headmaster */}
           {currentUser?.subjects && currentUser.subjects.length > 0 && (
-            <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/70 border border-emerald-300 text-xs text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 self-stretch sm:self-auto shadow-2xs">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <BookOpen className="w-4 h-4 text-emerald-200" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-black text-xs text-slate-900">Upande Wangu wa Ualimu:</span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-emerald-200 text-emerald-900 font-bold text-[9px]">
-                      Anafundisha
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-emerald-900 font-semibold block">
-                    {currentUser.subjects.join(', ')} • {currentUser.assignedClasses?.join(', ') || currentUser.assignedClass}
-                  </span>
-                </div>
-              </div>
-
-              {/* Quick Jump Buttons into Teaching Activities */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setActiveActivity('MARKS')}
-                  className={`px-2.5 py-1.5 rounded-xl font-bold text-[10px] transition-all flex items-center gap-1 shadow-xs ${
-                    activeActivity === 'MARKS'
-                      ? 'bg-emerald-800 text-white shadow-emerald-950/20'
-                      : 'bg-white hover:bg-emerald-100/80 text-emerald-950 border border-emerald-300'
-                  }`}
-                  title="Kujaza alama za somo langu kwenye Excel Grid"
-                >
-                  <FileSpreadsheet className="w-3 h-3 text-emerald-600" />
-                  <span>Jaza Alama</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveActivity('ATTENDANCE')}
-                  className={`px-2.5 py-1.5 rounded-xl font-bold text-[10px] transition-all flex items-center gap-1 shadow-xs ${
-                    activeActivity === 'ATTENDANCE'
-                      ? 'bg-emerald-800 text-white shadow-emerald-950/20'
-                      : 'bg-white hover:bg-emerald-100/80 text-emerald-950 border border-emerald-300'
-                  }`}
-                  title="Kuchukua mahudhurio ya darasa langu"
-                >
-                  <UserCheck className="w-3 h-3 text-emerald-600" />
-                  <span>Roll-Call</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveActivity('HT_CURRICULUM')}
-                  className={`px-2.5 py-1.5 rounded-xl font-bold text-[10px] transition-all flex items-center gap-1 shadow-xs ${
-                    activeActivity === 'HT_CURRICULUM'
-                      ? 'bg-emerald-800 text-white shadow-emerald-950/20'
-                      : 'bg-white hover:bg-emerald-100/80 text-emerald-950 border border-emerald-300'
-                  }`}
-                  title="Kuangalia maazimio na mitaala"
-                >
-                  <TrendingUp className="w-3 h-3 text-emerald-600" />
-                  <span>Maazimio</span>
-                </button>
+            <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 flex items-center gap-2 self-start sm:self-auto">
+              <BookOpen className="w-4 h-4 text-emerald-700 shrink-0" />
+              <div>
+                <span className="font-bold block">Masomo Unayofundisha:</span>
+                <span className="text-[11px] text-slate-600">{currentUser.subjects.join(', ')} ({currentUser.assignedClasses?.join(', ') || currentUser.assignedClass})</span>
               </div>
             </div>
           )}
