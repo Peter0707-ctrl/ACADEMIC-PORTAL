@@ -37,137 +37,136 @@ import { notifyUser } from '@/lib/notifications';
 import { INITIAL_PUPILS, StudentMark, calculateGrade, getRemarksForGrade } from '@/lib/teacher-data';
 
 // =============================================================================
-// TYPES & DATA STRUCTURES: COMPLETE SCHOOL ACADEMIC CALENDAR & SUBMISSIONS
+// TYPES & DATA STRUCTURES: TANZANIA SCHOOL ACADEMIC CALENDAR (ALL 12 MONTHS)
 // =============================================================================
 
-type SchoolTerm = 'TERM_1' | 'TERM_2';
-
-interface CalendarPeriod {
-  id: string;
-  term: SchoolTerm;
-  month: string;
-  name: string;
-  shortName: string;
-  badge: string;
-  formula: string;
-  targetField: 'monthlyTest1' | 'monthlyTest2' | 'midtermExam' | 'terminalExam';
+interface AcademicMonth {
+  id: string; // 'M01', 'M02', ... 'M12'
+  monthNumber: number;
+  name: string; // 'Januari', 'Februari', 'Machi', etc.
+  shortName: string; // 'Jan', 'Feb', 'Machi', etc.
+  term: 'Muhula wa 1' | 'Muhula wa 2';
+  tag: string;
+  defaultType: string;
 }
 
-const SCHOOL_CALENDAR_PERIODS: CalendarPeriod[] = [
+const TANZANIA_SCHOOL_MONTHS: AcademicMonth[] = [
   // MUHULA WA 1 (Januari – Juni)
   {
-    id: 'JANUARY',
-    term: 'TERM_1',
-    month: 'Januari',
-    name: 'Mtihani wa Mwezi wa 1 (Januari)',
-    shortName: 'Januari',
-    badge: 'Mwezi 1',
-    formula: 'Wastani = Alama ya Mtihani wa Januari Pekee (Monthly 1)',
-    targetField: 'monthlyTest1',
+    id: 'M01',
+    monthNumber: 1,
+    name: 'Januari',
+    shortName: 'Jan',
+    term: 'Muhula wa 1',
+    tag: 'Mtihani wa Mwezi 1',
+    defaultType: 'Monthly Test 1',
   },
   {
-    id: 'FEBRUARY',
-    term: 'TERM_1',
-    month: 'Februari',
-    name: 'Mtihani wa Mwezi wa 2 (Februari)',
-    shortName: 'Februari',
-    badge: 'Mwezi 2',
-    formula: 'Wastani = (Januari + Februari) / 2',
-    targetField: 'monthlyTest2',
+    id: 'M02',
+    monthNumber: 2,
+    name: 'Februari',
+    shortName: 'Feb',
+    term: 'Muhula wa 1',
+    tag: 'Mtihani wa Mwezi 2',
+    defaultType: 'Monthly Test 2',
   },
   {
-    id: 'MARCH_MIDTERM',
-    term: 'TERM_1',
-    month: 'Machi',
-    name: 'Mtihani wa Nusu Muhula (Mid-Term)',
-    shortName: 'Machi (Mid-Term)',
-    badge: 'Nusu Muhula',
-    formula: 'Wastani = (Majaribio ya Mwezi * 40%) + (Mid-Term * 60%)',
-    targetField: 'midtermExam',
+    id: 'M03',
+    monthNumber: 3,
+    name: 'Machi',
+    shortName: 'Machi',
+    term: 'Muhula wa 1',
+    tag: 'Nusu Muhula (Mid-Term)',
+    defaultType: 'Mid-Term Exam',
   },
   {
-    id: 'APRIL',
-    term: 'TERM_1',
-    month: 'Aprili',
-    name: 'Majaribio ya Mwezi wa 4 (Aprili)',
-    shortName: 'Aprili',
-    badge: 'Mwezi 4',
-    formula: 'Wastani = Maendeleo ya Majaribio hadi Aprili',
-    targetField: 'monthlyTest2',
+    id: 'M04',
+    monthNumber: 4,
+    name: 'Aprili',
+    shortName: 'Apr',
+    term: 'Muhula wa 1',
+    tag: 'Mtihani wa Mwezi 4',
+    defaultType: 'Monthly Test 4',
   },
   {
-    id: 'MAY',
-    term: 'TERM_1',
-    month: 'Mei',
-    name: 'Majaribio ya Mwezi wa 5 (Mei)',
+    id: 'M05',
+    monthNumber: 5,
+    name: 'Mei',
     shortName: 'Mei',
-    badge: 'Mwezi 5',
-    formula: 'Wastani = Maendeleo ya Majaribio hadi Mei',
-    targetField: 'monthlyTest2',
+    term: 'Muhula wa 1',
+    tag: 'Mtihani wa Mwezi 5',
+    defaultType: 'Monthly Test 5',
   },
   {
-    id: 'JUNE_TERMINAL',
-    term: 'TERM_1',
-    month: 'Juni',
-    name: 'Mtihani wa Mwisho wa Muhula wa 1 (Terminal)',
-    shortName: 'Juni (Terminal)',
-    badge: 'Muhula Mzima',
-    formula: 'Wastani = (Majaribio * 30%) + (Mid-Term * 30%) + (Terminal * 40%)',
-    targetField: 'terminalExam',
+    id: 'M06',
+    monthNumber: 6,
+    name: 'Juni',
+    shortName: 'Juni',
+    term: 'Muhula wa 1',
+    tag: 'Mwisho wa Muhula (Terminal)',
+    defaultType: 'Terminal Exam',
   },
 
   // MUHULA WA 2 (Julai – Desemba)
   {
-    id: 'JULY',
-    term: 'TERM_2',
-    month: 'Julai',
-    name: 'Mtihani wa Mwezi wa 1 wa Muhula wa 2 (Julai)',
-    shortName: 'Julai',
-    badge: 'Mwezi 7',
-    formula: 'Wastani = Alama ya Julai Pekee',
-    targetField: 'monthlyTest1',
+    id: 'M07',
+    monthNumber: 7,
+    name: 'Julai',
+    shortName: 'Jul',
+    term: 'Muhula wa 2',
+    tag: 'Mtihani wa Mwezi 7',
+    defaultType: 'Monthly Test 7',
   },
   {
-    id: 'AUGUST',
-    term: 'TERM_2',
-    month: 'Agosti',
-    name: 'Mtihani wa Mwezi wa 2 wa Muhula wa 2 (Agosti)',
-    shortName: 'Agosti',
-    badge: 'Mwezi 8',
-    formula: 'Wastani = (Julai + Agosti) / 2',
-    targetField: 'monthlyTest2',
+    id: 'M08',
+    monthNumber: 8,
+    name: 'Agosti',
+    shortName: 'Ago',
+    term: 'Muhula wa 2',
+    tag: 'Mtihani wa Mwezi 8',
+    defaultType: 'Monthly Test 8',
   },
   {
-    id: 'SEPTEMBER_MIDTERM',
-    term: 'TERM_2',
-    month: 'Septemba',
-    name: 'Mtihani wa Nusu Muhula wa 2 (Mid-Term)',
-    shortName: 'Septemba (Mid-Term)',
-    badge: 'Nusu Muhula 2',
-    formula: 'Wastani = (Majaribio * 40%) + (Mid-Term * 60%)',
-    targetField: 'midtermExam',
+    id: 'M09',
+    monthNumber: 9,
+    name: 'Septemba',
+    shortName: 'Sep',
+    term: 'Muhula wa 2',
+    tag: 'Nusu Muhula (Mid-Term 2)',
+    defaultType: 'Mid-Term Exam 2',
   },
   {
-    id: 'OCTOBER',
-    term: 'TERM_2',
-    month: 'Oktoba',
-    name: 'Majaribio ya Pre-National (Oktoba)',
-    shortName: 'Oktoba',
-    badge: 'Mwezi 10',
-    formula: 'Wastani = Maendeleo ya Oktoba',
-    targetField: 'monthlyTest2',
+    id: 'M10',
+    monthNumber: 10,
+    name: 'Oktoba',
+    shortName: 'Okt',
+    term: 'Muhula wa 2',
+    tag: 'Mtihani wa Mwezi 10 (Mock)',
+    defaultType: 'Pre-National / Mock',
   },
   {
-    id: 'NOVEMBER_ANNUAL',
-    term: 'TERM_2',
-    month: 'Novemba',
-    name: 'Mtihani wa Mwisho wa Mwaka (Annual Exam)',
-    shortName: 'Novemba (Annual)',
-    badge: 'Mwisho wa Mwaka',
-    formula: 'Wastani = (Majaribio * 30%) + (Mid-Term * 30%) + (Annual * 40%)',
-    targetField: 'terminalExam',
+    id: 'M11',
+    monthNumber: 11,
+    name: 'Novemba',
+    shortName: 'Nov',
+    term: 'Muhula wa 2',
+    tag: 'Mtihani wa Mwaka (Annual)',
+    defaultType: 'Annual Examination',
+  },
+  {
+    id: 'M12',
+    monthNumber: 12,
+    name: 'Desemba',
+    shortName: 'Des',
+    term: 'Muhula wa 2',
+    tag: 'Tathmini ya Mwisho wa Mwaka',
+    defaultType: 'Year-End Review',
   },
 ];
+
+interface PupilWithMonthlyMarks extends StudentMark {
+  monthlyScores?: Record<string, number>;
+}
 
 interface SubjectSubmissionRecord {
   className: string;
@@ -176,8 +175,11 @@ interface SubjectSubmissionRecord {
   teacherStaffId: string;
   studentsCount: number;
   averageMark: string | number;
-  periodId: string;
-  periodTitle: string;
+  monthId: string;
+  monthName: string;
+  monthNumber: number;
+  term: string;
+  tag: string;
   submittedAt: string;
   submittedDate: string;
   fileName?: string;
@@ -201,98 +203,21 @@ interface ClassUploadStatus {
 const STORAGE_REGISTERED_PUPILS_KEY = 'academic_portal_registered_pupils_v2';
 const STORAGE_SUBJECT_SUBMISSIONS_KEY = 'academic_subject_submissions_v1';
 
-// Dynamic score calculation engine based on selected month / calendar milestone
-function computeStudentScore(
-  p: { monthlyTest1?: number; monthlyTest2?: number; midtermExam?: number; terminalExam?: number },
-  periodId: string
-) {
-  const t1 = Number(p.monthlyTest1) || 0;
-  const t2 = Number(p.monthlyTest2) || 0;
-  const mid = Number(p.midtermExam) || 0;
-  const term = Number(p.terminalExam) || 0;
-
-  let finalMark = 0;
-
-  switch (periodId) {
-    case 'JANUARY':
-    case 'JULY':
-      finalMark = t1;
-      break;
-
-    case 'FEBRUARY':
-    case 'AUGUST':
-      if (t1 > 0 && t2 > 0) {
-        finalMark = Math.round((t1 + t2) / 2);
-      } else if (t1 > 0) {
-        finalMark = t1;
-      } else if (t2 > 0) {
-        finalMark = t2;
-      } else {
-        finalMark = 0;
-      }
-      break;
-
-    case 'MARCH_MIDTERM':
-    case 'SEPTEMBER_MIDTERM': {
-      const mAvg = t1 > 0 && t2 > 0 ? (t1 + t2) / 2 : t1 > 0 ? t1 : t2;
-      if (mid > 0 && mAvg > 0) {
-        finalMark = Math.round(mAvg * 0.4 + mid * 0.6);
-      } else if (mid > 0) {
-        finalMark = mid;
-      } else if (mAvg > 0) {
-        finalMark = Math.round(mAvg);
-      } else {
-        finalMark = 0;
-      }
-      break;
-    }
-
-    case 'APRIL':
-    case 'MAY':
-    case 'OCTOBER': {
-      const mAvg = t1 > 0 && t2 > 0 ? (t1 + t2) / 2 : t1 > 0 ? t1 : t2;
-      if (mid > 0 && mAvg > 0) {
-        finalMark = Math.round(mAvg * 0.4 + mid * 0.6);
-      } else if (mAvg > 0) {
-        finalMark = Math.round(mAvg);
-      } else {
-        finalMark = mid || t1 || t2 || 0;
-      }
-      break;
-    }
-
-    case 'JUNE_TERMINAL':
-    case 'NOVEMBER_ANNUAL':
-    default: {
-      const validMonthly = [t1, t2].filter((m) => m > 0);
-      const mAvg =
-        validMonthly.length > 0
-          ? validMonthly.reduce((a, b) => a + b, 0) / validMonthly.length
-          : 0;
-
-      if (term === 0 && mid > 0) {
-        finalMark = Math.round(mAvg * 0.4 + mid * 0.6);
-      } else if (term === 0 && mid === 0 && mAvg > 0) {
-        finalMark = Math.round(mAvg);
-      } else {
-        finalMark = Math.round(mAvg * 0.3 + mid * 0.3 + term * 0.4);
-      }
-      break;
-    }
+// Helper to retrieve pupil score for a specific month (1 to 12)
+function getPupilScoreForMonth(pupil: PupilWithMonthlyMarks, monthId: string): number {
+  if (pupil.monthlyScores && typeof pupil.monthlyScores[monthId] === 'number') {
+    return pupil.monthlyScores[monthId];
   }
-
-  const hasAnyScore = t1 > 0 || t2 > 0 || mid > 0 || term > 0;
-  const grade: StudentMark['grade'] = (hasAnyScore ? calculateGrade(finalMark) : 'F') as StudentMark['grade'];
-  const remarks = hasAnyScore ? getRemarksForGrade(grade) : 'Inasubiri Mtihani';
-  const monthlyAvg = Math.round((t1 + t2) / (t1 > 0 && t2 > 0 ? 2 : 1));
-
-  return {
-    monthlyAvg,
-    finalMark,
-    grade,
-    remarks,
-    hasAnyScore,
-  };
+  // Fallbacks to standard fields for initial seeded demo
+  if (monthId === 'M01') return pupil.monthlyTest1 || 0;
+  if (monthId === 'M02') return pupil.monthlyTest2 || 0;
+  if (monthId === 'M03') return pupil.midtermExam || 0;
+  if (monthId === 'M06') return pupil.terminalExam || 0;
+  if (monthId === 'M07') return pupil.monthlyTest1 || 0;
+  if (monthId === 'M08') return pupil.monthlyTest2 || 0;
+  if (monthId === 'M09') return pupil.midtermExam || 0;
+  if (monthId === 'M11') return pupil.terminalExam || 0;
+  return 0;
 }
 
 export default function SubjectMarksPage() {
@@ -303,11 +228,8 @@ export default function SubjectMarksPage() {
   // Modal State for Registering Students via Excel
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  // Active School Term ('TERM_1' or 'TERM_2')
-  const [activeTerm, setActiveTerm] = useState<SchoolTerm>('TERM_1');
-
-  // Active Selected Calendar Period ID (default: 'JANUARY')
-  const [selectedPeriodId, setSelectedPeriodId] = useState<string>('JANUARY');
+  // Active Month (1 to 12). Default: Januari (M01)
+  const [selectedMonthId, setSelectedMonthId] = useState<string>('M01');
 
   // Submissions state to Academic Master (stored in localStorage)
   const [subjectSubmissions, setSubjectSubmissions] = useState<Record<string, SubjectSubmissionRecord>>(() => {
@@ -320,7 +242,7 @@ export default function SubjectMarksPage() {
   });
 
   // Master pupils dictionary across all classes (persisted in localStorage)
-  const [pupilsData, setPupilsData] = useState<Record<string, StudentMark[]>>(() => {
+  const [pupilsData, setPupilsData] = useState<Record<string, PupilWithMonthlyMarks[]>>(() => {
     if (typeof window === 'undefined') return INITIAL_PUPILS;
     try {
       const stored = localStorage.getItem(STORAGE_REGISTERED_PUPILS_KEY);
@@ -398,36 +320,104 @@ export default function SubjectMarksPage() {
     id: string;
     admNo: string;
     name: string;
-    monthlyTest1: number;
-    monthlyTest2: number;
-    midtermExam: number;
-    terminalExam: number;
+    score: number;
     reason: string;
     notes: string;
   } | null>(null);
 
   const [adjustedStudentIds, setAdjustedStudentIds] = useState<Record<string, string>>({});
 
-  // Active key for current selection
-  const currentKey = `${selectedClass}_${selectedSubject}`;
-  const currentUpload = classUploads[currentKey] || { isUploaded: false };
+  // Active Month details
+  const activeMonth = useMemo(() => {
+    return (
+      TANZANIA_SCHOOL_MONTHS.find((m) => m.id === selectedMonthId) ||
+      TANZANIA_SCHOOL_MONTHS[0]
+    );
+  }, [selectedMonthId]);
+
+  // Submission key for current class, subject and month
+  const currentMonthSubmissionKey = `${selectedClass}_${selectedSubject}_${activeMonth.id}`;
+  const currentMonthSubmission = subjectSubmissions[currentMonthSubmissionKey] || null;
+  const isSubmittedToAcademic = Boolean(
+    currentMonthSubmission && currentMonthSubmission.status === 'SUBMITTED'
+  );
+
+  // Active key for upload status
+  const currentClassSubjectKey = `${selectedClass}_${selectedSubject}`;
+  const currentUpload = classUploads[currentClassSubjectKey] || { isUploaded: false };
   const isExcelUploaded = Boolean(currentUpload.isUploaded);
-  const uploadedFileName = currentUpload.fileName || null;
 
-  // Active submission for this class and subject
-  const currentSubmission = subjectSubmissions[currentKey] || null;
-  const isSubmittedToAcademic = Boolean(currentSubmission && currentSubmission.status === 'SUBMITTED');
+  // Check if any marks exist for the selected month in the selected class
+  const classPupilsList = useMemo(() => {
+    return (
+      pupilsData[selectedClass] ||
+      INITIAL_PUPILS[selectedClass] ||
+      INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
+      []
+    );
+  }, [pupilsData, selectedClass]);
 
-  // Filter available periods by the active term
-  const termPeriods = useMemo(() => {
-    return SCHOOL_CALENDAR_PERIODS.filter((p) => p.term === activeTerm);
-  }, [activeTerm]);
+  const hasMarksForActiveMonth = useMemo(() => {
+    return classPupilsList.some((p) => getPupilScoreForMonth(p, activeMonth.id) > 0);
+  }, [classPupilsList, activeMonth.id]);
 
-  // Current active calendar period
-  const activePeriod = useMemo(() => {
-    const found = termPeriods.find((p) => p.id === selectedPeriodId);
-    return found || termPeriods[0] || SCHOOL_CALENDAR_PERIODS[0];
-  }, [termPeriods, selectedPeriodId]);
+  const isMarksActive = isExcelUploaded || hasMarksForActiveMonth;
+
+  // Live computed list of pupils based specifically on the selected month
+  const classPupils = useMemo(() => {
+    const computed = classPupilsList.map((pupil) => {
+      const monthScore = getPupilScoreForMonth(pupil, activeMonth.id);
+      const hasScore = monthScore > 0;
+      const grade: StudentMark['grade'] = (hasScore ? calculateGrade(monthScore) : 'F') as StudentMark['grade'];
+      const remarks = hasScore ? getRemarksForGrade(grade) : 'Inasubiri Mtihani';
+
+      return {
+        ...pupil,
+        mark: monthScore,
+        grade,
+        remarks,
+        hasScore,
+      };
+    });
+
+    // Sort descending by month score if marks are active
+    const sorted = isMarksActive ? [...computed].sort((a, b) => b.mark - a.mark) : [...computed];
+
+    const withRank = sorted.map((pupil, idx) => ({
+      ...pupil,
+      rank: isMarksActive && pupil.hasScore ? idx + 1 : undefined,
+    }));
+
+    if (!searchPupil.trim()) return withRank;
+    return withRank.filter(
+      (p) =>
+        p.name.toLowerCase().includes(searchPupil.toLowerCase()) ||
+        p.admNo.toLowerCase().includes(searchPupil.toLowerCase())
+    );
+  }, [classPupilsList, activeMonth.id, isMarksActive, searchPupil]);
+
+  // Statistics for the selected month
+  const totalStudents = classPupils.length;
+  const pupilsWithScores = classPupils.filter((p) => p.hasScore);
+  const gradeACount = isMarksActive
+    ? classPupils.filter((p) => p.hasScore && p.grade === 'A').length
+    : 0;
+  const gradeBCount = isMarksActive
+    ? classPupils.filter((p) => p.hasScore && p.grade === 'B').length
+    : 0;
+  const gradeCCount = isMarksActive
+    ? classPupils.filter((p) => p.hasScore && p.grade === 'C').length
+    : 0;
+  const gradeDCount = isMarksActive
+    ? classPupils.filter((p) => p.hasScore && (p.grade === 'D' || p.grade === 'F')).length
+    : 0;
+
+  const averageScore =
+    isMarksActive && pupilsWithScores.length > 0
+      ? (pupilsWithScores.reduce((acc, p) => acc + p.mark, 0) / pupilsWithScores.length).toFixed(1)
+      : isMarksActive && totalStudents > 0
+      ? (classPupils.reduce((acc, p) => acc + p.mark, 0) / totalStudents).toFixed(1)
+      : '—';
 
   // Handler: Download Student Registration Template
   const handleDownloadRosterTemplate = () => {
@@ -450,7 +440,7 @@ export default function SubjectMarksPage() {
     notifyUser(
       'success',
       'Kigezo cha Usajili Kimepakuliwa',
-      `Kigezo cha Excel cha kusajili wanafunzi wa ${selectedClass} kimepakuliwa kikamilifu.`
+      `Kigezo cha Excel cha kusajili wanafunzi wa ${selectedClass} kimepakuliwa.`
     );
   };
 
@@ -466,7 +456,7 @@ export default function SubjectMarksPage() {
         const lines = text.split(/\r\n|\n/).filter((l) => l.trim() !== '');
 
         if (lines.length > 1) {
-          const registeredList: StudentMark[] = [];
+          const registeredList: PupilWithMonthlyMarks[] = [];
 
           for (let i = 1; i < lines.length; i++) {
             const cols = lines[i].split(',').map((c) => c.replace(/["\r]/g, '').trim());
@@ -489,6 +479,7 @@ export default function SubjectMarksPage() {
                 grade: 'F',
                 remarks: 'Inasubiri Mtihani',
                 attendance: 'PRESENT',
+                monthlyScores: {},
               });
             }
           }
@@ -505,7 +496,7 @@ export default function SubjectMarksPage() {
             notifyUser(
               'success',
               'Wanafunzi Wamesajiliwa Kikamilifu!',
-              `Wanafunzi wote ${registeredList.length} wamesajiliwa kwenye ${selectedClass} na wameingizwa kwenye jedwali la matokeo!`
+              `Wanafunzi wote ${registeredList.length} wamesajiliwa kwenye ${selectedClass} na kuonekana kwenye jedwali la matokeo!`
             );
             return;
           }
@@ -545,7 +536,7 @@ export default function SubjectMarksPage() {
     const prefix = selectedClass.includes('7') ? 'PSLE-2026' : selectedClass.includes('4') ? 'SFNA-2026' : 'PUP-2026';
     const startNum = 501;
 
-    const generated: StudentMark[] = sampleNames.map((item, idx) => ({
+    const generated: PupilWithMonthlyMarks[] = sampleNames.map((item, idx) => ({
       id: `reg-${Date.now()}-${idx}`,
       admNo: `${prefix}-${String(startNum + idx).padStart(4, '0')}`,
       name: item.name,
@@ -559,6 +550,7 @@ export default function SubjectMarksPage() {
       grade: 'F',
       remarks: 'Inasubiri Mtihani',
       attendance: 'PRESENT',
+      monthlyScores: {},
     }));
 
     setPupilsData((prev) => ({
@@ -575,75 +567,14 @@ export default function SubjectMarksPage() {
     );
   };
 
-  // Check if any student in selected class has recorded scores
-  const hasMarksInSelectedClass = useMemo(() => {
-    const list = pupilsData[selectedClass] || [];
-    return list.some(
-      (p) =>
-        (p.monthlyTest1 || 0) > 0 ||
-        (p.monthlyTest2 || 0) > 0 ||
-        (p.midtermExam || 0) > 0 ||
-        (p.terminalExam || 0) > 0
-    );
-  }, [pupilsData, selectedClass]);
-
-  const isMarksActive = isExcelUploaded || hasMarksInSelectedClass;
-
-  // Live computed list of pupils based dynamically on active period
-  const classPupils = useMemo(() => {
-    const list =
-      pupilsData[selectedClass] ||
-      INITIAL_PUPILS[selectedClass] ||
-      INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
-      [];
-
-    const computed = list.map((pupil) => {
-      const { monthlyAvg, finalMark, grade, remarks, hasAnyScore } = computeStudentScore(
-        pupil,
-        activePeriod.id
-      );
-      return {
-        ...pupil,
-        monthlyAvg,
-        mark: finalMark,
-        grade,
-        remarks,
-        hasAnyScore,
-      };
-    });
-
-    const sorted = isMarksActive ? [...computed].sort((a, b) => b.mark - a.mark) : [...computed];
-
-    const withRank = sorted.map((pupil, idx) => ({
-      ...pupil,
-      rank: isMarksActive && pupil.hasAnyScore ? idx + 1 : undefined,
-    }));
-
-    if (!searchPupil.trim()) return withRank;
-    return withRank.filter(
-      (p) =>
-        p.name.toLowerCase().includes(searchPupil.toLowerCase()) ||
-        p.admNo.toLowerCase().includes(searchPupil.toLowerCase())
-    );
-  }, [pupilsData, selectedClass, searchPupil, isMarksActive, activePeriod.id]);
-
-  // Download Excel / CSV Template
+  // Download Excel / CSV Template specifically for the selected month
   const handleDownloadTemplate = () => {
-    const list =
-      pupilsData[selectedClass] ||
-      INITIAL_PUPILS[selectedClass] ||
-      INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
-      [];
-
-    const headers =
-      'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Monthly_Test_1_Jan,Monthly_Test_2_Feb,Mid_Term_Machi,Terminal_Exam_Juni\n';
-    const rows = list
-      .map(
-        (p) =>
-          `${p.admNo},"${p.name}",${p.gender},${p.monthlyTest1 > 0 ? p.monthlyTest1 : ''},${
-            p.monthlyTest2 > 0 ? p.monthlyTest2 : ''
-          },${p.midtermExam > 0 ? p.midtermExam : ''},${p.terminalExam > 0 ? p.terminalExam : ''}`
-      )
+    const headers = `Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Alama_Mwezi_${activeMonth.name}\n`;
+    const rows = classPupilsList
+      .map((p) => {
+        const curScore = getPupilScoreForMonth(p, activeMonth.id);
+        return `${p.admNo},"${p.name}",${p.gender},${curScore > 0 ? curScore : ''}`;
+      })
       .join('\n');
 
     const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(headers + rows);
@@ -651,7 +582,7 @@ export default function SubjectMarksPage() {
     link.setAttribute('href', csvContent);
     link.setAttribute(
       'download',
-      `Kigezo_Matokeo_${selectedClass.replace(/\s+/g, '_')}_${selectedSubject.replace(/\s+/g, '_')}.csv`
+      `Kigezo_Matokeo_${activeMonth.name}_${selectedClass.replace(/\s+/g, '_')}_${selectedSubject.replace(/\s+/g, '_')}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -659,12 +590,12 @@ export default function SubjectMarksPage() {
 
     notifyUser(
       'success',
-      'Kigezo Kimepakuliwa Kikamilifu!',
-      `Kigezo cha Excel cha ${selectedClass} kwa somo la ${selectedSubject} kimepakuliwa.`
+      'Kigezo Kimepakuliwa!',
+      `Kigezo cha Excel cha Mwezi wa ${activeMonth.name} (${selectedClass}) kimepakuliwa tayari kwa kujaza alama.`
     );
   };
 
-  // Progressive Excel / CSV Upload with Auto-Merge
+  // Upload Excel specifically for the selected month (Auto-merges into that month!)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -676,68 +607,27 @@ export default function SubjectMarksPage() {
         const lines = text.split(/\r\n|\n/).filter((l) => l.trim() !== '');
 
         if (lines.length > 1) {
-          const updatedList = [
-            ...(pupilsData[selectedClass] ||
-              INITIAL_PUPILS[selectedClass] ||
-              INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
-              []),
-          ];
-
-          const headers = lines[0]
-            .toLowerCase()
-            .split(',')
-            .map((c) => c.replace(/["\r]/g, '').trim());
-
-          let t1Idx = headers.findIndex(
-            (h) => h.includes('monthly_1') || h.includes('january') || h.includes('jan') || h.includes('jul')
-          );
-          let t2Idx = headers.findIndex(
-            (h) => h.includes('monthly_2') || h.includes('february') || h.includes('feb') || h.includes('aug')
-          );
-          let midIdx = headers.findIndex((h) => h.includes('mid') || h.includes('nusu') || h.includes('machi'));
-          let termIdx = headers.findIndex(
-            (h) => h.includes('terminal') || h.includes('term') || h.includes('muhula') || h.includes('juni')
-          );
-
-          if (t1Idx === -1 && headers.length >= 4) t1Idx = 3;
-          if (t2Idx === -1 && headers.length >= 5) t2Idx = 4;
-          if (midIdx === -1 && headers.length >= 6) midIdx = 5;
-          if (termIdx === -1 && headers.length >= 7) termIdx = 6;
-
+          const updatedList = [...classPupilsList];
           let imported = 0;
+
+          // Header can be checked for column 3 (score)
           for (let i = 1; i < lines.length; i++) {
             const cols = lines[i].split(',').map((c) => c.replace(/["\r]/g, '').trim());
             if (cols.length >= 2) {
               const admNo = cols[0];
-              const idx = updatedList.findIndex(
-                (p) => p.admNo.toLowerCase() === admNo.toLowerCase()
-              );
+              const scoreVal = parseInt(cols[3] || cols[cols.length - 1] || '75', 10);
+
+              const idx = updatedList.findIndex((p) => p.admNo.toLowerCase() === admNo.toLowerCase());
               if (idx !== -1) {
                 const cur = updatedList[idx];
-
-                const newT1 =
-                  t1Idx !== -1 && cols[t1Idx] !== undefined && cols[t1Idx] !== ''
-                    ? parseInt(cols[t1Idx], 10)
-                    : cur.monthlyTest1;
-                const newT2 =
-                  t2Idx !== -1 && cols[t2Idx] !== undefined && cols[t2Idx] !== ''
-                    ? parseInt(cols[t2Idx], 10)
-                    : cur.monthlyTest2;
-                const newMid =
-                  midIdx !== -1 && cols[midIdx] !== undefined && cols[midIdx] !== ''
-                    ? parseInt(cols[midIdx], 10)
-                    : cur.midtermExam;
-                const newTerm =
-                  termIdx !== -1 && cols[termIdx] !== undefined && cols[termIdx] !== ''
-                    ? parseInt(cols[termIdx], 10)
-                    : cur.terminalExam;
+                const validScore = !isNaN(scoreVal) ? Math.max(0, Math.min(100, scoreVal)) : 75;
 
                 updatedList[idx] = {
                   ...cur,
-                  monthlyTest1: !isNaN(newT1) ? newT1 : cur.monthlyTest1,
-                  monthlyTest2: !isNaN(newT2) ? newT2 : cur.monthlyTest2,
-                  midtermExam: !isNaN(newMid) ? newMid : cur.midtermExam,
-                  terminalExam: !isNaN(newTerm) ? newTerm : cur.terminalExam,
+                  monthlyScores: {
+                    ...(cur.monthlyScores || {}),
+                    [activeMonth.id]: validScore,
+                  },
                 };
                 imported++;
               }
@@ -747,20 +637,17 @@ export default function SubjectMarksPage() {
           setPupilsData((prev) => ({ ...prev, [selectedClass]: updatedList }));
           setClassUploads((prev) => ({
             ...prev,
-            [currentKey]: {
+            [currentClassSubjectKey]: {
               isUploaded: true,
               fileName: file.name,
-              uploadedAt: new Date().toLocaleTimeString('sw-TZ', {
-                hour: '2-digit',
-                minute: '2-digit',
-              }),
+              uploadedAt: new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }),
             },
           }));
 
           notifyUser(
             'success',
-            'Faili Limepakiwa & Kuunganishwa!',
-            `Alama za wanafunzi ${imported} zimehifadhiwa bila kufuta mitihani ya miezi mingine.`
+            'Alama Zimehifadhiwa!',
+            `Alama za Mwezi wa ${activeMonth.name} kwa wanafunzi ${imported} wa ${selectedClass} zimepakiwa na kuhifadhiwa kikamilifu.`
           );
         }
       } catch (err) {
@@ -770,142 +657,90 @@ export default function SubjectMarksPage() {
     reader.readAsText(file);
   };
 
-  // Instant simulation based on active calendar period
-  const simulateActivePeriodUpload = () => {
-    const list = [
-      ...(pupilsData[selectedClass] ||
-        INITIAL_PUPILS[selectedClass] ||
-        INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
-        []),
-    ];
+  // Instant 1-Click Simulation for the Selected Month
+  const handleSimulateMonthScores = () => {
+    const updated = classPupilsList.map((p, index) => {
+      // Generate realistic score for this specific month
+      const offset = activeMonth.monthNumber * 3;
+      const score = Math.min(100, Math.max(60, 72 + ((index * 7 + offset) % 26)));
 
-    const updated = list.map((p, index) => {
-      const curT1 = p.monthlyTest1 > 0 ? p.monthlyTest1 : Math.min(100, Math.max(62, 75 + ((index * 7) % 24)));
-      const genT1 = Math.min(100, Math.max(62, 75 + ((index * 7) % 24)));
-      const genT2 = Math.min(100, Math.max(65, 78 + ((index * 5) % 21)));
-      const genMid = Math.min(100, Math.max(65, 80 + ((index * 4) % 19)));
-      const genTerm = Math.min(100, Math.max(66, 82 + ((index * 6) % 17)));
-
-      if (activePeriod.id === 'JANUARY' || activePeriod.id === 'JULY') {
-        return { ...p, monthlyTest1: genT1 };
-      } else if (activePeriod.id === 'FEBRUARY' || activePeriod.id === 'AUGUST') {
-        return { ...p, monthlyTest1: curT1, monthlyTest2: genT2 };
-      } else if (activePeriod.id.includes('MIDTERM')) {
-        return { ...p, monthlyTest1: curT1, monthlyTest2: p.monthlyTest2 > 0 ? p.monthlyTest2 : genT2, midtermExam: genMid };
-      } else {
-        return { ...p, monthlyTest1: genT1, monthlyTest2: genT2, midtermExam: genMid, terminalExam: genTerm };
-      }
+      return {
+        ...p,
+        monthlyScores: {
+          ...(p.monthlyScores || {}),
+          [activeMonth.id]: score,
+        },
+      };
     });
 
     setPupilsData((prev) => ({ ...prev, [selectedClass]: updated }));
-
     setClassUploads((prev) => ({
       ...prev,
-      [currentKey]: {
+      [currentClassSubjectKey]: {
         isUploaded: true,
-        fileName: `matokeo_${activePeriod.month.toLowerCase()}_${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '_')}.csv`,
+        fileName: `matokeo_${activeMonth.name.toLowerCase()}_${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '_')}.csv`,
         uploadedAt: new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }),
       },
     }));
 
     notifyUser(
       'success',
-      'Matokeo Yamepakiwa!',
-      `Alama za ${activePeriod.name} zimehifadhiwa na wastani umekokotolewa kiotomatiki.`
+      'Maksi Zimeingizwa!',
+      `Alama za mfano za Mwezi wa ${activeMonth.name} zimeingizwa kwa wanafunzi wote wa ${selectedClass}.`
     );
   };
 
-  // Reset / Clear uploaded results for current class
-  const handleClearExcelResults = () => {
-    setClassUploads((prev) => ({
-      ...prev,
-      [currentKey]: {
-        isUploaded: false,
-      },
-    }));
-    setAdjustedStudentIds({});
-
-    setPupilsData((prev) => {
-      const list = prev[selectedClass] || [];
-      const cleared: StudentMark[] = list.map((p) => ({
+  // Reset marks for the selected month
+  const handleClearMonthScores = () => {
+    const cleared = classPupilsList.map((p) => {
+      const copyScores = { ...(p.monthlyScores || {}) };
+      delete copyScores[activeMonth.id];
+      return {
         ...p,
-        monthlyTest1: 0,
-        monthlyTest2: 0,
-        monthlyAvg: 0,
-        midtermExam: 0,
-        terminalExam: 0,
-        mark: 0,
-        grade: 'F' as const,
-        remarks: 'Inasubiri Mtihani',
-      }));
-      return { ...prev, [selectedClass]: cleared };
+        monthlyScores: copyScores,
+      };
     });
+
+    setPupilsData((prev) => ({ ...prev, [selectedClass]: cleared }));
 
     notifyUser(
       'info',
       'Matokeo Yamewekwa Upya',
-      `Matokeo ya ${selectedClass} kwa somo la ${selectedSubject} yamefutwa.`
+      `Alama za Mwezi wa ${activeMonth.name} kwa ${selectedClass} zimefutwa tayari kwa kuanza upya.`
     );
   };
 
-  // Open Single Student Adjustment Modal
-  const handleOpenStudentEdit = (pupil: StudentMark) => {
-    if (!isMarksActive) {
-      notifyUser(
-        'warning',
-        'Weka Kwanza Alama za Darasa',
-        `Tafadhali pakia au weka alama za ${selectedClass} kwanza kabla ya kurekebisha mwanafunzi mmoja mmoja.`
-      );
-      return;
-    }
+  // Open Single Student Edit
+  const handleOpenStudentEdit = (pupil: PupilWithMonthlyMarks) => {
+    const curScore = getPupilScoreForMonth(pupil, activeMonth.id);
 
     setEditingStudent({
       id: pupil.id,
       admNo: pupil.admNo,
       name: pupil.name,
-      monthlyTest1: pupil.monthlyTest1,
-      monthlyTest2: pupil.monthlyTest2,
-      midtermExam: pupil.midtermExam,
-      terminalExam: pupil.terminalExam,
+      score: curScore,
       reason: 'Uhakiki wa Karatasi ya Mtihani',
       notes: '',
     });
   };
 
-  // Save Single Student Adjustment
+  // Save Single Student Edit
   const handleSaveStudentEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStudent) return;
 
-    const t1 = Math.max(0, Math.min(100, Number(editingStudent.monthlyTest1) || 0));
-    const t2 = Math.max(0, Math.min(100, Number(editingStudent.monthlyTest2) || 0));
-    const mid = Math.max(0, Math.min(100, Number(editingStudent.midtermExam) || 0));
-    const term = Math.max(0, Math.min(100, Number(editingStudent.terminalExam) || 0));
-
-    const { monthlyAvg, finalMark, grade, remarks } = computeStudentScore(
-      { monthlyTest1: t1, monthlyTest2: t2, midtermExam: mid, terminalExam: term },
-      activePeriod.id
-    );
+    const newScore = Math.max(0, Math.min(100, Number(editingStudent.score) || 0));
 
     setPupilsData((prev) => {
-      const classList = [
-        ...(prev[selectedClass] ||
-          INITIAL_PUPILS[selectedClass] ||
-          INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
-          []),
-      ];
+      const classList = [...(prev[selectedClass] || [])];
       const idx = classList.findIndex((p) => p.id === editingStudent.id);
       if (idx !== -1) {
         classList[idx] = {
           ...classList[idx],
-          monthlyTest1: t1,
-          monthlyTest2: t2,
-          monthlyAvg,
-          midtermExam: mid,
-          terminalExam: term,
-          mark: finalMark,
-          grade,
-          remarks,
+          monthlyScores: {
+            ...(classList[idx].monthlyScores || {}),
+            [activeMonth.id]: newScore,
+          },
         };
       }
       return { ...prev, [selectedClass]: classList };
@@ -913,25 +748,25 @@ export default function SubjectMarksPage() {
 
     setAdjustedStudentIds((prev) => ({
       ...prev,
-      [editingStudent.id]: editingStudent.reason,
+      [`${editingStudent.id}_${activeMonth.id}`]: editingStudent.reason,
     }));
 
     notifyUser(
       'success',
-      'Alama Zimebadilishwa Kikamilifu!',
-      `Alama za mwanafunzi ${editingStudent.name} (${editingStudent.admNo}) zimerekebishwa! Wastani: ${finalMark}% (${grade}).`
+      'Alama Zimebadilishwa!',
+      `Alama ya Mwezi wa ${activeMonth.name} kwa mwanafunzi ${editingStudent.name} zimerekebishwa kuwa ${newScore}%.`
     );
 
     setEditingStudent(null);
   };
 
-  // Submit to Academic Master
+  // Submit to Academic Master for the Selected Month
   const handleSubmitToAcademicMaster = () => {
     if (!isMarksActive) {
       notifyUser(
         'error',
         'Maksi Hazijapakiwa Bado!',
-        `Tafadhali pakia au weka alama za ${selectedClass} kabla ya kuwasilisha kwa Mwalimu wa Taaluma.`
+        `Tafadhali weka kwanza alama za Mwezi wa ${activeMonth.name} kwa wanafunzi wa ${selectedClass} kabla ya kuwasilisha.`
       );
       return;
     }
@@ -954,13 +789,14 @@ export default function SubjectMarksPage() {
         teacherStaffId: currentUser?.identifier || 'TCH-2026-001',
         studentsCount: classPupils.length,
         averageMark: averageScore,
-        periodId: activePeriod.id,
-        periodTitle: activePeriod.name,
+        monthId: activeMonth.id,
+        monthName: activeMonth.name,
+        monthNumber: activeMonth.monthNumber,
+        term: activeMonth.term,
+        tag: activeMonth.tag,
         submittedAt: timeStr,
         submittedDate: dateStr,
-        fileName:
-          uploadedFileName ||
-          `matokeo_${selectedSubject.toLowerCase().replace(/\s+/g, '_')}.xlsx`,
+        fileName: `matokeo_${activeMonth.name.toLowerCase()}_${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '_')}.xlsx`,
         status: 'SUBMITTED',
         pupils: classPupils.map((p) => ({
           admNo: p.admNo,
@@ -968,11 +804,14 @@ export default function SubjectMarksPage() {
           gender: p.gender,
           finalMark: p.mark,
           grade: p.grade,
-          remarks: p.remarks || getRemarksForGrade(p.grade),
+          remarks: p.remarks,
         })),
       };
 
-      submissions[currentKey] = record;
+      // Save both by month-specific key and by class-subject key for broadsheet
+      submissions[currentMonthSubmissionKey] = record;
+      submissions[currentClassSubjectKey] = record;
+
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_SUBJECT_SUBMISSIONS_KEY, JSON.stringify(submissions));
       }
@@ -981,40 +820,17 @@ export default function SubjectMarksPage() {
       notifyUser(
         'success',
         'Matokeo Yamewasilishwa kwa Mwalimu wa Taaluma!',
-        `Alama za somo la ${selectedSubject} (${selectedClass}) za ${activePeriod.name} zimewasilishwa rasmi ofisi ya taaluma.`
+        `Alama za somo la ${selectedSubject} (${selectedClass}) za Mwezi wa ${activeMonth.name} (${activeMonth.term}) zimewasilishwa rasmi kwa Mwalimu wa Taaluma.`
       );
     } catch (err) {
       console.error('Failed to submit subject marks to academic master', err);
     }
   };
 
-  // Live Statistics for selected class based on dynamic scope
-  const totalStudents = classPupils.length;
-  const pupilsWithScores = classPupils.filter((p) => p.hasAnyScore || p.mark > 0);
-  const gradeACount = isMarksActive
-    ? classPupils.filter((p) => p.hasAnyScore && p.grade === 'A').length
-    : 0;
-  const gradeBCount = isMarksActive
-    ? classPupils.filter((p) => p.hasAnyScore && p.grade === 'B').length
-    : 0;
-  const gradeCCount = isMarksActive
-    ? classPupils.filter((p) => p.hasAnyScore && p.grade === 'C').length
-    : 0;
-  const gradeDCount = isMarksActive
-    ? classPupils.filter((p) => p.hasAnyScore && (p.grade === 'D' || p.grade === 'F')).length
-    : 0;
-
-  const averageScore =
-    isMarksActive && pupilsWithScores.length > 0
-      ? (pupilsWithScores.reduce((acc, p) => acc + p.mark, 0) / pupilsWithScores.length).toFixed(1)
-      : isMarksActive && totalStudents > 0
-      ? (classPupils.reduce((acc, p) => acc + p.mark, 0) / totalStudents).toFixed(1)
-      : '—';
-
   return (
     <TeacherShell
       pageTitle="Kujaza Alama za Somo (Excel Spreadsheet Grid)"
-      pageDescription="Matokeo yanapangwa kulingana na Kalenda Kamili ya Shule. Chagua mwezi wowote, wastani na madaraja huhesabiwa kiotomatiki na kuwasilishwa kwa Mwalimu wa Taaluma."
+      pageDescription="Matokeo yanapangwa kulingana na Kalenda ya Shule kwa miezi yote 12 ya mwaka. Chagua mwezi wowote kusimamia alama zake na kuwasilisha kwa Mwalimu wa Taaluma."
     >
       <div className="space-y-4 animate-fade-in">
         {/* Hidden file input for Excel upload */}
@@ -1027,7 +843,7 @@ export default function SubjectMarksPage() {
         />
 
         {/* ===================================================================== */}
-        {/* 0. TEACHER'S ASSIGNED CLASSES & SUBJECT BAR */}
+        {/* 0. TEACHER'S ASSIGNED CLASSES & SUBJECT SELECTION BAR */}
         {/* ===================================================================== */}
         <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-2xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-emerald-100">
@@ -1082,11 +898,11 @@ export default function SubjectMarksPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             {teacherClasses.map((cls) => {
               const isSelected = selectedClass === cls;
-              const clsKey = `${cls}_${selectedSubject}`;
-              const clsStatus = classUploads[clsKey];
-              const isClsUploaded = Boolean(clsStatus?.isUploaded);
               const pupilsCount = (pupilsData[cls] || INITIAL_PUPILS[cls] || []).length;
-              const isSub = Boolean(subjectSubmissions[clsKey]?.status === 'SUBMITTED');
+              const hasSub = Boolean(
+                subjectSubmissions[`${cls}_${selectedSubject}_${activeMonth.id}`]?.status === 'SUBMITTED' ||
+                subjectSubmissions[`${cls}_${selectedSubject}`]?.status === 'SUBMITTED'
+              );
 
               return (
                 <button
@@ -1115,7 +931,7 @@ export default function SubjectMarksPage() {
                       {pupilsCount} Wanafunzi
                     </span>
                     <div className="flex items-center gap-1">
-                      {isSub && (
+                      {hasSub && (
                         <span
                           className={`px-1 py-0.2 rounded font-black text-[9px] ${
                             isSelected ? 'bg-emerald-400 text-emerald-950' : 'bg-emerald-700 text-white'
@@ -1126,16 +942,12 @@ export default function SubjectMarksPage() {
                       )}
                       <span
                         className={`px-1.5 py-0.2 rounded-full font-bold text-[9px] border ${
-                          isClsUploaded
-                            ? isSelected
-                              ? 'bg-emerald-500/30 text-emerald-100 border-emerald-400/40'
-                              : 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                            : isSelected
-                            ? 'bg-amber-400/20 text-amber-200 border-amber-400/30'
-                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                          isSelected
+                            ? 'bg-emerald-500/30 text-emerald-100 border-emerald-400/40'
+                            : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                         }`}
                       >
-                        {isClsUploaded ? 'Maksi Zipopo' : 'Inasubiri'}
+                        Amilifu
                       </span>
                     </div>
                   </div>
@@ -1146,132 +958,125 @@ export default function SubjectMarksPage() {
         </div>
 
         {/* ===================================================================== */}
-        {/* 1. COMPACT, CLEAN & PROFESSIONAL SCHOOL CALENDAR ASSESSMENT CONTROL */}
-        {/* (Eliminates all repetitive cards, integrates calendar & submission) */}
+        {/* 1. COMPLETE 12-MONTH TANZANIA SCHOOL ACADEMIC CALENDAR CONTROLLER */}
         {/* ===================================================================== */}
         <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-3">
-          {/* Top Bar: Term Switcher & Live Academic Submission Status */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-emerald-100">
+          {/* Calendar Header with Status */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-emerald-100">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-emerald-700 shrink-0" />
               <span className="text-xs font-black text-slate-900">
-                Kalenda ya Mitihani ya Shule (Mwezi kwa Mwezi):
+                Kalenda Kamili ya Masomo (Miezi 12 ya Mwaka):
               </span>
-
-              {/* Term Switcher */}
-              <div className="flex items-center gap-1 bg-emerald-50 p-0.5 rounded-lg border border-emerald-200 text-[11px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTerm('TERM_1');
-                    setSelectedPeriodId('JANUARY');
-                  }}
-                  className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
-                    activeTerm === 'TERM_1'
-                      ? 'bg-emerald-800 text-white shadow-2xs font-black'
-                      : 'text-emerald-900 hover:bg-emerald-100'
-                  }`}
-                >
-                  Muhula wa 1 (Jan – Jun)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTerm('TERM_2');
-                    setSelectedPeriodId('JULY');
-                  }}
-                  className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
-                    activeTerm === 'TERM_2'
-                      ? 'bg-emerald-800 text-white shadow-2xs font-black'
-                      : 'text-emerald-900 hover:bg-emerald-100'
-                  }`}
-                >
-                  Muhula wa 2 (Jul – Des)
-                </button>
-              </div>
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                Tanzania School Calendar 2026
+              </span>
             </div>
 
-            {/* Submission Status Badge */}
+            {/* Submission Status for Active Month */}
             <div className="flex items-center gap-1.5 shrink-0">
               {isSubmittedToAcademic ? (
                 <span className="px-2.5 py-1 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 flex items-center gap-1 text-[11px] font-black">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>✓ Imewasilishwa kwa Taaluma ({currentSubmission.submittedAt})</span>
+                  <span>✓ Imewasilishwa ({activeMonth.name} Saa {currentMonthSubmission?.submittedAt})</span>
                 </span>
               ) : (
                 <span className="px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 flex items-center gap-1 text-[11px] font-bold">
                   <Clock className="w-3.5 h-3.5 text-amber-600" />
-                  <span>⏳ Bado Haijawasilishwa</span>
+                  <span>⏳ Bado Haijawasilishwa ({activeMonth.name})</span>
                 </span>
               )}
             </div>
           </div>
 
-          {/* Stepper / Timeline: Complete Months of the Selected Term */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-            {termPeriods.map((period) => {
-              const isSelected = selectedPeriodId === period.id;
+          {/* All 12 Months: Side-by-Side Horizontal Selector */}
+          <div className="overflow-x-auto pb-1">
+            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-1.5 min-w-[700px] lg:min-w-0">
+              {TANZANIA_SCHOOL_MONTHS.map((month) => {
+                const isSelected = selectedMonthId === month.id;
 
-              return (
-                <button
-                  key={period.id}
-                  type="button"
-                  onClick={() => setSelectedPeriodId(period.id)}
-                  className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-1 ${
-                    isSelected
-                      ? 'bg-emerald-800 text-white border-emerald-950 shadow-sm ring-2 ring-emerald-500/30'
-                      : 'bg-emerald-50/40 hover:bg-emerald-100/70 text-slate-800 border-emerald-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-1">
-                    <span className={`text-[10px] font-black uppercase tracking-wider ${isSelected ? 'text-emerald-200' : 'text-emerald-800'}`}>
-                      {period.badge}
+                return (
+                  <button
+                    key={month.id}
+                    type="button"
+                    onClick={() => setSelectedMonthId(month.id)}
+                    className={`p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col justify-between items-center gap-0.5 ${
+                      isSelected
+                        ? 'bg-emerald-800 text-white border-emerald-950 shadow-sm ring-2 ring-emerald-500/30'
+                        : 'bg-emerald-50/40 hover:bg-emerald-100/70 text-slate-800 border-emerald-200/90'
+                    }`}
+                  >
+                    <span
+                      className={`text-[9px] font-black uppercase ${
+                        isSelected ? 'text-emerald-200' : 'text-emerald-800'
+                      }`}
+                    >
+                      {String(month.monthNumber).padStart(2, '0')}
                     </span>
-                    {isSelected && <Check className="w-3 h-3 text-emerald-300 shrink-0" />}
-                  </div>
-                  <span className={`text-xs font-black block leading-tight ${isSelected ? 'text-white' : 'text-slate-900'}`}>
-                    {period.shortName}
-                  </span>
-                </button>
-              );
-            })}
+                    <span
+                      className={`text-xs font-black block leading-tight ${
+                        isSelected ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
+                      {month.shortName}
+                    </span>
+                    <span
+                      className={`text-[8px] font-medium block truncate max-w-full ${
+                        isSelected ? 'text-emerald-100' : 'text-slate-500'
+                      }`}
+                    >
+                      {month.monthNumber === 3 || month.monthNumber === 9
+                        ? 'Mid-Term'
+                        : month.monthNumber === 6
+                        ? 'Terminal'
+                        : month.monthNumber === 11
+                        ? 'Annual'
+                        : month.term.replace('Muhula wa ', 'M-')}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Action Toolbar & Context Info (All essential tools in ONE clean row) */}
+          {/* Active Month Context & Compact Action Bar */}
           <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 text-xs">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-black text-emerald-950 text-xs">
-                  Mtihani Amilifu: <span className="text-emerald-800 underline font-black">{activePeriod.name}</span>
+                  Mwezi Amilifu: <span className="text-emerald-800 underline font-black">{activeMonth.name} ({activeMonth.tag})</span>
                 </span>
                 <span className="text-[10px] px-2 py-0.2 rounded-md bg-white border border-emerald-300 text-emerald-900 font-bold">
-                  Wastani wa Sasa: <strong className="font-black">{isMarksActive ? `${averageScore}%` : '—'}</strong>
+                  {activeMonth.term}
+                </span>
+                <span className="text-[10px] px-2 py-0.2 rounded-md bg-white border border-emerald-300 text-emerald-900 font-bold">
+                  Wastani wa Mwezi Huu: <strong className="font-black">{isMarksActive ? `${averageScore}%` : '—'}</strong>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-600 font-mono">
-                {activePeriod.formula}
+              <p className="text-[11px] text-slate-600 font-sans">
+                Alama zote unazoweka hapa chini ni maalum kwa ajili ya mwezi mzima wa <strong>{activeMonth.name}</strong>.
               </p>
             </div>
 
             {/* Compact Tool Buttons */}
             <div className="flex flex-wrap items-center gap-2 shrink-0">
-              {/* Upload Excel */}
+              {/* Upload Excel for this Month */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-100 text-emerald-950 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
-                title="Pakia faili la Excel au CSV la matokeo"
+                title={`Pakia faili la Excel la alama za mwezi wa ${activeMonth.name}`}
               >
                 <UploadCloud className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Pakia Excel</span>
+                <span>Pakia ({activeMonth.shortName})</span>
               </button>
 
-              {/* 1-Click Test Data */}
+              {/* 1-Click Test Data for this Month */}
               <button
                 type="button"
-                onClick={simulateActivePeriodUpload}
+                onClick={handleSimulateMonthScores}
                 className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 font-bold text-xs flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
-                title="Weka alama za majaribio za mwezi huu"
+                title={`Weka alama za majaribio za mwezi wa ${activeMonth.name}`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>Maksi za Mfano</span>
@@ -1282,13 +1087,13 @@ export default function SubjectMarksPage() {
                 type="button"
                 onClick={handleDownloadTemplate}
                 className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold text-xs flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
-                title="Pakua kigezo cha Excel"
+                title={`Pakua kigezo cha Excel cha mwezi wa ${activeMonth.name}`}
               >
                 <Download className="w-3.5 h-3.5 text-slate-600" />
                 <span>Kigezo</span>
               </button>
 
-              {/* Primary Submit to Academic Master Button */}
+              {/* Submit to Academic Master Button */}
               {isSubmittedToAcademic ? (
                 <>
                   <button
@@ -1297,7 +1102,7 @@ export default function SubjectMarksPage() {
                     className="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5 text-emerald-300" />
-                    <span>Wasilisha Upya ({activePeriod.month})</span>
+                    <span>Wasilisha Upya ({activeMonth.shortName})</span>
                   </button>
 
                   <Link
@@ -1320,17 +1125,17 @@ export default function SubjectMarksPage() {
                   }`}
                 >
                   <Send className="w-3.5 h-3.5 text-emerald-300" />
-                  <span>Wasilisha kwa Taaluma ({activePeriod.month})</span>
+                  <span>Wasilisha kwa Taaluma ({activeMonth.name})</span>
                 </button>
               )}
 
-              {/* Reset if marks are active */}
+              {/* Reset Month Scores */}
               {isMarksActive && (
                 <button
                   type="button"
-                  onClick={handleClearExcelResults}
+                  onClick={handleClearMonthScores}
                   className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
-                  title="Futa matokeo ili kuanza upya"
+                  title={`Futa matokeo ya mwezi wa ${activeMonth.name}`}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
@@ -1340,7 +1145,7 @@ export default function SubjectMarksPage() {
         </div>
 
         {/* ===================================================================== */}
-        {/* 2. SUMMARY STATS CARDS */}
+        {/* 2. SUMMARY STATS CARDS FOR SELECTED MONTH */}
         {/* ===================================================================== */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
           <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
@@ -1353,19 +1158,19 @@ export default function SubjectMarksPage() {
 
           <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Wastani ({activePeriod.shortName})
+              Wastani ({activeMonth.shortName})
             </span>
             <p className="text-xl font-black text-emerald-800 mt-0.5">
               {isMarksActive ? `${averageScore}%` : '—'}
             </p>
             <span className="text-[10px] text-emerald-700 font-semibold">
-              {isMarksActive ? 'Kulingana na Mtihani Uliochaguliwa' : 'Inasubiri Maksi'}
+              {isMarksActive ? `Mwezi wa ${activeMonth.name}` : 'Inasubiri Maksi'}
             </span>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Wenye Daraja A
+              Wenye Daraja A ({activeMonth.shortName})
             </span>
             <p className="text-xl font-black text-emerald-700 mt-0.5">
               {isMarksActive ? gradeACount : '—'}
@@ -1377,7 +1182,7 @@ export default function SubjectMarksPage() {
 
           <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Wenye Daraja B
+              Wenye Daraja B ({activeMonth.shortName})
             </span>
             <p className="text-xl font-black text-blue-700 mt-0.5">
               {isMarksActive ? gradeBCount : '—'}
@@ -1389,7 +1194,7 @@ export default function SubjectMarksPage() {
 
           <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs col-span-2 sm:col-span-1">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Daraja C / D / F
+              Daraja C / D / F ({activeMonth.shortName})
             </span>
             <p className="text-xl font-black text-amber-700 mt-0.5">
               {isMarksActive ? gradeCCount + gradeDCount : '—'}
@@ -1423,13 +1228,13 @@ export default function SubjectMarksPage() {
             </span>
             <span>•</span>
             <span>
-              Mtihani: <strong className="text-emerald-900">{activePeriod.shortName}</strong>
+              Mwezi Amilifu: <strong className="text-emerald-900">{activeMonth.name}</strong>
             </span>
           </div>
         </div>
 
         {/* ===================================================================== */}
-        {/* 3. EXCEL SPREADSHEET TABLE: STUDENTS OF SELECTED CLASS */}
+        {/* 3. EXCEL SPREADSHEET TABLE: 12-MONTH PERSPECTIVE */}
         {/* ===================================================================== */}
         <div className="bg-white/95 rounded-3xl border border-emerald-200/90 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -1438,64 +1243,52 @@ export default function SubjectMarksPage() {
                 <tr className="bg-emerald-800 text-white font-bold uppercase tracking-wider text-[10px]">
                   <th className="py-2.5 px-3 border-r border-emerald-700 text-center w-10">#</th>
                   <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[120px]">Namba ya Usajili</th>
-                  <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[190px]">Jina Kamili la Mwanafunzi</th>
+                  <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[180px]">Jina Kamili la Mwanafunzi</th>
                   <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-12">Jinsia</th>
-                  <th
-                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
-                      activePeriod.id === 'JANUARY' || activePeriod.id === 'JULY'
-                        ? 'bg-emerald-950 font-black ring-1 ring-emerald-400 inset-0'
-                        : 'bg-emerald-900/60'
-                    }`}
-                  >
-                    Monthly 1 (Jan)
-                  </th>
-                  <th
-                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
-                      activePeriod.id === 'FEBRUARY' || activePeriod.id === 'AUGUST'
-                        ? 'bg-emerald-950 font-black ring-1 ring-emerald-400'
-                        : 'bg-emerald-900/60'
-                    }`}
-                  >
-                    Monthly 2 (Feb)
-                  </th>
-                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center bg-emerald-950/80 min-w-[85px]">
-                    Wastani Monthly
-                  </th>
-                  <th
-                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
-                      activePeriod.id.includes('MIDTERM')
-                        ? 'bg-blue-950 font-black ring-1 ring-blue-400'
-                        : 'bg-blue-900/60'
-                    }`}
-                  >
-                    Mid-Term (Machi)
-                  </th>
-                  <th
-                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
-                      activePeriod.id.includes('TERMINAL') || activePeriod.id.includes('ANNUAL')
-                        ? 'bg-indigo-950 font-black ring-1 ring-indigo-400'
-                        : 'bg-indigo-900/60'
-                    }`}
-                  >
-                    Terminal (Juni)
-                  </th>
-                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center bg-amber-900/80 min-w-[95px]">
+
+                  {/* 12 Months Column Headers */}
+                  {TANZANIA_SCHOOL_MONTHS.map((m) => {
+                    const isColActive = m.id === activeMonth.id;
+                    return (
+                      <th
+                        key={m.id}
+                        onClick={() => setSelectedMonthId(m.id)}
+                        className={`py-2 px-1.5 border-r border-emerald-700 text-center min-w-[55px] cursor-pointer transition-colors ${
+                          isColActive
+                            ? 'bg-emerald-950 font-black ring-1 ring-emerald-400'
+                            : 'bg-emerald-900/60 hover:bg-emerald-900'
+                        }`}
+                        title={`Bofya kutazama na kusimamia alama za mwezi wa ${m.name}`}
+                      >
+                        <div className="leading-tight">
+                          <span className="block text-[8px] text-emerald-300 font-mono">
+                            {String(m.monthNumber).padStart(2, '0')}
+                          </span>
+                          <span className={isColActive ? 'text-amber-300 font-black' : ''}>
+                            {m.shortName}
+                          </span>
+                        </div>
+                      </th>
+                    );
+                  })}
+
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center bg-amber-900/80 min-w-[85px]">
                     <div className="leading-tight">
-                      <span>Wastani (%)</span>
+                      <span>Alama (%)</span>
                       <span className="block text-[8px] font-mono text-amber-200 uppercase font-black">
-                        {activePeriod.shortName}
+                        {activeMonth.shortName}
                       </span>
                     </div>
                   </th>
-                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-16">Daraja</th>
-                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-14">Nafasi</th>
-                  <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[150px]">Maoni ya Mwalimu</th>
-                  <th className="py-2.5 px-3 text-center min-w-[100px] bg-emerald-900/80">Marekebisho</th>
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-14">Daraja</th>
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-12">Nafasi</th>
+                  <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[140px]">Maoni</th>
+                  <th className="py-2.5 px-3 text-center min-w-[90px] bg-emerald-900/80">Marekebisho</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-100 text-slate-800">
                 {classPupils.map((pupil, idx) => {
-                  const isAdjusted = Boolean(adjustedStudentIds[pupil.id]);
+                  const isAdjusted = Boolean(adjustedStudentIds[`${pupil.id}_${activeMonth.id}`]);
 
                   return (
                     <tr
@@ -1521,7 +1314,7 @@ export default function SubjectMarksPage() {
                           {isAdjusted && (
                             <span
                               className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 font-bold text-[9px] border border-blue-200"
-                              title={`Imerekebishwa kwa mikono: ${adjustedStudentIds[pupil.id]}`}
+                              title={`Imerekebishwa kwa mikono: ${adjustedStudentIds[`${pupil.id}_${activeMonth.id}`]}`}
                             >
                               Imerekebishwa
                             </span>
@@ -1534,76 +1327,32 @@ export default function SubjectMarksPage() {
                         {pupil.gender}
                       </td>
 
-                      {/* Monthly Test 1 (Jan) */}
-                      <td
-                        className={`py-2 px-2 text-center font-mono font-semibold border-r border-slate-100 ${
-                          activePeriod.id === 'JANUARY' || activePeriod.id === 'JULY'
-                            ? 'bg-emerald-50/60 font-bold'
-                            : ''
-                        }`}
-                      >
-                        {pupil.monthlyTest1 > 0 ? (
-                          <span className="text-slate-900">{pupil.monthlyTest1}</span>
-                        ) : (
-                          <span className="text-slate-300 font-normal">—</span>
-                        )}
-                      </td>
+                      {/* 12 Months Cells */}
+                      {TANZANIA_SCHOOL_MONTHS.map((m) => {
+                        const mScore = getPupilScoreForMonth(pupil, m.id);
+                        const isColActive = m.id === activeMonth.id;
 
-                      {/* Monthly Test 2 (Feb) */}
-                      <td
-                        className={`py-2 px-2 text-center font-mono font-semibold border-r border-slate-100 ${
-                          activePeriod.id === 'FEBRUARY' || activePeriod.id === 'AUGUST'
-                            ? 'bg-emerald-50/60 font-bold'
-                            : ''
-                        }`}
-                      >
-                        {pupil.monthlyTest2 > 0 ? (
-                          <span className="text-slate-900">{pupil.monthlyTest2}</span>
-                        ) : (
-                          <span className="text-slate-300 font-normal">—</span>
-                        )}
-                      </td>
+                        return (
+                          <td
+                            key={m.id}
+                            className={`py-2 px-1 text-center font-mono text-xs border-r border-slate-100 ${
+                              isColActive
+                                ? 'bg-emerald-50 font-black text-emerald-950 ring-1 ring-emerald-300'
+                                : 'text-slate-600'
+                            }`}
+                          >
+                            {mScore > 0 ? (
+                              <span>{mScore}</span>
+                            ) : (
+                              <span className="text-slate-300 font-normal">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
 
-                      {/* Monthly Average */}
-                      <td className="py-2 px-2 text-center font-mono font-bold text-emerald-950 bg-emerald-50/40 border-r border-slate-100">
-                        {pupil.monthlyAvg > 0 ? (
-                          <span>{pupil.monthlyAvg}</span>
-                        ) : (
-                          <span className="text-slate-300 font-normal">—</span>
-                        )}
-                      </td>
-
-                      {/* Midterm Exam */}
-                      <td
-                        className={`py-2 px-2 text-center font-mono font-semibold text-blue-900 border-r border-slate-100 ${
-                          activePeriod.id.includes('MIDTERM') ? 'bg-blue-50/60 font-bold' : ''
-                        }`}
-                      >
-                        {pupil.midtermExam > 0 ? (
-                          <span className="font-bold">{pupil.midtermExam}</span>
-                        ) : (
-                          <span className="text-slate-300 font-normal">—</span>
-                        )}
-                      </td>
-
-                      {/* Terminal Exam */}
-                      <td
-                        className={`py-2 px-2 text-center font-mono font-semibold text-indigo-900 border-r border-slate-100 ${
-                          activePeriod.id.includes('TERMINAL') || activePeriod.id.includes('ANNUAL')
-                            ? 'bg-indigo-50/60 font-bold'
-                            : ''
-                        }`}
-                      >
-                        {pupil.terminalExam > 0 ? (
-                          <span className="font-bold">{pupil.terminalExam}</span>
-                        ) : (
-                          <span className="text-slate-300 font-normal">—</span>
-                        )}
-                      </td>
-
-                      {/* Final Mark (%) */}
+                      {/* Final Mark (%) for Active Month */}
                       <td className="py-2 px-2 text-center font-mono font-black text-slate-900 bg-amber-50/50 border-r border-slate-100 text-sm">
-                        {pupil.hasAnyScore ? (
+                        {pupil.hasScore ? (
                           <span className="font-bold text-amber-950">{pupil.mark}%</span>
                         ) : (
                           <span className="text-slate-300 font-normal text-xs">—</span>
@@ -1612,7 +1361,7 @@ export default function SubjectMarksPage() {
 
                       {/* Grade Badge */}
                       <td className="py-2 px-2 text-center border-r border-slate-100">
-                        {pupil.hasAnyScore ? (
+                        {pupil.hasScore ? (
                           <span
                             className={`px-2 py-0.5 rounded-full font-black text-[10px] ${
                               pupil.grade === 'A'
@@ -1633,19 +1382,19 @@ export default function SubjectMarksPage() {
 
                       {/* Rank */}
                       <td className="py-2 px-2 text-center font-mono font-bold text-slate-600 border-r border-slate-100">
-                        {pupil.hasAnyScore && pupil.rank ? `#${pupil.rank}` : '—'}
+                        {pupil.hasScore && pupil.rank ? `#${pupil.rank}` : '—'}
                       </td>
 
                       {/* Remarks */}
                       <td className="py-2 px-3 text-slate-600 text-[11px] font-medium border-r border-slate-100 whitespace-nowrap">
-                        {pupil.hasAnyScore ? (
+                        {pupil.hasScore ? (
                           pupil.remarks || getRemarksForGrade(pupil.grade)
                         ) : (
                           <span className="text-slate-400 italic">Inasubiri mtihani</span>
                         )}
                       </td>
 
-                      {/* Action Button: Edit Single Student */}
+                      {/* Action Button: Edit Single Student for this Month */}
                       <td className="py-2 px-3 text-center">
                         <button
                           type="button"
@@ -1665,15 +1414,15 @@ export default function SubjectMarksPage() {
         </div>
 
         {/* ===================================================================== */}
-        {/* SINGLE STUDENT EDIT MODAL */}
+        {/* SINGLE STUDENT EDIT MODAL FOR SELECTED MONTH */}
         {/* ===================================================================== */}
         {editingStudent && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-            <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-emerald-200 space-y-4 animate-scale-in">
+            <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-emerald-200 space-y-4 animate-scale-in">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
                   <h3 className="text-base font-black text-slate-900">
-                    Rekebisha Alama za Mwanafunzi
+                    Rekebisha Alama: {activeMonth.name}
                   </h3>
                   <p className="text-xs text-slate-500">
                     {editingStudent.name} • {editingStudent.admNo} ({selectedClass})
@@ -1689,124 +1438,33 @@ export default function SubjectMarksPage() {
               </div>
 
               <form onSubmit={handleSaveStudentEdit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
-                      Monthly 1 (Januari):
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={editingStudent.monthlyTest1}
-                      onChange={(e) =>
-                        setEditingStudent({ ...editingStudent, monthlyTest1: Number(e.target.value) })
-                      }
-                      className="w-full p-2 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
-                      Monthly 2 (Februari):
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={editingStudent.monthlyTest2}
-                      onChange={(e) =>
-                        setEditingStudent({ ...editingStudent, monthlyTest2: Number(e.target.value) })
-                      }
-                      className="w-full p-2 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
-                      Mid-Term (Machi):
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={editingStudent.midtermExam}
-                      onChange={(e) =>
-                        setEditingStudent({ ...editingStudent, midtermExam: Number(e.target.value) })
-                      }
-                      className="w-full p-2 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
-                      Terminal (Juni / Mwisho):
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={editingStudent.terminalExam}
-                      onChange={(e) =>
-                        setEditingStudent({ ...editingStudent, terminalExam: Number(e.target.value) })
-                      }
-                      className="w-full p-2 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
-                    />
-                  </div>
-                </div>
-
-                {/* Live Calculated Preview */}
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-bold block">
-                      Wastani ({activePeriod.shortName}):
-                    </span>
-                    <span className="font-black text-emerald-900 text-sm">
-                      {
-                        computeStudentScore(
-                          {
-                            monthlyTest1: editingStudent.monthlyTest1,
-                            monthlyTest2: editingStudent.monthlyTest2,
-                            midtermExam: editingStudent.midtermExam,
-                            terminalExam: editingStudent.terminalExam,
-                          },
-                          activePeriod.id
-                        ).finalMark
-                      }
-                      %
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-bold block">Daraja:</span>
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-800 text-white font-black text-xs">
-                      Grade{' '}
-                      {
-                        computeStudentScore(
-                          {
-                            monthlyTest1: editingStudent.monthlyTest1,
-                            monthlyTest2: editingStudent.monthlyTest2,
-                            midtermExam: editingStudent.midtermExam,
-                            terminalExam: editingStudent.terminalExam,
-                          },
-                          activePeriod.id
-                        ).grade
-                      }
-                    </span>
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Alama ya Mwezi wa {activeMonth.name} (0 - 100):
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={editingStudent.score}
+                    onChange={(e) =>
+                      setEditingStudent({ ...editingStudent, score: Number(e.target.value) })
+                    }
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 text-lg focus:outline-none focus:border-emerald-600"
+                  />
                 </div>
 
                 {/* Reason for Adjustment */}
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
-                    Sababu ya Marekebisho (Audit Reason):
+                    Sababu ya Marekebisho:
                   </label>
                   <select
                     value={editingStudent.reason}
                     onChange={(e) =>
                       setEditingStudent({ ...editingStudent, reason: e.target.value })
                     }
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 focus:outline-none focus:border-emerald-600 text-xs"
                   >
                     <option value="Uhakiki wa Karatasi ya Mtihani">
                       Uhakiki wa Karatasi ya Mtihani (Remarking)
@@ -1834,7 +1492,7 @@ export default function SubjectMarksPage() {
                     type="submit"
                     className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 cursor-pointer"
                   >
-                    Hifadhi Marekebisho
+                    Hifadhi Alama ya {activeMonth.name}
                   </button>
                 </div>
               </form>
