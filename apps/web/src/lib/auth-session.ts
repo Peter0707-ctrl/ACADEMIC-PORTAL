@@ -1,7 +1,7 @@
 // =============================================================================
 // SHARED AUTHENTICATION & MULTI-TEACHER SESSION ENGINE (ACADEMIC PORTAL)
 // Supports all primary school teaching staff: Headmaster, Academic Master,
-// Discipline Master, and Subject/Class Teachers.
+// Discipline Master, Second Headmaster, and Subject/Class Teachers.
 // =============================================================================
 
 export type UserRole =
@@ -46,7 +46,7 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     identifier: 'HT-2026-001',
     email: 'headteacher@primaryschool.ac.tz',
     phone: '+255 754 112 233',
-    assignedClass: 'Standard 6 & 7',
+    assignedClass: 'Senior Standards (Std 6 & 7)',
     assignedClasses: ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'],
     subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Social Studies (Maarifa ya Jamii)'],
     isHomeroomMaster: false,
@@ -129,8 +129,8 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
   },
 ];
 
-const ACCOUNTS_STORAGE_KEY = 'academic_portal_faculty_accounts_v7';
-const SESSION_STORAGE_KEY = 'academic_portal_active_teacher_v7';
+const ACCOUNTS_STORAGE_KEY = 'academic_portal_faculty_accounts_v8';
+const SESSION_STORAGE_KEY = 'academic_portal_active_teacher_v8';
 
 // Get Stored Accounts
 export function getStoredAccounts(): UserAccount[] {
