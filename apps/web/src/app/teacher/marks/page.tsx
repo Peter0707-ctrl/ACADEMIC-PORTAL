@@ -20,6 +20,9 @@ import {
   BookOpen,
   Users,
   ChevronDown,
+  UserPlus,
+  Plus,
+  FileUp,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession, UserAccount } from '@/lib/auth-session';
@@ -32,19 +35,54 @@ interface ClassUploadStatus {
   uploadedAt?: string;
 }
 
+const STORAGE_REGISTERED_PUPILS_KEY = 'academic_portal_registered_pupils_v2';
+
+
 export default function SubjectMarksPage() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getCurrentSession());
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const rosterFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load active session once on mount
+  // Modal State for Registering Students via Excel
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  // Master pupils dictionary across all classes (persisted in localStorage)
+  const [pupilsData, setPupilsData] = useState<Record<string, StudentMark[]>>(() => {
+    if (typeof window === 'undefined') return INITIAL_PUPILS;
+    try {
+      const stored = localStorage.getItem(STORAGE_REGISTERED_PUPILS_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return { ...INITIAL_PUPILS, ...parsed };
+      }
+    } catch {}
+    return INITIAL_PUPILS;
+  });
+
+  // Sync pupilsData to localStorage
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STORAGE_REGISTERED_PUPILS_KEY, JSON.stringify(pupilsData));
+    } catch {}
+  }, [pupilsData]);
+
+  // Load active session and URL class param once on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     const session = getCurrentSession();
     if (session) {
       setCurrentUser(session);
     }
+
+    const params = new URLSearchParams(window.location.search);
+    const classParam = params.get('class');
+    if (classParam) {
+      setSelectedClass(classParam);
+    }
   }, []);
 
-  // 1. Teacher's Assigned Classes and Subjects
+  // 1. Teacher's Assigned Classes and Subjects (Stable array references)
   const teacherClasses: string[] = useMemo(() => {
     if (currentUser?.assignedClasses && currentUser.assignedClasses.length > 0) {
       return currentUser.assignedClasses;
@@ -98,8 +136,151 @@ export default function SubjectMarksPage() {
   // Set of students whose marks were adjusted individually
   const [adjustedStudentIds, setAdjustedStudentIds] = useState<Record<string, string>>({});
 
-  // Master pupils dictionary across all classes
-  const [pupilsData, setPupilsData] = useState<Record<string, StudentMark[]>>(INITIAL_PUPILS);
+  // Handler: Download Student Registration Template
+  const handleDownloadRosterTemplate = () => {
+    const headers = 'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Darasa\n';
+    const sampleRows = [
+      `PUP-2026-001,John Peter Massawe,M,${selectedClass}`,
+      `PUP-2026-002,Amina Salum Juma,F,${selectedClass}`,
+      `PUP-2026-003,Emmanuel David Lyimo,M,${selectedClass}`,
+      `PUP-2026-004,Zawadi Faraja Temu,F,${selectedClass}`,
+    ].join('\n');
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(headers + sampleRows);
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    link.setAttribute('download', `Kigezo_Kusajili_Wanafunzi_${selectedClass.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    notifyUser(
+      'success',
+      'Kigezo cha Usajili Kimepakuliwa',
+      `Kigezo cha Excel cha kusajili wanafunzi wa ${selectedClass} kimepakuliwa kikamilifu.`
+    );
+  };
+
+  // Handler: Upload Student Roster Excel / CSV
+  const handleUploadRosterFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split(/\r\n|\n/).filter((l) => l.trim() !== '');
+
+        if (lines.length > 1) {
+          const registeredList: StudentMark[] = [];
+
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(',').map((c) => c.replace(/["\r]/g, '').trim());
+            if (cols.length >= 2 && cols[0] && cols[1]) {
+              const admNo = cols[0];
+              const name = cols[1];
+              const gender = (cols[2]?.toUpperCase() === 'F' ? 'F' : 'M') as 'M' | 'F';
+
+              registeredList.push({
+                id: `pup-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+                admNo,
+                name,
+                gender,
+                monthlyTest1: 0,
+                monthlyTest2: 0,
+                monthlyAvg: 0,
+                midtermExam: 0,
+                terminalExam: 0,
+                mark: 0,
+                grade: 'F',
+                remarks: 'Inasubiri Mtihani',
+                attendance: 'PRESENT',
+              });
+            }
+          }
+
+          if (registeredList.length > 0) {
+            setPupilsData((prev) => ({
+              ...prev,
+              [selectedClass]: registeredList,
+            }));
+
+            setShowRegisterModal(false);
+            if (rosterFileInputRef.current) rosterFileInputRef.current.value = '';
+
+            notifyUser(
+              'success',
+              'Wanafunzi Wamesajiliwa Kikamilifu!',
+              `Wanafunzi wote ${registeredList.length} wamesajiliwa kwenye ${selectedClass} na wameingizwa moja kwa moja kwenye jedwali la matokeo!`
+            );
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to parse roster file', err);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Handler: 1-Click Sample Student Roster
+  const handleRegisterSampleRoster = () => {
+    const sampleNames = [
+      { name: 'Barakael Frank Minja', gender: 'M' as const },
+      { name: 'Catherine Joseph Shirima', gender: 'F' as const },
+      { name: 'Denis Innocent Mushi', gender: 'M' as const },
+      { name: 'Ester Martin Massawe', gender: 'F' as const },
+      { name: 'Geoffrey Ally Mkude', gender: 'M' as const },
+      { name: 'Happy Richard Kweka', gender: 'F' as const },
+      { name: 'Ibrahim Saidi Swai', gender: 'M' as const },
+      { name: 'Jackline Michael Temu', gender: 'F' as const },
+      { name: 'Kelvin David Kimaro', gender: 'M' as const },
+      { name: 'Lilian Peter Lyimo', gender: 'F' as const },
+      { name: 'Moses Gabriel Mlay', gender: 'M' as const },
+      { name: 'Nuru Charles Moshi', gender: 'F' as const },
+      { name: 'Oscar Lucas Tarimo', gender: 'M' as const },
+      { name: 'Patricia Anthony Shayo', gender: 'F' as const },
+      { name: 'Rashidi Juma Hassan', gender: 'M' as const },
+      { name: 'Salma Kassim Bakari', gender: 'F' as const },
+      { name: 'Tumaini Nelson Mallya', gender: 'M' as const },
+      { name: 'Upendo Wilson Maro', gender: 'F' as const },
+      { name: 'Victor Godson Lyatuu', gender: 'M' as const },
+      { name: 'Zainabu Zuberi Mkazi', gender: 'F' as const },
+    ];
+
+    const prefix = selectedClass.includes('7') ? 'PSLE-2026' : selectedClass.includes('4') ? 'SFNA-2026' : 'PUP-2026';
+    const startNum = 501;
+
+    const generated: StudentMark[] = sampleNames.map((item, idx) => ({
+      id: `reg-${Date.now()}-${idx}`,
+      admNo: `${prefix}-${String(startNum + idx).padStart(4, '0')}`,
+      name: item.name,
+      gender: item.gender,
+      monthlyTest1: 0,
+      monthlyTest2: 0,
+      monthlyAvg: 0,
+      midtermExam: 0,
+      terminalExam: 0,
+      mark: 0,
+      grade: 'F',
+      remarks: 'Inasubiri Mtihani',
+      attendance: 'PRESENT',
+    }));
+
+    setPupilsData((prev) => ({
+      ...prev,
+      [selectedClass]: generated,
+    }));
+
+    setShowRegisterModal(false);
+
+    notifyUser(
+      'success',
+      'Wanafunzi wa Majaribio Wamesajiliwa!',
+      `Wanafunzi ${generated.length} wamesajiliwa kwa mafanikio katika ${selectedClass} na kuonekana kwenye orodha ya matokeo.`
+    );
+  };
 
   // Current active key for uploads
   const currentKey = `${selectedClass}_${selectedSubject}`;
@@ -110,7 +291,7 @@ export default function SubjectMarksPage() {
 
   // Compute ranks and live list of pupils for selected class
   const classPupils = useMemo(() => {
-    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || [];
+    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
 
     // Sort descending by final mark to calculate rank only if Excel has been uploaded
     const sorted = isExcelUploaded
@@ -133,7 +314,7 @@ export default function SubjectMarksPage() {
 
   // 1. Download Excel / CSV Template for Selected Class (All Students Pre-Filled)
   const handleDownloadTemplate = () => {
-    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || [];
+    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
     const headers =
       'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Monthly_Test_1,Monthly_Test_2,Wastani_Monthly,Mid_Term,Terminal_Exam,Wastani_Muhula,Daraja\n';
     const rows = list
@@ -177,7 +358,7 @@ export default function SubjectMarksPage() {
 
         if (lines.length > 1) {
           const updatedList = [
-            ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || []),
+            ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
           ];
           let imported = 0;
 
@@ -242,7 +423,7 @@ export default function SubjectMarksPage() {
   // 3. Instant 1-Click Excel Simulation for Fast Testing (Strictly for Selected Class)
   const simulateInstantAutoFill = () => {
     const list = [
-      ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || []),
+      ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
     ];
     const autoFilled = list.map((p, index) => {
       const t1 = Math.min(100, Math.max(62, 75 + ((index * 7) % 24)));
@@ -345,7 +526,7 @@ export default function SubjectMarksPage() {
 
     setPupilsData((prev) => {
       const classList = [
-        ...(prev[selectedClass] || INITIAL_PUPILS[selectedClass] || []),
+        ...(prev[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
       ];
       const idx = classList.findIndex((p) => p.id === editingStudent.id);
       if (idx !== -1) {
@@ -505,13 +686,34 @@ export default function SubjectMarksPage() {
 
           {/* Interactive Class Selector Tabs */}
           <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-950">
-                Chagua Darasa Uone Wanafunzi Wake:
-              </span>
-              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-2.5 py-0.5 rounded-full">
-                Madarasa Ninayofundisha Pekee ({teacherClasses.length})
-              </span>
+            {/* Hidden Input for Student Registration Roster */}
+            <input
+              type="file"
+              ref={rosterFileInputRef}
+              onChange={handleUploadRosterFile}
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+            />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-950">
+                  Chagua Darasa Uone Wanafunzi Wake:
+                </span>
+                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-2.5 py-0.5 rounded-full">
+                  Madarasa Ninayofundisha Pekee ({teacherClasses.length})
+                </span>
+              </div>
+
+              {/* Action Button: Register Students by Excel */}
+              <button
+                type="button"
+                onClick={() => setShowRegisterModal(true)}
+                className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-amber-300" />
+                <span>+ Sajili Wanafunzi kwa Excel ({selectedClass})</span>
+              </button>
             </div>
 
             {/* Grid of Teacher Classes */}
@@ -1222,6 +1424,112 @@ export default function SubjectMarksPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================== */}
+        {/* STUDENT ROSTER REGISTRATION MODAL (REGISTER STUDENTS VIA EXCEL) */}
+        {/* ===================================================================== */}
+        {showRegisterModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+            <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-emerald-200 space-y-5 animate-scale-in">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                    <UserPlus className="w-5 h-5 text-emerald-800" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">
+                      Sajili Wanafunzi kwa Excel ({selectedClass})
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      Weka orodha ya wanafunzi wa darasa hili ili waonekane kwenye jedwali la matokeo
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Instructions & Template Format */}
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
+                    <span>Muundo wa Faili la Excel / CSV la Kusajili Wanafunzi:</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleDownloadRosterTemplate}
+                    className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Pakua Kigezo</span>
+                  </button>
+                </div>
+                <div className="overflow-x-auto rounded-xl bg-white border border-emerald-100 p-2 text-[10px] font-mono text-slate-700">
+                  <div className="font-bold text-emerald-900 pb-1 border-b border-slate-100 grid grid-cols-4 gap-2">
+                    <span>Namba_Ya_Usajili</span>
+                    <span>Jina_La_Mwanafunzi</span>
+                    <span>Jinsia</span>
+                    <span>Darasa</span>
+                  </div>
+                  <div className="pt-1 space-y-0.5 text-slate-600">
+                    <div className="grid grid-cols-4 gap-2">
+                      <span>PUP-2026-001</span>
+                      <span className="truncate">John Peter Massawe</span>
+                      <span>M</span>
+                      <span className="truncate">{selectedClass}</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      <span>PUP-2026-002</span>
+                      <span className="truncate">Amina Salum Juma</span>
+                      <span>F</span>
+                      <span className="truncate">{selectedClass}</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Faili litakapopakiwa, wanafunzi hao wataingizwa mara moja kwenye darasa la <strong>{selectedClass}</strong> na idadi ya wanafunzi itaonekana kwenye kadi ya darasa na jedwali la matokeo.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => rosterFileInputRef.current?.click()}
+                  className="w-full py-3 px-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-800/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <UploadCloud className="w-4 h-4 text-emerald-200" />
+                  <span>Chagua &amp; Pakia Faili la Wanafunzi (.xlsx au .csv)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleRegisterSampleRoster}
+                  className="w-full py-2.5 px-4 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>Sajili Wanafunzi 20 wa Majaribio (1-Click Test Roster)</span>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-end pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Funga
+                </button>
+              </div>
             </div>
           </div>
         )}

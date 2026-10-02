@@ -370,16 +370,16 @@ export default function TeacherDashboardPage() {
                   <div>
                     <h3 className="text-xs font-black text-slate-900">{cls}</h3>
                     <span className="text-[11px] text-emerald-800 font-semibold block">
-                      Masomo: {currentUser?.subjects?.join(', ') || 'Uraia na Maadili'}
+                      {cls.includes('6') ? '35 Wanafunzi' : cls.includes('7') ? '15 Wanafunzi' : 'Wanafunzi Wamesajiliwa'} • {currentUser?.subjects?.join(', ') || 'Uraia na Maadili'}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Link
-                    href={`/teacher/marks`}
+                    href={`/teacher/marks?class=${encodeURIComponent(cls)}`}
                     className="p-1.5 rounded-lg bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-colors"
-                    title="Jaza alama za darasa hili"
+                    title="Jaza alama au sajili wanafunzi wa darasa hili"
                   >
                     Alama &rarr;
                   </Link>
