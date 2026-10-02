@@ -69,6 +69,12 @@ const INITIAL_PUPILS: Record<string, StudentMark[]> = {
     { id: 'p8', admNo: 'PUP-2026-045', name: 'Saidi Mohamed', gender: 'M', mark: 70, grade: 'B', attendance: 'PRESENT' },
     { id: 'p9', admNo: 'PUP-2026-046', name: 'Rehema John', gender: 'F', mark: 58, grade: 'C', attendance: 'ABSENT' },
   ],
+  'Standard 6 (Grade 6)': [
+    { id: 'p13', admNo: 'PUP-2026-061', name: 'Rashid Hamisi', gender: 'M', mark: 85, grade: 'A', attendance: 'PRESENT' },
+    { id: 'p14', admNo: 'PUP-2026-062', name: 'Amina Salum', gender: 'F', mark: 89, grade: 'A', attendance: 'PRESENT' },
+    { id: 'p15', admNo: 'PUP-2026-063', name: 'Frank Leonard', gender: 'M', mark: 76, grade: 'B', attendance: 'PRESENT' },
+    { id: 'p16', admNo: 'PUP-2026-064', name: 'Grace Mlay', gender: 'F', mark: 92, grade: 'A', attendance: 'PRESENT' },
+  ],
   'Standard 7 (Grade 7)': [
     { id: 'p10', admNo: 'PSLE-2026-0428', name: 'Kelvin Shirima (Candidate)', gender: 'M', mark: 96, grade: 'A', attendance: 'PRESENT' },
     { id: 'p11', admNo: 'PSLE-2026-0429', name: 'Neema Massawe (Candidate)', gender: 'F', mark: 91, grade: 'A', attendance: 'PRESENT' },
@@ -259,6 +265,7 @@ export default function TeacherPortalPage() {
   const isHeadteacher = currentUser?.role === 'HEADTEACHER' || currentUser?.leadershipRole === 'HEADTEACHER';
   const isAcademicMaster = currentUser?.role === 'ACADEMIC' || currentUser?.leadershipRole === 'ACADEMIC';
   const isDisciplineMaster = currentUser?.role === 'DISCIPLINE' || currentUser?.leadershipRole === 'DISCIPLINE';
+  const isLeader = isHeadteacher || isAcademicMaster || isDisciplineMaster;
 
   // If unauthorized, block view
   if (isAuthorized === false) {
@@ -454,6 +461,74 @@ export default function TeacherPortalPage() {
             )}
           </div>
         </div>
+
+        {/* =================================================================== */}
+        {/* DUAL-MODE CONTROLLER FOR TEACHER LEADERS (OFISI YA MKUU VS DARASANI) */}
+        {/* =================================================================== */}
+        {isLeader && (
+          <div className="bg-white/95 rounded-2xl border border-emerald-200/90 p-3 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">
+                Eneo la Kazi:
+              </span>
+              <div className="inline-flex p-1 bg-slate-100/90 rounded-xl border border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isHeadteacher) setActiveTab('HT_APPROVALS');
+                    else if (isAcademicMaster) setActiveTab('ACAD_CANDIDATES');
+                    else if (isDisciplineMaster) setActiveTab('DISC_WHOLE_SCHOOL');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    ['HT_APPROVALS', 'HT_STAFF_OVERSIGHT', 'ACAD_CANDIDATES', 'ACAD_BROADSHEET', 'DISC_WHOLE_SCHOOL', 'DISC_INCIDENTS'].includes(activeTab)
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-emerald-800'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>
+                    {isHeadteacher
+                      ? 'Ofisi ya Mkuu (Executive Leadership)'
+                      : isAcademicMaster
+                      ? 'Ofisi ya Taaluma (Academic Master)'
+                      : 'Ofisi ya Nidhamu (Discipline Master)'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('MARKS')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    ['MARKS', 'ATTENDANCE', 'STAFF_ROSTER'].includes(activeTab)
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-emerald-800'
+                  }`}
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Darasani Kwangu (Teaching Dashboard)</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-slate-600 font-medium px-1 flex items-center gap-1.5">
+              {['MARKS', 'ATTENDANCE', 'STAFF_ROSTER'].includes(activeTab) ? (
+                <>
+                  <BookOpen className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                  <span>
+                    Modi ya Kufundisha: Unajaza alama na mahudhurio ya madarasa unayofundisha ({currentUser?.assignedClasses?.join(', ') || currentUser?.assignedClass}).
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Award className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span>
+                    Modi ya Uongozi: Una mamlaka ya kiutendaji na usimamizi wa shule nzima.
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* WORKSPACE NAVIGATION TABS (ADAPTS DYNAMICALLY TO TEACHER'S ROLE) */}
         <div className="flex items-center gap-2 border-b border-emerald-200/80 pb-2 overflow-x-auto scrollbar-none text-xs font-bold">
@@ -870,6 +945,35 @@ export default function TeacherPortalPage() {
               </div>
             </div>
 
+            {/* Teaching leader contextual notice */}
+            {isLeader && currentUser?.subjects && currentUser.subjects.length > 0 && (
+              <div className="p-3.5 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-emerald-950">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold block text-slate-800">
+                      Dashboard ya Mwalimu Darasani ({isHeadteacher ? 'Mwalimu Mkuu anayefundisha' : isAcademicMaster ? 'Mwl wa Taaluma anayefundisha' : 'Mwl wa Nidhamu anayefundisha'})
+                    </span>
+                    <span className="text-[11px] text-slate-600">
+                      Unasimamia ufundishaji wa: <strong className="text-emerald-900">{currentUser.subjects.join(', ')}</strong> kwa madarasa: <strong className="text-emerald-900">{currentUser.assignedClasses?.join(' na ') || currentUser.assignedClass}</strong>. Alama unazoingiza hapa zitaingizwa moja kwa moja kwenye ripoti na broadsheet ya shule.
+                    </span>
+                  </div>
+                </div>
+                {isHeadteacher && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('HT_APPROVALS')}
+                    className="shrink-0 px-3 py-1.5 rounded-xl bg-white border border-emerald-300 text-emerald-800 font-bold text-xs hover:bg-emerald-100 flex items-center gap-1.5 self-start sm:self-auto transition-all shadow-2xs"
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Rudi Ofisi ya Mkuu</span>
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Marks Table */}
             <div className="overflow-x-auto rounded-2xl border border-slate-200">
               <table className="w-full text-left text-xs border-collapse">
@@ -946,7 +1050,21 @@ export default function TeacherPortalPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <div>
+                  <select
+                    value={selectedClass}
+                    onChange={(e) => setSelectedClass(e.target.value)}
+                    className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500"
+                  >
+                    {Object.keys(pupilsData).map((cls) => (
+                      <option key={cls} value={cls}>
+                        {cls}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => triggerNotification('success', 'Mahudhurio Yamewasilishwa', `Roll-call ya ${selectedClass} imethibitishwa na kuhifadhiwa kwenye rejista rasmi ya shule.`)}
