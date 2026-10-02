@@ -212,9 +212,9 @@ export default function PrimaryPortalHomePage() {
     location: 'Dar es Salaam, Tanzania',
   });
 
-  // 1. Splash Screen State (Disabled for instant serious academic access)
-  const [showSplash, setShowSplash] = useState(false);
-  const [progress, setProgress] = useState(100);
+  // 1. Splash Screen State (5-Second Animated School Logo Blueprint)
+  const [showSplash, setShowSplash] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   // 2. Active Mode: 'login' | 'register'
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');

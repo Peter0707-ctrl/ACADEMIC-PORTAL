@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   GraduationCap,
@@ -30,17 +30,8 @@ import {
   UserCheck,
   Menu,
   X,
-  Settings,
-  Shield,
-  KeyRound,
-  Lock,
-  Save,
-  Target,
-  BookMarked,
-  User,
 } from 'lucide-react';
 import { getCurrentSession } from '@/lib/auth-session';
-import { notifyUser } from '@/lib/notifications';
 
 type StudentTab =
   | 'DASHBOARD'
@@ -53,98 +44,12 @@ type StudentTab =
   | 'COMMUNICATION'
   | 'DISCIPLINE'
   | 'REQUESTS'
-  | 'GRADUATION'
-  | 'SETTINGS';
+  | 'GRADUATION';
 
 export default function StudentPortal() {
   const [activeTab, setActiveTab] = useState<StudentTab>('DASHBOARD');
+  const [activeNotice, setActiveNotice] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Student Editable Profile & Aspirations State
-  const [preferredName, setPreferredName] = useState('Kelvin');
-  const [studentBio, setStudentBio] = useState('Mwanafunzi mwenye bidii ya masomo ya Hisabati na Sayansi. Ninapenda kusoma vitabu, kufanya majaribio ya kisayansi, na kujiandaa kuwa mhandisi wa kompyuta.');
-  const [careerAspiration, setCareerAspiration] = useState('Software Engineer / Daktari Bingwa');
-  const [favSubjects, setFavSubjects] = useState('Mathematics & Science');
-  const [hobbies, setHobbies] = useState('Kusoma Vitabu, Kujifunza Kompyuta, na Mpira wa Miguu');
-  const [dailyStudyTargetHours, setDailyStudyTargetHours] = useState('2');
-  const [studentEmail, setStudentEmail] = useState('kelvin.shirima@mwanafunzi.ac.tz');
-
-  // Student Security State
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
-  // Study Reminders & Alerts
-  const [alertHomework, setAlertHomework] = useState(true);
-  const [alertExamResults, setAlertExamResults] = useState(true);
-  const [alertTimetable, setAlertTimetable] = useState(true);
-  const [alertStudyReminders, setAlertStudyReminders] = useState(true);
-
-  // Load saved settings on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('academic_portal_student_settings_v1');
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (data.preferredName) setPreferredName(data.preferredName);
-        if (data.studentBio) setStudentBio(data.studentBio);
-        if (data.careerAspiration) setCareerAspiration(data.careerAspiration);
-        if (data.favSubjects) setFavSubjects(data.favSubjects);
-        if (data.hobbies) setHobbies(data.hobbies);
-        if (data.dailyStudyTargetHours) setDailyStudyTargetHours(data.dailyStudyTargetHours);
-        if (data.studentEmail) setStudentEmail(data.studentEmail);
-        if (data.alertHomework !== undefined) setAlertHomework(data.alertHomework);
-        if (data.alertExamResults !== undefined) setAlertExamResults(data.alertExamResults);
-        if (data.alertTimetable !== undefined) setAlertTimetable(data.alertTimetable);
-        if (data.alertStudyReminders !== undefined) setAlertStudyReminders(data.alertStudyReminders);
-      }
-    } catch {
-      // fallback
-    }
-  }, []);
-
-  const handleSaveStudentProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    const settingsData = {
-      preferredName,
-      studentBio,
-      careerAspiration,
-      favSubjects,
-      hobbies,
-      dailyStudyTargetHours,
-      studentEmail,
-      alertHomework,
-      alertExamResults,
-      alertTimetable,
-      alertStudyReminders,
-    };
-    try {
-      localStorage.setItem('academic_portal_student_settings_v1', JSON.stringify(settingsData));
-    } catch {
-      // ignore
-    }
-    notifyUser(
-      'success',
-      'Wasifu wa Mwanafunzi Umehifadhiwa!',
-      `Taarifa za wasifu wa ${preferredName}, ndoto ya taaluma, na malengo ya kudurusu masomo zimesasishwa kwa mafanikio.`
-    );
-  };
-
-  const handleSaveStudentSecurity = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword && newPassword !== confirmPassword) {
-      notifyUser('error', 'Nenosiri Halilingani!', 'Tafadhali hakikisha nenosiri jipya na uthibitisho wake yanafanana kikamilifu.');
-      return;
-    }
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    notifyUser(
-      'success',
-      'Nenosiri Limesasishwa!',
-      'Nenosiri jipya la kuingilia portal ya mwanafunzi limehifadhiwa salama.'
-    );
-  };
 
   // Student Profile Data
   const student = {
@@ -213,11 +118,7 @@ export default function StudentPortal() {
       status: 'INASUBIRI UHAKIKI WA MWALIMU WA DARASA',
     };
     setRequestsList([newReq, ...requestsList]);
-    notifyUser(
-      'success',
-      'Ombi la Ruhusa Limetumwa!',
-      `Ombi lako la ruhusa ya siku ${requestDays} limewasilishwa kwa Mwalimu wa Darasa (${student.homeroomTeacher}) na Mwalimu Mkuu kwa uhakiki na idhini.`
-    );
+    setActiveNotice(`Ombi lako la ruhusa limetumwa kwa Mwalimu wa Darasa na Mwalimu Mkuu.`);
   };
 
   return (
@@ -500,43 +401,11 @@ export default function StudentPortal() {
                 Mtahiniwa
               </span>
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('SETTINGS');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full p-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-between text-left ${
-                activeTab === 'SETTINGS'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-900'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Settings className="w-4 h-4 text-emerald-700" />
-                <span>Mipangilio &amp; Wasifu</span>
-              </div>
-              <ChevronRight className="w-3.5 h-3.5 opacity-60" />
-            </button>
           </div>
         </div>
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-emerald-100 bg-emerald-50/50 space-y-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab('SETTINGS')}
-            className="w-full text-left group p-1.5 rounded-xl hover:bg-white transition-colors"
-          >
-            <span className="font-bold text-slate-800 block text-xs group-hover:text-emerald-800 transition-colors">
-              {preferredName || student.fullName}
-            </span>
-            <span className="text-[10px] text-emerald-800 flex items-center gap-1">
-              <span>{student.class}</span>
-              <Settings className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </span>
-          </button>
-
           <Link
             href="/"
             className="w-full py-2 px-3 rounded-xl bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
@@ -559,7 +428,7 @@ export default function StudentPortal() {
             </Link>
             <span className="text-xs font-bold text-slate-500">Mwanafunzi</span>
             <ChevronRight className="w-3 h-3 text-slate-300" />
-            <span className="text-xs font-black text-slate-800">{preferredName || student.fullName}</span>
+            <span className="text-xs font-black text-slate-800">{student.fullName}</span>
             <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
               Mtahiniwa Rasmi wa NECTA 2026
             </span>
@@ -570,21 +439,28 @@ export default function StudentPortal() {
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
               <span>Usajili Hai (Active)</span>
             </div>
-            <button
-              type="button"
-              onClick={() => setActiveTab('SETTINGS')}
-              className="flex items-center gap-2 p-1 pl-2.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 transition-all text-left"
-              title="Fungua Mipangilio na Wasifu wa Mwanafunzi"
-            >
-              <span className="hidden sm:inline-block text-xs font-bold text-slate-800 max-w-[120px] truncate">
-                {preferredName || student.fullName.split(' ')[0]}
-              </span>
-              <div className="w-8 h-8 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold text-xs ring-2 ring-emerald-500/20 shrink-0">
-                KS
-              </div>
-            </button>
+            <div className="w-8 h-8 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold text-xs ring-2 ring-emerald-500/20">
+              KS
+            </div>
           </div>
         </header>
+
+        {/* Notice alert */}
+        {activeNotice && (
+          <div className="mx-4 sm:mx-8 mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
+              <span className="font-bold">{activeNotice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveNotice(null)}
+              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
+            >
+              Funga
+            </button>
+          </div>
+        )}
 
         {/* Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
@@ -818,14 +694,8 @@ export default function StudentPortal() {
                   </div>
                   <button
                     type="button"
-                    onClick={() =>
-                      notifyUser(
-                        'info',
-                        'Inapakua Ripoti ya Mtihani...',
-                        `Ripoti rasmi ya matokeo ya ${preferredName || student.fullName} ya Muhula wa 1 inapakuliwa ikiwa na sahihi na muhuri wa Mwalimu Mkuu.`
-                      )
-                    }
-                    className="px-4 py-2 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                    onClick={() => setActiveNotice('Ripoti rasmi inapakuliwa...')}
+                    className="px-4 py-2 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 self-start sm:self-auto"
                   >
                     <Download className="w-4 h-4" />
                     <span>Pakua Ripoti ya PDF</span>
@@ -932,14 +802,8 @@ export default function StudentPortal() {
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        notifyUser(
-                          'info',
-                          'Inapakua Kitambulisho...',
-                          `Kitambulisho rasmi cha mwanafunzi ${preferredName || student.fullName} chenye QR Code na namba ya usajili kinapakuliwa.`
-                        )
-                      }
-                      className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 font-bold text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer"
+                      onClick={() => setActiveNotice('Kitambulisho kinapakuliwa...')}
+                      className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 font-bold text-emerald-900"
                     >
                       Pakua
                     </button>
@@ -952,14 +816,8 @@ export default function StudentPortal() {
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        notifyUser(
-                          'info',
-                          'Inapakua Cheti cha NECTA...',
-                          `Cheti cha usajili wa mtihani wa Taifa wa PSLE 2026 (${student.examIndexNo}) kinapakuliwa kwa muundo wa PDF.`
-                        )
-                      }
-                      className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 font-bold text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer"
+                      onClick={() => setActiveNotice('Cheti cha NECTA kinapakuliwa...')}
+                      className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 font-bold text-emerald-900"
                     >
                       Pakua
                     </button>
@@ -1069,358 +927,6 @@ export default function StudentPortal() {
                   <div className="w-4/5 h-full bg-emerald-600 rounded-full" />
                 </div>
                 <span className="text-[11px] font-bold text-emerald-900 block">Utayari wa Mahafali: 85%</span>
-              </div>
-            </div>
-          )}
-
-          {/* ================================================================= */}
-          {/* TAB 12: SETTINGS & 360° PROFILE (MIPANGILIO & WASIFU WA MWANAFUNZI) */}
-          {/* ================================================================= */}
-          {activeTab === 'SETTINGS' && (
-            <div className="space-y-6 animate-fade-in">
-              {/* Header Banner */}
-              <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-800 text-emerald-100 flex items-center justify-center font-black text-xl shadow-md shadow-emerald-950/20 shrink-0">
-                    KS
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-lg sm:text-xl font-black text-slate-900">
-                        {preferredName} ({student.fullName})
-                      </h1>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
-                        Mtahiniwa wa PSLE 2026
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Namba ya Usajili: <strong className="font-mono text-emerald-900">{student.admNo}</strong> • Namba ya Mtihani: <strong className="font-mono text-slate-800">{student.examIndexNo}</strong>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-950 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Wasifu Umethibitishwa na Mwalimu wa Darasa</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Grid: 2 Columns */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left Column (7 cols): Profile & Career Aspirations */}
-                <div className="lg:col-span-7 space-y-6">
-                  {/* Card 1: Wasifu Wangu & Taarifa Binafsi */}
-                  <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-5">
-                    <div className="flex items-center justify-between border-b border-emerald-100 pb-3">
-                      <div className="flex items-center gap-2">
-                        <User className="w-5 h-5 text-emerald-700" />
-                        <h3 className="text-sm font-black text-slate-900">Wasifu Wangu &amp; Taarifa Binafsi</h3>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-medium">Badili kisha hifadhi</span>
-                    </div>
-
-                    <form onSubmit={handleSaveStudentProfile} className="space-y-4 text-xs">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Jina la Kupenda Kuitwa (Preferred Display Name):
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={preferredName}
-                            onChange={(e) => setPreferredName(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 font-bold text-slate-800"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Jina Rasmi la Usajili wa NECTA (Read-only):
-                          </label>
-                          <input
-                            type="text"
-                            disabled
-                            value={student.fullName}
-                            className="w-full p-2.5 rounded-xl bg-slate-100 border border-slate-200 font-bold text-slate-500 cursor-not-allowed"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Barua Pepe ya Mwanafunzi (Student Email):
-                          </label>
-                          <input
-                            type="email"
-                            value={studentEmail}
-                            onChange={(e) => setStudentEmail(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 font-bold text-slate-800"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Mawasiliano ya Mzazi / Mlezi (Read-only):
-                          </label>
-                          <input
-                            type="text"
-                            disabled
-                            value={`${student.parentName.split(' ')[0]} • ${student.parentPhone}`}
-                            className="w-full p-2.5 rounded-xl bg-slate-100 border border-slate-200 font-bold text-slate-500 cursor-not-allowed"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                          Wasifu Mfupi / Kaulimbiu Yangu (Bio &amp; Personal Motto):
-                        </label>
-                        <textarea
-                          rows={2}
-                          value={studentBio}
-                          onChange={(e) => setStudentBio(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 text-slate-700 font-medium"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="py-2.5 px-5 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-950/20 transition-all cursor-pointer"
-                      >
-                        <Save className="w-4 h-4" />
-                        <span>Hifadhi Mabadiliko ya Wasifu</span>
-                      </button>
-                    </form>
-                  </div>
-
-                  {/* Card 2: Malengo ya Masomo & Kazi ya Baadaye */}
-                  <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-5">
-                    <div className="flex items-center gap-2 border-b border-emerald-100 pb-3">
-                      <Target className="w-5 h-5 text-emerald-700" />
-                      <h3 className="text-sm font-black text-slate-900">Malengo ya Masomo &amp; Ndoto ya Kazi ya Baadaye</h3>
-                    </div>
-
-                    <form onSubmit={handleSaveStudentProfile} className="space-y-4 text-xs">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Ndoto ya Kazi Yangu ya Baadaye (Career Goal):
-                          </label>
-                          <input
-                            type="text"
-                            value={careerAspiration}
-                            onChange={(e) => setCareerAspiration(e.target.value)}
-                            placeholder="Mfn. Software Engineer / Daktari"
-                            className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 font-bold text-slate-800"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Lengo la Kujisomea Kila Siku (Masaa):
-                          </label>
-                          <select
-                            value={dailyStudyTargetHours}
-                            onChange={(e) => setDailyStudyTargetHours(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 font-bold text-slate-800"
-                          >
-                            <option value="1">Saa 1 kwa Siku</option>
-                            <option value="2">Masaa 2 kwa Siku (Inapendekezwa)</option>
-                            <option value="3">Masaa 3 kwa Siku</option>
-                            <option value="4">Masaa 4 kwa Siku (Kambi ya Mitihani)</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Masomo Ninayoyapenda Zaidi:
-                          </label>
-                          <input
-                            type="text"
-                            value={favSubjects}
-                            onChange={(e) => setFavSubjects(e.target.value)}
-                            placeholder="Mfn. Hisabati, Sayansi, Kiingereza"
-                            className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 font-bold text-slate-800"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Vipaji, Michezo &amp; Klabu za Shule:
-                          </label>
-                          <input
-                            type="text"
-                            value={hobbies}
-                            onChange={(e) => setHobbies(e.target.value)}
-                            placeholder="Mfn. Mpira wa Miguu, Klabu ya Tehama, Sanaa"
-                            className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 font-bold text-slate-800"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="py-2.5 px-5 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-950/20 transition-all cursor-pointer"
-                      >
-                        <Save className="w-4 h-4" />
-                        <span>Hifadhi Malengo ya Masomo</span>
-                      </button>
-                    </form>
-                  </div>
-                </div>
-
-                {/* Right Column (5 cols): Security & Notifications */}
-                <div className="lg:col-span-5 space-y-6">
-                  {/* Card 3: Ulinzi & Nenosiri la Mwanafunzi */}
-                  <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-5">
-                    <div className="flex items-center gap-2 border-b border-emerald-100 pb-3">
-                      <Lock className="w-5 h-5 text-emerald-700" />
-                      <h3 className="text-sm font-black text-slate-900">Ulinzi &amp; Nenosiri la Kuingilia Portal</h3>
-                    </div>
-
-                    <form onSubmit={handleSaveStudentSecurity} className="space-y-3.5 text-xs">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 mb-1">
-                          Nenosiri la Sasa:
-                        </label>
-                        <input
-                          type="password"
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Weka nenosiri lako la sasa"
-                          className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 mb-1">
-                          Nenosiri Jipya:
-                        </label>
-                        <input
-                          type="password"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Nenosiri jipya (tarakimu 6 au zaidi)"
-                          className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 mb-1">
-                          Thibitisha Nenosiri Jipya:
-                        </label>
-                        <input
-                          type="password"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="Rudia nenosiri jipya"
-                          className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-bold"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full py-2.5 px-4 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-950/20 transition-all cursor-pointer"
-                      >
-                        <Shield className="w-4 h-4" />
-                        <span>Badilisha Nenosiri Langu</span>
-                      </button>
-                    </form>
-                  </div>
-
-                  {/* Card 4: Vikumbusho & Arifa za Mfumo */}
-                  <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-4">
-                    <div className="flex items-center gap-2 border-b border-emerald-100 pb-3">
-                      <Bell className="w-5 h-5 text-emerald-700" />
-                      <h3 className="text-sm font-black text-slate-900">Vikumbusho vya Kazi &amp; Arifa</h3>
-                    </div>
-
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Washa au zima arifa unazopenda kupokea kwenye skrini ya simu/kompyuta yako:
-                    </p>
-
-                    <div className="space-y-3 text-xs">
-                      {/* Toggle 1: Homework */}
-                      <label className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 transition-colors cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={alertHomework}
-                          onChange={(e) => setAlertHomework(e.target.checked)}
-                          className="mt-0.5 rounded text-emerald-800 focus:ring-emerald-500 w-4 h-4 accent-emerald-700"
-                        />
-                        <div>
-                          <span className="font-bold text-slate-800 block">Vikumbusho vya Kazi za Nyumbani (Homework)</span>
-                          <span className="text-[10px] text-slate-500 block">
-                            Pata ukumbusho kabla ya muda wa kuwasilisha kazi kwa mwalimu.
-                          </span>
-                        </div>
-                      </label>
-
-                      {/* Toggle 2: Exam Results */}
-                      <label className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 transition-colors cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={alertExamResults}
-                          onChange={(e) => setAlertExamResults(e.target.checked)}
-                          className="mt-0.5 rounded text-emerald-800 focus:ring-emerald-500 w-4 h-4 accent-emerald-700"
-                        />
-                        <div>
-                          <span className="font-bold text-slate-800 block">Arifa za Matokeo ya Mitihani</span>
-                          <span className="text-[10px] text-slate-500 block">
-                            Taarifa za papo hapo matokeo ya mtihani yanapotangazwa rasmi.
-                          </span>
-                        </div>
-                      </label>
-
-                      {/* Toggle 3: Timetable */}
-                      <label className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 transition-colors cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={alertTimetable}
-                          onChange={(e) => setAlertTimetable(e.target.checked)}
-                          className="mt-0.5 rounded text-emerald-800 focus:ring-emerald-500 w-4 h-4 accent-emerald-700"
-                        />
-                        <div>
-                          <span className="font-bold text-slate-800 block">Mabadiliko ya Ratiba ya Masomo</span>
-                          <span className="text-[10px] text-slate-500 block">
-                            Pata taarifa mwalimu akibadili kipindi au chumba cha darasa.
-                          </span>
-                        </div>
-                      </label>
-
-                      {/* Toggle 4: Study Reminders */}
-                      <label className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 transition-colors cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={alertStudyReminders}
-                          onChange={(e) => setAlertStudyReminders(e.target.checked)}
-                          className="mt-0.5 rounded text-emerald-800 focus:ring-emerald-500 w-4 h-4 accent-emerald-700"
-                        />
-                        <div>
-                          <span className="font-bold text-slate-800 block">Kumbusho la Kujisomea Jioni (Evening Study)</span>
-                          <span className="text-[10px] text-slate-500 block">
-                            Kengele ya kukukumbusha kuanza masaa yako ya kujisomea jioni.
-                          </span>
-                        </div>
-                      </label>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleSaveStudentProfile}
-                      className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <Save className="w-3.5 h-3.5" />
-                      <span>Hifadhi Mapendeleo ya Arifa</span>
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           )}
