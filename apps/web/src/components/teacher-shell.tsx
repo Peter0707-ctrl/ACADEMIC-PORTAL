@@ -201,7 +201,7 @@ export default function TeacherShell({
             >
               <div className="flex items-center gap-2.5">
                 <Home className={`w-4 h-4 ${pathname === '/teacher' ? 'text-emerald-200' : 'text-emerald-700'}`} />
-                <span>Dashibodi Kuu</span>
+                <span>Dashboard</span>
               </div>
               <ChevronDown className={`w-4 h-4 ${pathname === '/teacher' ? 'text-emerald-200' : 'text-slate-400'}`} />
             </Link>
@@ -216,7 +216,7 @@ export default function TeacherShell({
                     : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
                 }`}
               >
-                Kujaza Alama (Excel / Jedwali)
+                Marks Entry
               </Link>
 
               <Link
@@ -238,7 +238,7 @@ export default function TeacherShell({
                     : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
                 }`}
               >
-                Mitaala &amp; Maazimio
+                Curriculum &amp; Lesson Plans
               </Link>
             </div>
           </div>
@@ -249,13 +249,13 @@ export default function TeacherShell({
           <div className="space-y-1 pt-2 border-t border-emerald-100">
             <div className="px-2 py-1 flex items-center justify-between text-slate-700">
               <span className="text-[11px] font-black uppercase tracking-wider text-emerald-900">
-                {isHeadteacher ? 'Ofisi ya Mwalimu Mkuu' : 'Uongozi wa Shule'}
+                {isHeadteacher ? 'Headteacher Office' : 'School Leadership'}
               </span>
               <Award className="w-3.5 h-3.5 text-amber-500" />
             </div>
 
             <div className="space-y-1">
-              {/* Idhini ya Matokeo & Muhuri (Headteacher Primary Activity) */}
+              {/* Results Approval & Seal */}
               <Link
                 href="/teacher/approvals"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -266,14 +266,14 @@ export default function TeacherShell({
               >
                 <div className="flex items-center gap-2">
                   <Award className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Idhini ya Matokeo &amp; Muhuri</span>
+                  <span>Results Approval &amp; Seal</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold">
-                  Mkuu
+                  Head
                 </span>
               </Link>
 
-              {/* Broadsheet ya Shule Nzima */}
+              {/* School Broadsheet */}
               <Link
                 href="/teacher/broadsheet"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -284,14 +284,14 @@ export default function TeacherShell({
               >
                 <div className="flex items-center gap-2">
                   <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Broadsheet ya Shule</span>
+                  <span>School Broadsheet</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">
-                  Ripoti
+                  Report
                 </span>
               </Link>
 
-              {/* Walimu Wangu (Staff Directory - Teachers Only under Headteacher) */}
+              {/* Staff Directory */}
               <Link
                 href="/teacher/staff"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -302,14 +302,14 @@ export default function TeacherShell({
               >
                 <div className="flex items-center gap-2">
                   <Users className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Walimu Wangu (Staff)</span>
+                  <span>Staff Directory</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
-                  Walimu Tu
+                  Teachers
                 </span>
               </Link>
 
-              {/* Watahiniwa wa Taifa (NECTA Candidates) */}
+              {/* National Candidates (NECTA) */}
               <Link
                 href="/teacher/candidates"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -320,14 +320,14 @@ export default function TeacherShell({
               >
                 <div className="flex items-center gap-2">
                   <FileText className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Watahiniwa wa Taifa (NECTA)</span>
+                  <span>National Candidates (NECTA)</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold">
                   Std 4 &amp; 7
                 </span>
               </Link>
 
-              {/* Nidhamu & Utoro Shuleni */}
+              {/* Discipline & Truancy */}
               <Link
                 href="/teacher/discipline"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -338,24 +338,23 @@ export default function TeacherShell({
               >
                 <div className="flex items-center gap-2">
                   <Shield className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Nidhamu &amp; Utoro</span>
+                  <span>Discipline &amp; Truancy</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
-                  Nidhamu
+                  Discipline
                 </span>
               </Link>
             </div>
           </div>
 
           {/* ================================================================= */}
-          {/* GROUP 3: UTAWALA WA MFUMO - STRICTLY RENDERED FOR ADMIN ONLY */}
-          {/* (Never shown to Mwalimu Mkuu or Teachers) */}
+          {/* GROUP 3: SYSTEM ADMINISTRATION - STRICTLY RENDERED FOR ADMIN ONLY */}
           {/* ================================================================= */}
           {isAdmin && (
             <div className="space-y-1 pt-2 border-t border-emerald-100">
               <div className="px-2 py-1 flex items-center justify-between text-slate-700">
                 <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  Utawala wa Mfumo
+                  System Administration
                 </span>
                 <ShieldCheck className="w-3.5 h-3.5 text-slate-600" />
               </div>
@@ -366,7 +365,7 @@ export default function TeacherShell({
               >
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
-                  <span>Watumiaji Wote &amp; Kufuta</span>
+                  <span>User Management</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">
                   Admin IT
@@ -375,7 +374,7 @@ export default function TeacherShell({
             </div>
           )}
           {/* ================================================================= */}
-          {/* GROUP: MIPANGILIO & WASIFU (SETTINGS & PROFILE) */}
+          {/* GROUP: SETTINGS & PROFILE */}
           {/* ================================================================= */}
           <div className="space-y-1 pt-2 border-t border-emerald-100">
             <Link
@@ -388,10 +387,10 @@ export default function TeacherShell({
             >
               <div className="flex items-center gap-2">
                 <Settings className="w-3.5 h-3.5 text-slate-700" />
-                <span>Mipangilio &amp; Wasifu</span>
+                <span>Settings &amp; Profile</span>
               </div>
               <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">
-                Wasifu
+                Profile
               </span>
             </Link>
           </div>
@@ -404,18 +403,18 @@ export default function TeacherShell({
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900 text-white text-[10px] font-bold shadow-xs">
               <Globe className="w-3.5 h-3.5 text-emerald-300" />
-              <span>LUGHA: SWA</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-emerald-700 text-emerald-100 text-[9px]">TZ</span>
+              <span>LANG: ENG</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-700 text-emerald-100 text-[9px]">EN</span>
             </div>
 
             <button
               type="button"
               onClick={handleLogout}
-              className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1.5 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50"
-              title="Ondoka kwenye mfumo na kurudi ukurasa wa Login"
+              className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1.5 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50 cursor-pointer"
+              title="Logout from portal"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Toka</span>
+              <span>Logout</span>
             </button>
           </div>
         </div>
