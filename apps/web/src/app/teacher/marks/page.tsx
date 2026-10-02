@@ -32,16 +32,6 @@ interface ClassUploadStatus {
   uploadedAt?: string;
 }
 
-const ALL_SCHOOL_CLASSES = [
-  'Standard 7 (Grade 7)',
-  'Standard 6 (Grade 6)',
-  'Standard 5 (Grade 5)',
-  'Standard 4 (Grade 4)',
-  'Standard 3 (Grade 3)',
-  'Standard 2 (Grade 2)',
-  'Standard 1 (Grade 1)',
-  'Nursery (Awali)',
-];
 
 export default function SubjectMarksPage() {
   const currentUser = getCurrentSession();
@@ -516,25 +506,9 @@ export default function SubjectMarksPage() {
               <span className="text-[11px] font-black uppercase tracking-wider text-emerald-950">
                 Chagua Darasa Uone Wanafunzi Wake:
               </span>
-
-              {/* Quick Dropdown for All Other Primary Classes */}
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-500 text-[11px] font-semibold hidden sm:inline">Madarasa Mengine:</span>
-                <select
-                  value={teacherClasses.includes(selectedClass) ? '' : selectedClass}
-                  onChange={(e) => {
-                    if (e.target.value) setSelectedClass(e.target.value);
-                  }}
-                  className="text-xs font-bold py-1 px-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 hover:bg-slate-100"
-                >
-                  <option value="">-- Madarasa Mengine ya Shule --</option>
-                  {ALL_SCHOOL_CLASSES.filter((c) => !teacherClasses.includes(c)).map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-2.5 py-0.5 rounded-full">
+                Madarasa Ninayofundisha Pekee ({teacherClasses.length})
+              </span>
             </div>
 
             {/* Grid of Teacher Classes */}
