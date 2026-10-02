@@ -645,8 +645,7 @@ export default function AcademicBroadsheetHubPage() {
   return (
     <TeacherShell
       pageTitle="Uratibu wa Broadsheets & Uunganishaji wa Masomo"
-      pageDescription="Ofisi ya Taaluma (Mwl. Taaluma ACAD-2026-001 & Msaidizi wa Taaluma ACAD-2026-002): Kusanya matokeo ya masomo 6 kutoka kwa kila mwalimu, unganisha kiotomatiki (Merge), chambua hitilafu kwa AI, na uwasilishe kwa Mwalimu Mkuu."
-      requiredRole="ACADEMIC"
+      pageDescription="Ofisi ya Mwalimu Mkuu & Taaluma: Kusanya matokeo ya masomo yote kutoka kwa kila mwalimu, unganisha kiotomatiki (Merge), chambua hitilafu kwa AI, na uidhinishe broadsheet ya shule nzima."
     >
       <div className="space-y-6 animate-fade-in">
         {/* Notice alert */}

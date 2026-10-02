@@ -592,128 +592,135 @@ export default function UnifiedAcademicERPPortal() {
               {/* 1. Mwalimu Mkuu Activities */}
               {isHeadteacher && (
                 <>
-                  <Link
-                    href="/teacher/approvals"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('HT_APPROVALS')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'HT_APPROVALS'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Award className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>Idhini ya Matokeo &amp; Muhuri</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold">Mkuu</span>
-                  </Link>
+                    <Award className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Idhini ya Matokeo &amp; Muhuri</span>
+                  </button>
 
-                  <Link
-                    href="/teacher/curriculum"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('HT_CURRICULUM')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'HT_CURRICULUM'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <TrendingUp className="w-4 h-4 text-blue-500 shrink-0" />
-                      <span>Usimamizi wa Mitaala &amp; Walimu</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                  </Link>
+                    <TrendingUp className="w-4 h-4 text-blue-500 shrink-0" />
+                    <span>Usimamizi wa Mitaala &amp; Walimu</span>
+                  </button>
                 </>
               )}
 
               {/* 2. Academic Master Activities */}
               {isAcademicMaster && (
                 <>
-                  <Link
-                    href="/teacher/candidates"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('CANDIDATES')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'CANDIDATES'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Award className="w-4 h-4 text-purple-500 shrink-0" />
-                      <span>Watahiniwa wa Taifa (NECTA)</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                  </Link>
+                    <Award className="w-4 h-4 text-purple-500 shrink-0" />
+                    <span>Watahiniwa wa Taifa (NECTA)</span>
+                  </button>
 
-                  <Link
-                    href="/teacher/broadsheet"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('BROADSHEET')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'BROADSHEET'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <FileText className="w-4 h-4 text-blue-500 shrink-0" />
-                      <span>Uratibu wa Broadsheet</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">Taaluma</span>
-                  </Link>
+                    <FileText className="w-4 h-4 text-blue-500 shrink-0" />
+                    <span>Uratibu wa Broadsheet</span>
+                  </button>
 
-                  <Link
-                    href="/teacher/curriculum"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('HT_CURRICULUM')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'HT_CURRICULUM'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Mitaala &amp; Maazimio ya Kazi</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                  </Link>
+                    <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Mitaala &amp; Maazimio ya Kazi</span>
+                  </button>
                 </>
               )}
 
               {/* 3. Discipline Master Activities */}
               {isDisciplineMaster && (
-                <Link
-                  href="/teacher/discipline"
-                  className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
+                <button
+                  type="button"
+                  onClick={() => setActiveActivity('DISCIPLINE')}
+                  className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                    activeActivity === 'DISCIPLINE'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Nidhamu, Utoro &amp; Wito wa Wazazi</span>
-                  </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">Nidhamu</span>
-                </Link>
+                  <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Nidhamu, Utoro &amp; Wito wa Wazazi</span>
+                </button>
               )}
 
               {/* 4. Classroom Teaching Activities (Every teacher including Headmaster who teaches) */}
               {!isAdmin && (
                 <>
-                  <Link
-                    href="/teacher/marks"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 shadow-2xs"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('MARKS')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'MARKS'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <FileSpreadsheet className="w-4 h-4 text-emerald-700 shrink-0" />
-                      <span>Kujaza Alama (Excel &amp; Madarasa)</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-700 text-white font-bold">Excel</span>
-                  </Link>
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Kujaza Alama za Masomo Yangu</span>
+                  </button>
 
-                  <Link
-                    href="/teacher/attendance"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 shadow-2xs"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('ATTENDANCE')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'ATTENDANCE'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <UserCheck className="w-4 h-4 text-emerald-700 shrink-0" />
-                      <span>Mahudhurio (Roll-Call Kila Siku)</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-700 text-white font-bold">Kila Siku</span>
-                  </Link>
+                    <UserCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Roll-Call ya Darasa Langu</span>
+                  </button>
 
-                  <Link
-                    href="/teacher/staff"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
+                  <button
+                    type="button"
+                    onClick={() => setActiveActivity('STAFF')}
+                    className={`w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2.5 text-left ${
+                      activeActivity === 'STAFF'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Users className="w-4 h-4 text-slate-500 shrink-0" />
-                      <span>Walimu Wangu ({teachersList.length})</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                  </Link>
-
-                  <Link
-                    href="/teacher/settings"
-                    className="w-full p-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between text-left bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200/80"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Users className="w-4 h-4 text-slate-500 shrink-0" />
-                      <span>Mipangilio &amp; Wasifu Wangu</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                  </Link>
+                    <Users className="w-4 h-4 text-slate-500 shrink-0" />
+                    <span>Walimu Wangu ({teachersList.length} Walimu Pekee)</span>
+                  </button>
                 </>
               )}
 
@@ -806,97 +813,6 @@ export default function UnifiedAcademicERPPortal() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* QUICK ACCESS ACTION CARDS: EXCEL UPLOAD, ATTENDANCE, BROADSHEET & APPROVALS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
-          {/* Card 1: Marks & Excel Upload */}
-          <Link
-            href="/teacher/marks"
-            className="p-5 rounded-3xl bg-white/95 border-2 border-emerald-300 hover:border-emerald-600 shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center group-hover:bg-emerald-800 group-hover:text-white transition-colors">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <h3 className="font-black text-sm text-slate-900 group-hover:text-emerald-900 transition-colors">
-                Kujaza Alama &amp; Excel
-              </h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Chagua darasa unalofundisha, pakia faili la Excel (.xlsx), na wasilisha kwa Mwl. Taaluma.
-              </p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-800">
-              <span>Fungua Excel Upload</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* Card 2: Daily Attendance */}
-          <Link
-            href="/teacher/attendance"
-            className="p-5 rounded-3xl bg-white/95 border-2 border-emerald-300 hover:border-emerald-600 shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center group-hover:bg-emerald-800 group-hover:text-white transition-colors">
-                <UserCheck className="w-5 h-5" />
-              </div>
-              <h3 className="font-black text-sm text-slate-900 group-hover:text-emerald-900 transition-colors">
-                Mahudhurio (Roll-Call)
-              </h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Weka mahudhurio ya kila siku (wanafunzi 35), ripoti utoro moja kwa moja kwa Mkuu na Nidhamu.
-              </p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-800">
-              <span>Fungua Roll-Call</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* Card 3: Broadsheet */}
-          <Link
-            href="/teacher/broadsheet"
-            className="p-5 rounded-3xl bg-white/95 border border-emerald-200 hover:border-emerald-500 shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center group-hover:bg-blue-800 group-hover:text-white transition-colors">
-                <FileText className="w-5 h-5" />
-              </div>
-              <h3 className="font-black text-sm text-slate-900 group-hover:text-blue-900 transition-colors">
-                Broadsheet Kuu ya Shule
-              </h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Unganisha alama za masomo yote kwa kila darasa, kagua makosa kupitia AI na tuma kwa Mkuu.
-              </p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-800">
-              <span>Uratibu wa Broadsheet</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* Card 4: Approvals */}
-          <Link
-            href="/teacher/approvals"
-            className="p-5 rounded-3xl bg-white/95 border border-emerald-200 hover:border-emerald-500 shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center group-hover:bg-amber-800 group-hover:text-white transition-colors">
-                <Award className="w-5 h-5" />
-              </div>
-              <h3 className="font-black text-sm text-slate-900 group-hover:text-amber-900 transition-colors">
-                Idhini ya Matokeo &amp; Muhuri
-              </h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Kagua alama za madarasa yote, gonga Muhuri Rasmi wa Kidigitali na weka tarehe ya kutangaza.
-              </p>
-            </div>
-            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-800">
-              <span>Idhini &amp; Muhuri</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
         </div>
 
         {/* =================================================================== */}

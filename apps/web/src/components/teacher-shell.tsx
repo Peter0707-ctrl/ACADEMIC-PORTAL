@@ -88,7 +88,14 @@ export default function TeacherShell({
     }
 
     // Role-specific check if page requires specific leadership role
-    if (requiredRole && session.role !== requiredRole && session.leadershipRole !== requiredRole && session.role !== 'ADMIN') {
+    // Mwalimu Mkuu (HEADTEACHER) and ADMIN have universal executive oversight across all school modules
+    if (
+      requiredRole &&
+      session.role !== requiredRole &&
+      session.leadershipRole !== requiredRole &&
+      session.role !== 'ADMIN' &&
+      session.role !== 'HEADTEACHER'
+    ) {
       setIsAuthorized(false);
       triggerNotification(
         'error',
@@ -105,28 +112,9 @@ export default function TeacherShell({
     setCurrentUser(session);
   }, [requiredRole, router, triggerNotification]);
 
-  // Switch Teacher Identity
-  const handleSwitchTeacher = (teacher: UserAccount) => {
-    setCurrentSession(teacher);
-    setCurrentUser(teacher);
-
-    // If on a page requiring specific role that the new teacher doesn't have, redirect to /teacher
-    if (requiredRole && teacher.role !== requiredRole && teacher.leadershipRole !== requiredRole && teacher.role !== 'ADMIN') {
-      router.push('/teacher');
-    } else {
-      router.refresh();
-    }
-
-    triggerNotification(
-      'success',
-      'Akaunti ya Mwalimu Imebadilishwa',
-      `Sasa unafanya kazi kama ${teacher.fullName} (${teacher.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : teacher.role === 'ACADEMIC' ? 'Taaluma' : teacher.role === 'DISCIPLINE' ? 'Nidhamu' : 'Class Teacher'}).`
-    );
-  };
-
   const handleLogout = () => {
     clearCurrentSession();
-    router.push('/login');
+    router.push('/');
   };
 
   const teachersList = useMemo(() => {
