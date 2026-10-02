@@ -26,6 +26,8 @@ import {
   Check,
   Globe,
   UploadCloud,
+  FolderArchive,
+  Megaphone,
   Menu,
   X,
 } from 'lucide-react';
@@ -66,7 +68,6 @@ export default function TeacherShell({
   const [notification, setNotification] = useState<CenteredNotification | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Close mobile drawer on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
@@ -308,9 +309,9 @@ export default function TeacherShell({
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="p-4 sm:p-5 space-y-5">
+        <div className="p-4 sm:p-5 space-y-4">
           {/* School Brand / Logo + Mobile Close Button */}
-          <div className="flex items-center justify-between pb-4 border-b border-emerald-100">
+          <div className="flex items-center justify-between pb-3 border-b border-emerald-100">
             <div className="flex items-center gap-3">
               <Link
                 href="/"
@@ -340,75 +341,183 @@ export default function TeacherShell({
             </button>
           </div>
 
-          {/* ================================================================= */}
-          {/* GROUP 1: TAALUMA & UFUNDISHAJI (ACADEMIC TEACHING & CLASSROOM) */}
-          {/* ================================================================= */}
-          <div className="space-y-1">
-            <Link
-              href="/teacher"
-              className={`w-full p-3 rounded-xl transition-all flex items-center justify-between text-left font-bold text-xs ${
-                pathname === '/teacher'
-                  ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
-                  : 'bg-emerald-50/70 hover:bg-emerald-100/70 text-slate-800 border border-emerald-200/80'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Home className={`w-4 h-4 ${pathname === '/teacher' ? 'text-emerald-200' : 'text-emerald-700'}`} />
-                <span>Dashibodi Kuu</span>
+          {/* Teacher Profile & Teaching Allocation Card */}
+          <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/90 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-black text-xs shadow-xs shrink-0">
+                {userInitials}
               </div>
-              <ChevronDown className={`w-4 h-4 ${pathname === '/teacher' ? 'text-emerald-200' : 'text-slate-400'}`} />
-            </Link>
-
-            {/* Sub-items under Dashboard (Cleanly spaced vertically) */}
-            <div className="pl-6 pr-1 pt-1.5 pb-2 space-y-1">
-              <Link
-                href="/teacher/marks"
-                className={`block py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
-                  pathname === '/teacher/marks'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
-                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
-                }`}
-              >
-                Kujaza Alama (Excel / Jedwali)
-              </Link>
-
-              <Link
-                href="/teacher/attendance"
-                className={`block py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
-                  pathname === '/teacher/attendance'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
-                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
-                }`}
-              >
-                Mahudhurio (Roll-Call)
-              </Link>
-
-              <Link
-                href="/teacher/curriculum"
-                className={`block py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
-                  pathname === '/teacher/curriculum'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
-                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
-                }`}
-              >
-                Mitaala &amp; Maazimio
-              </Link>
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-black text-slate-900 block truncate">
+                  {currentUser?.fullName}
+                </span>
+                <span className="text-[10px] text-emerald-800 font-bold block truncate">
+                  {currentUser?.identifier === 'HT-2026-002' ? 'Makamu Mkuu wa Shule' :
+                   currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' :
+                   currentUser?.identifier === 'ACAD-2026-002' ? 'Msaidizi wa Taaluma' :
+                   currentUser?.role === 'ACADEMIC' ? 'Mwalimu wa Taaluma' :
+                   currentUser?.role === 'DISCIPLINE' ? 'Mwalimu wa Nidhamu' :
+                   'Class Teacher'}
+                </span>
+              </div>
             </div>
+            {currentUser?.assignedClass && (
+              <div className="mt-2 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[10px]">
+                <span className="text-slate-600 font-medium truncate max-w-[170px]" title={currentUser.assignedClass}>
+                  📚 {currentUser.assignedClass}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-md bg-emerald-200/80 text-emerald-950 font-bold text-[9px]">
+                  Anafundisha
+                </span>
+              </div>
+            )}
           </div>
 
           {/* ================================================================= */}
-          {/* GROUP 2: OFISI YA MWALIMU MKUU & UONGOZI (EXECUTIVE LEADERSHIP) */}
+          {/* GROUP 1: UPANDE WA UALIMU / TEACHER SIDE (CLASSES, SUBJECTS, RESULTS) */}
+          {/* AVAILABLE TO EVERYONE: TEACHERS, ACADEMICS & HEADTEACHERS */}
           {/* ================================================================= */}
-          <div className="space-y-1 pt-2 border-t border-emerald-100">
+          <div className="space-y-1">
             <div className="px-2 py-1 flex items-center justify-between text-slate-700">
-              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-900">
-                {isHeadteacher ? 'Ofisi ya Mwalimu Mkuu' : 'Uongozi wa Shule'}
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900">
+                Upande wa Ualimu (Teacher Side)
               </span>
-              <Award className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                Masomo Yangu
+              </span>
             </div>
 
-            <div className="space-y-1">
-              {/* Idhini ya Matokeo & Muhuri (Headteacher Primary Activity) */}
+            <Link
+              href="/teacher"
+              className={`w-full p-2.5 rounded-xl transition-all flex items-center justify-between text-left font-bold text-xs ${
+                pathname === '/teacher'
+                  ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
+                  : 'bg-emerald-50/60 hover:bg-emerald-100/70 text-slate-800 border border-emerald-200/70'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Home className={`w-3.5 h-3.5 ${pathname === '/teacher' ? 'text-emerald-200' : 'text-emerald-700'}`} />
+                <span>Dashibodi ya Ualimu</span>
+              </div>
+              <ChevronRight className={`w-3.5 h-3.5 ${pathname === '/teacher' ? 'text-emerald-200' : 'text-slate-400'}`} />
+            </Link>
+
+            <Link
+              href="/teacher/marks"
+              className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                pathname === '/teacher/marks'
+                  ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                  : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Kujaza Alama &amp; Matokeo</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
+                Excel
+              </span>
+            </Link>
+
+            <Link
+              href="/teacher/attendance"
+              className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                pathname === '/teacher/attendance'
+                  ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                  : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Mahudhurio ya Darasa</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
+                Roll-Call
+              </span>
+            </Link>
+
+            <Link
+              href="/teacher/curriculum"
+              className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                pathname === '/teacher/curriculum'
+                  ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                  : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Mipango &amp; Maazimio ya Kazi</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
+                Lesson Plans
+              </span>
+            </Link>
+          </div>
+
+          {/* ================================================================= */}
+          {/* GROUP 2: OFISI YA TAALUMA / ACADEMIC OFFICER */}
+          {/* ACADEMIC MONITORING, CURRICULUM, LESSON PROGRESS, RESULTS REVIEW */}
+          {/* ================================================================= */}
+          {(isAcademicMaster || isHeadteacher || isAdmin) && (
+            <div className="space-y-1 pt-2 border-t border-emerald-100">
+              <div className="px-2 py-1 flex items-center justify-between text-slate-700">
+                <span className="text-[10px] font-black uppercase tracking-wider text-teal-900">
+                  Ofisi ya Taaluma (Academic)
+                </span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-bold">
+                  Taaluma
+                </span>
+              </div>
+
+              <Link
+                href="/teacher/broadsheet"
+                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                  pathname === '/teacher/broadsheet'
+                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Broadsheets &amp; AI Review</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">
+                  Masomo 6
+                </span>
+              </Link>
+
+              <Link
+                href="/teacher/candidates"
+                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                  pathname === '/teacher/candidates'
+                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Watahiniwa wa Taifa (NECTA)</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold">
+                  Std 4 &amp; 7
+                </span>
+              </Link>
+            </div>
+          )}
+
+          {/* ================================================================= */}
+          {/* GROUP 3: OFISI YA MWALIMU MKUU / HEAD TEACHER MANAGEMENT */}
+          {/* SCHOOL MANAGEMENT, APPROVALS, STAFF */}
+          {/* ================================================================= */}
+          {(isHeadteacher || isAdmin) && (
+            <div className="space-y-1 pt-2 border-t border-emerald-100">
+              <div className="px-2 py-1 flex items-center justify-between text-slate-700">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900">
+                  Mwalimu Mkuu (Leadership)
+                </span>
+                <Award className="w-3.5 h-3.5 text-amber-500" />
+              </div>
+
               <Link
                 href="/teacher/approvals"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -426,25 +535,6 @@ export default function TeacherShell({
                 </span>
               </Link>
 
-              {/* Broadsheet ya Shule Nzima */}
-              <Link
-                href="/teacher/broadsheet"
-                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/broadsheet'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Broadsheet ya Shule</span>
-                </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">
-                  Ripoti
-                </span>
-              </Link>
-
-              {/* Walimu Wangu (Staff Directory - Teachers Only under Headteacher) */}
               <Link
                 href="/teacher/staff"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -461,26 +551,22 @@ export default function TeacherShell({
                   Walimu Tu
                 </span>
               </Link>
+            </div>
+          )}
 
-              {/* Watahiniwa wa Taifa (NECTA Candidates) */}
-              <Link
-                href="/teacher/candidates"
-                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/candidates'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Watahiniwa wa Taifa (NECTA)</span>
-                </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold">
-                  Std 4 &amp; 7
+          {/* ================================================================= */}
+          {/* GROUP 4: OFISI YA NIDHAMU / DISCIPLINE OFFICER */}
+          {/* DISCIPLINE RECORDS, INCIDENTS, ACTIONS, REPORTS */}
+          {/* ================================================================= */}
+          {(isDisciplineMaster || isHeadteacher || isAdmin) && (
+            <div className="space-y-1 pt-2 border-t border-emerald-100">
+              <div className="px-2 py-1 flex items-center justify-between text-slate-700">
+                <span className="text-[10px] font-black uppercase tracking-wider text-rose-900">
+                  Ofisi ya Nidhamu (Discipline)
                 </span>
-              </Link>
+                <Shield className="w-3.5 h-3.5 text-rose-600" />
+              </div>
 
-              {/* Nidhamu & Utoro Shuleni */}
               <Link
                 href="/teacher/discipline"
                 className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
@@ -491,18 +577,76 @@ export default function TeacherShell({
               >
                 <div className="flex items-center gap-2">
                   <Shield className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Nidhamu &amp; Utoro</span>
+                  <span>Kumbukumbu &amp; Utoro</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
                   Nidhamu
                 </span>
               </Link>
             </div>
+          )}
+
+          {/* ================================================================= */}
+          {/* GROUP 5: MASIJALA YA SHULE / SCHOOL SECRETARY & RECORDS */}
+          {/* DOCUMENTS, STUDENT RECORDS, STAFF RECORDS, FILE ARCHIVE */}
+          {/* ================================================================= */}
+          <div className="space-y-1 pt-2 border-t border-emerald-100">
+            <div className="px-2 py-1 flex items-center justify-between text-slate-700">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-700">
+                Masijala ya Shule (Records)
+              </span>
+              <FolderArchive className="w-3.5 h-3.5 text-slate-600" />
+            </div>
+
+            <Link
+              href="/teacher/records"
+              className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                pathname === '/teacher/records'
+                  ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                  : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <FolderArchive className="w-3.5 h-3.5 text-slate-700" />
+                <span>Nyaraka &amp; Hifadhi ya Faili</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">
+                Katibu
+              </span>
+            </Link>
           </div>
 
           {/* ================================================================= */}
-          {/* GROUP 3: UTAWALA WA MFUMO - STRICTLY RENDERED FOR ADMIN ONLY */}
-          {/* (Never shown to Mwalimu Mkuu or Teachers) */}
+          {/* GROUP 6: MAWASILIANO & MATANGAZO (COMMUNICATION / NOTIFICATIONS) */}
+          {/* ================================================================= */}
+          <div className="space-y-1 pt-2 border-t border-emerald-100">
+            <div className="px-2 py-1 flex items-center justify-between text-slate-700">
+              <span className="text-[10px] font-black uppercase tracking-wider text-sky-900">
+                Mawasiliano (Noticeboard)
+              </span>
+              <Megaphone className="w-3.5 h-3.5 text-sky-600" />
+            </div>
+
+            <Link
+              href="/teacher/announcements"
+              className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                pathname === '/teacher/announcements'
+                  ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                  : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Megaphone className="w-3.5 h-3.5 text-sky-600" />
+                <span>Matangazo ya Shule &amp; Wazazi</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-900 font-bold">
+                SMS &amp; Web
+              </span>
+            </Link>
+          </div>
+
+          {/* ================================================================= */}
+          {/* GROUP 7: UTAWALA WA MFUMO - STRICTLY RENDERED FOR ADMIN ONLY */}
           {/* ================================================================= */}
           {isAdmin && (
             <div className="space-y-1 pt-2 border-t border-emerald-100">
@@ -595,7 +739,7 @@ export default function TeacherShell({
                   {currentUser?.fullName}
                 </span>
                 <span className="text-[10px] text-emerald-800 font-semibold block truncate max-w-[170px]">
-                  {currentUser?.identifier} • {currentUser?.identifier === 'HT-2026-002' ? 'Makamu Mkuu' : currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.identifier === 'ACAD-2026-002' ? 'Msaidizi wa Taaluma' : currentUser?.role === 'ACADEMIC' ? 'Mwl. Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
+                  {currentUser?.identifier} • {currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.role === 'ACADEMIC' ? 'Mwl. Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
                 </span>
               </div>
             </div>
