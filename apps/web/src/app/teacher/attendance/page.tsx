@@ -158,7 +158,7 @@ export default function AttendancePage() {
   // Handle single attendance toggle
   const handleAttendanceChange = (
     pupilId: string,
-    status: 'PRESENT' | 'ABSENT' | 'PERMISSION',
+    status: 'PRESENT' | 'ABSENT' | 'PERMISSION' | 'LATE',
     reason?: string
   ) => {
     setActivePupils((prev) =>
@@ -219,9 +219,10 @@ export default function AttendancePage() {
   // Live computed metrics for current active date
   const presentCount = activePupils.filter((p) => p.status === 'PRESENT').length;
   const absentCount = activePupils.filter((p) => p.status === 'ABSENT').length;
+  const lateCount = activePupils.filter((p) => p.status === 'LATE').length;
   const permCount = activePupils.filter((p) => p.status === 'PERMISSION').length;
   const totalCount = activePupils.length;
-  const attendanceRate = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
+  const attendanceRate = totalCount > 0 ? Math.round(((presentCount + lateCount) / totalCount) * 100) : 0;
 
   const isToday = selectedDate === getTodayISO();
   const selectedDateFormatted = useMemo(() => formatSwahiliDate(selectedDate), [selectedDate]);
@@ -490,10 +491,10 @@ export default function AttendancePage() {
         </div>
 
         {/* ===================================================================== */}
-        {/* 2. TOP STATS CARDS */}
+        {/* 2. TOP STATS CARDS (INCLUDES LATE / WALIOCHELEWA) */}
         {/* ===================================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-4 shadow-xs">
             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
               Jumla ya Wanafunzi
             </span>
@@ -501,28 +502,36 @@ export default function AttendancePage() {
             <span className="text-[11px] text-emerald-800 font-bold">{selectedClass}</span>
           </div>
 
-          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-4 shadow-xs">
             <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">
               Waliopo (Present)
             </span>
             <span className="text-2xl font-black text-emerald-700 block mt-1">{presentCount}</span>
-            <span className="text-[11px] text-emerald-800 font-bold">{attendanceRate}% Attendance Rate</span>
+            <span className="text-[11px] text-emerald-800 font-bold">{attendanceRate}% Mahudhurio</span>
           </div>
 
-          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-4 shadow-xs">
             <span className="text-[10px] text-rose-700 font-bold uppercase tracking-wider block">
               Watoro ({selectedDate})
             </span>
             <span className="text-2xl font-black text-rose-600 block mt-1">{absentCount}</span>
-            <span className="text-[11px] text-rose-700 font-semibold">Zinafika kwa Mkuu &amp; Nidhamu</span>
+            <span className="text-[11px] text-rose-700 font-semibold">Zinafika kwa Mkuu</span>
           </div>
 
-          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-5 shadow-xs">
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-4 shadow-xs">
             <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">
+              Waliochelewa (Late)
+            </span>
+            <span className="text-2xl font-black text-amber-600 block mt-1">{lateCount}</span>
+            <span className="text-[11px] text-amber-700 font-semibold">Wamerekodiwa Kuchelewa</span>
+          </div>
+
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/90 p-4 shadow-xs">
+            <span className="text-[10px] text-blue-700 font-bold uppercase tracking-wider block">
               Wenye Ruhusa (Permission)
             </span>
-            <span className="text-2xl font-black text-amber-600 block mt-1">{permCount}</span>
-            <span className="text-[11px] text-amber-700 font-semibold">Wana sababu maalum</span>
+            <span className="text-2xl font-black text-blue-600 block mt-1">{permCount}</span>
+            <span className="text-[11px] text-blue-700 font-semibold">Wana sababu maalum</span>
           </div>
         </div>
 
@@ -700,14 +709,26 @@ export default function AttendancePage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleAttendanceChange(pupil.id, 'PERMISSION')}
+                          onClick={() => handleAttendanceChange(pupil.id, 'LATE')}
                           className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                            pupil.status === 'PERMISSION'
-                              ? 'bg-amber-600 text-white shadow-xs'
+                            pupil.status === 'LATE'
+                              ? 'bg-amber-500 text-white shadow-xs'
                               : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                           }`}
                         >
                           <Clock className="w-3 h-3" />
+                          <span>Late</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAttendanceChange(pupil.id, 'PERMISSION')}
+                          className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                            pupil.status === 'PERMISSION'
+                              ? 'bg-blue-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          <Check className="w-3 h-3" />
                           <span>Ruksa</span>
                         </button>
                       </div>
@@ -721,16 +742,24 @@ export default function AttendancePage() {
                           placeholder="Sababu ya utoro..."
                           className="w-full px-2 py-1 rounded-lg border border-rose-200 bg-white text-rose-800 text-[11px] focus:outline-none focus:ring-1 focus:ring-rose-500 font-medium"
                         />
+                      ) : pupil.status === 'LATE' ? (
+                        <input
+                          type="text"
+                          defaultValue={pupil.absentReason || 'Amechelewa (Muda: 08:15)'}
+                          onBlur={(e) => handleAttendanceChange(pupil.id, 'LATE', e.target.value)}
+                          placeholder="Sababu ya kuchelewa..."
+                          className="w-full px-2 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-[11px] focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium"
+                        />
                       ) : pupil.status === 'PERMISSION' ? (
                         <input
                           type="text"
                           defaultValue={pupil.absentReason || 'Sababu ya ruhusa...'}
                           onBlur={(e) => handleAttendanceChange(pupil.id, 'PERMISSION', e.target.value)}
                           placeholder="Sababu ya ruhusa..."
-                          className="w-full px-2 py-1 rounded-lg border border-amber-200 bg-white text-amber-800 text-[11px] focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium"
+                          className="w-full px-2 py-1 rounded-lg border border-blue-200 bg-white text-blue-800 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
                         />
                       ) : (
-                        <span className="text-slate-400 font-medium text-[11px]">Darasani</span>
+                        <span className="text-slate-400 font-medium text-[11px]">Darasani (Kwa Wakati)</span>
                       )}
                     </td>
                   </tr>

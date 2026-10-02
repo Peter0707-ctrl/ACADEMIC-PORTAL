@@ -21,7 +21,7 @@ export interface PupilDailyAttendance {
   name: string;
   gender: 'M' | 'F';
   parentPhone: string;
-  status: 'PRESENT' | 'ABSENT' | 'PERMISSION';
+  status: 'PRESENT' | 'ABSENT' | 'PERMISSION' | 'LATE';
   absentReason?: string;
   daysAbsentCount: number;
 }

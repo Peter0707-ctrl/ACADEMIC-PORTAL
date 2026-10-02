@@ -571,3 +571,4 @@ export default function AssignmentsPage() {
     </TeacherShell>
   );
 }
+

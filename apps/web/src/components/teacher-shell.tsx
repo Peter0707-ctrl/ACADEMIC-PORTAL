@@ -29,6 +29,7 @@ import {
   Settings,
   Layers,
   MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -445,7 +446,7 @@ export default function TeacherShell({
                 </span>
               </Link>
 
-              {/* Nidhamu & Utoro Shuleni */}
+              {/* Discipline & Truancy */}
               <Link
                 href="/teacher/discipline"
                 className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
