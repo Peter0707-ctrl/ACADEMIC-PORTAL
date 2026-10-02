@@ -64,10 +64,10 @@ const AUTH_CONFIG = {
     tagline: 'Child-Centered Primary Education System',
   },
   login: {
-    title: 'Sign In to School Portal',
-    subtitle: 'Select your role to access your classroom, pupil records, or parent account.',
-    identifierPlaceholder: 'Enter email address or mobile number',
-    identifierLabel: 'Email or Mobile Number',
+    title: 'Kuingia Kwenye Mfumo wa Shule (Sign In)',
+    subtitle: 'Weka taarifa zako za kikazi au za usajili kufungua dashibodi yako.',
+    identifierPlaceholder: 'Mfano: HT-2026-001 au headteacher@primaryschool.ac.tz',
+    identifierLabel: 'Kitambulisho (Staff ID, Namba ya Usajili, au Email)',
     passwordLabel: 'Password',
     passwordPlaceholder: 'Enter your account password',
     rememberMeLabel: 'Remember this device',
@@ -212,9 +212,9 @@ export default function PrimaryPortalHomePage() {
     location: 'Dar es Salaam, Tanzania',
   });
 
-  // 1. Splash Screen State (5 seconds)
-  const [showSplash, setShowSplash] = useState(true);
-  const [progress, setProgress] = useState(0);
+  // 1. Splash Screen State (Disabled for instant serious academic access)
+  const [showSplash, setShowSplash] = useState(false);
+  const [progress, setProgress] = useState(100);
 
   // 2. Active Mode: 'login' | 'register'
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -337,12 +337,11 @@ export default function PrimaryPortalHomePage() {
       return;
     }
 
-    const isValid = validateEmail(cleanIdentifier) || validatePhone(cleanIdentifier);
-    if (!isValid) {
+    if (cleanIdentifier.length < 2) {
       triggerNotification(
         'error',
-        'Invalid Format',
-        'Please provide a valid email address or mobile phone number.'
+        'Taarifa Zinahitajika',
+        'Tafadhali weka barua pepe, namba ya simu, au Kitambulisho cha Mwalimu / Mwanafunzi (Staff ID / Admission No).'
       );
       return;
     }
@@ -826,45 +825,76 @@ export default function PrimaryPortalHomePage() {
               </button>
             </form>
 
-            {/* Quick Blueprint Executive Demonstration Access */}
-            <div className="mt-5 p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-2">
+            {/* Direct Official Portals Access */}
+            <div className="mt-5 p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/90 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-emerald-950 uppercase tracking-wider">
-                  Quick Blueprint Leadership Access:
+                  Majaribio ya Papo Hapo (1-Click Portal Access):
                 </span>
-                <span className="text-[9px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-full border border-emerald-200">
-                  Instant Demo
+                <span className="text-[9px] text-emerald-800 font-bold bg-white px-2 py-0.5 rounded-full border border-emerald-200">
+                  Verified Roles
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                {/* Mwalimu Mkuu -> /teacher */}
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestLogin('HEADTEACHER')}
+                  className="p-2.5 rounded-xl bg-white border border-emerald-300 text-emerald-950 hover:bg-emerald-100 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>School Admin</span>
-                </Link>
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <Award className="w-3.5 h-3.5 text-emerald-700" />
+                  <Award className="w-3.5 h-3.5 text-amber-600" />
                   <span>Mwalimu Mkuu</span>
-                </Link>
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                </button>
+
+                {/* School Admin -> /admin */}
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestLogin('ADMIN')}
+                  className="p-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
                 >
-                  <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>School Admin (IT)</span>
+                </button>
+
+                {/* Mwl wa Taaluma -> /teacher */}
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestLogin('ACADEMIC')}
+                  className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-300 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
                   <span>Mwl. wa Taaluma</span>
-                </Link>
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                </button>
+
+                {/* Mwl wa Nidhamu -> /teacher */}
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestLogin('DISCIPLINE')}
+                  className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-300 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
                 >
-                  <Shield className="w-3.5 h-3.5 text-emerald-700" />
+                  <Shield className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Mwl. wa Nidhamu</span>
-                </Link>
+                </button>
+
+                {/* Mwalimu wa Darasa -> /teacher */}
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestLogin('TEACHER')}
+                  className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-300 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
+                >
+                  <Users className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Mwalimu wa Darasa</span>
+                </button>
+
+                {/* Mtahiniwa NECTA -> /student */}
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestLogin('CANDIDATE')}
+                  className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-300 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Mtahiniwa (PSLE)</span>
+                </button>
               </div>
             </div>
 

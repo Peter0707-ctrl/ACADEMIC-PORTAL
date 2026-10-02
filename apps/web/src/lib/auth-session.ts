@@ -212,10 +212,10 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
   },
 ];
 
-const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v1';
-const SESSION_STORAGE_KEY = 'academic_portal_active_session_v1';
+const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v2';
+const SESSION_STORAGE_KEY = 'academic_portal_active_session_v2';
 
-// Get Stored Accounts (or initialize with blueprint)
+// Get Stored Accounts (guarantees all blueprint roles exist)
 export function getStoredAccounts(): UserAccount[] {
   if (typeof window === 'undefined') return INITIAL_BLUEPRINT_ACCOUNTS;
   try {
@@ -224,7 +224,17 @@ export function getStoredAccounts(): UserAccount[] {
       localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(INITIAL_BLUEPRINT_ACCOUNTS));
       return INITIAL_BLUEPRINT_ACCOUNTS;
     }
-    return JSON.parse(raw);
+    const parsed: UserAccount[] = JSON.parse(raw);
+    // Ensure all leadership and blueprint accounts are present
+    const missing = INITIAL_BLUEPRINT_ACCOUNTS.filter(
+      (bp) => !parsed.some((p) => p.id === bp.id || p.identifier === bp.identifier)
+    );
+    if (missing.length > 0) {
+      const merged = [...parsed, ...missing];
+      localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(merged));
+      return merged;
+    }
+    return parsed;
   } catch {
     return INITIAL_BLUEPRINT_ACCOUNTS;
   }
