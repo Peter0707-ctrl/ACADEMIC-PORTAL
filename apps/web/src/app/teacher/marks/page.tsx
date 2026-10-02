@@ -22,7 +22,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
-import { getCurrentSession } from '@/lib/auth-session';
+import { getCurrentSession, UserAccount } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
 import { INITIAL_PUPILS, StudentMark, calculateGrade, getRemarksForGrade } from '@/lib/teacher-data';
 
@@ -32,13 +32,20 @@ interface ClassUploadStatus {
   uploadedAt?: string;
 }
 
-
 export default function SubjectMarksPage() {
-  const currentUser = getCurrentSession();
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getCurrentSession());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load active session once on mount
+  useEffect(() => {
+    const session = getCurrentSession();
+    if (session) {
+      setCurrentUser(session);
+    }
+  }, []);
+
   // 1. Teacher's Assigned Classes and Subjects
-  const teacherClasses = useMemo(() => {
+  const teacherClasses: string[] = useMemo(() => {
     if (currentUser?.assignedClasses && currentUser.assignedClasses.length > 0) {
       return currentUser.assignedClasses;
     }
@@ -46,9 +53,9 @@ export default function SubjectMarksPage() {
       return [currentUser.assignedClass];
     }
     return ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'];
-  }, [currentUser]);
+  }, [currentUser?.assignedClasses, currentUser?.assignedClass]);
 
-  const teacherSubjects = useMemo(() => {
+  const teacherSubjects: string[] = useMemo(() => {
     if (currentUser?.subjects && currentUser.subjects.length > 0) {
       return currentUser.subjects;
     }
@@ -60,10 +67,16 @@ export default function SubjectMarksPage() {
       'Kiswahili',
       'Science & Technology (Sayansi)',
     ];
-  }, [currentUser]);
+  }, [currentUser?.subjects]);
 
-  const [selectedClass, setSelectedClass] = useState<string>('Standard 6 (Grade 6)');
-  const [selectedSubject, setSelectedSubject] = useState<string>('Civic & Moral Education (Uraia na Maadili)');
+  const [selectedClass, setSelectedClass] = useState<string>(() => {
+    const session = getCurrentSession();
+    return session?.assignedClasses?.[0] || 'Standard 6 (Grade 6)';
+  });
+  const [selectedSubject, setSelectedSubject] = useState<string>(() => {
+    const session = getCurrentSession();
+    return session?.subjects?.[0] || 'Civic & Moral Education (Uraia na Maadili)';
+  });
   const [searchPupil, setSearchPupil] = useState('');
 
   // Per-Class, Per-Subject Excel Upload Tracker
@@ -88,16 +101,6 @@ export default function SubjectMarksPage() {
   // Master pupils dictionary across all classes
   const [pupilsData, setPupilsData] = useState<Record<string, StudentMark[]>>(INITIAL_PUPILS);
 
-  // Initialize selected class & subject from teacher profile
-  useEffect(() => {
-    if (teacherClasses.length > 0) {
-      setSelectedClass(teacherClasses[0]);
-    }
-    if (teacherSubjects.length > 0) {
-      setSelectedSubject(teacherSubjects[0]);
-    }
-  }, [teacherClasses, teacherSubjects]);
-
   // Current active key for uploads
   const currentKey = `${selectedClass}_${selectedSubject}`;
   const currentUpload = classUploads[currentKey] || { isUploaded: false };
@@ -107,7 +110,7 @@ export default function SubjectMarksPage() {
 
   // Compute ranks and live list of pupils for selected class
   const classPupils = useMemo(() => {
-    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
+    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || [];
 
     // Sort descending by final mark to calculate rank only if Excel has been uploaded
     const sorted = isExcelUploaded
@@ -130,7 +133,7 @@ export default function SubjectMarksPage() {
 
   // 1. Download Excel / CSV Template for Selected Class (All Students Pre-Filled)
   const handleDownloadTemplate = () => {
-    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
+    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || [];
     const headers =
       'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Monthly_Test_1,Monthly_Test_2,Wastani_Monthly,Mid_Term,Terminal_Exam,Wastani_Muhula,Daraja\n';
     const rows = list
@@ -174,7 +177,7 @@ export default function SubjectMarksPage() {
 
         if (lines.length > 1) {
           const updatedList = [
-            ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
+            ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || []),
           ];
           let imported = 0;
 
@@ -239,7 +242,7 @@ export default function SubjectMarksPage() {
   // 3. Instant 1-Click Excel Simulation for Fast Testing (Strictly for Selected Class)
   const simulateInstantAutoFill = () => {
     const list = [
-      ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
+      ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || []),
     ];
     const autoFilled = list.map((p, index) => {
       const t1 = Math.min(100, Math.max(62, 75 + ((index * 7) % 24)));
@@ -342,7 +345,7 @@ export default function SubjectMarksPage() {
 
     setPupilsData((prev) => {
       const classList = [
-        ...(prev[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
+        ...(prev[selectedClass] || INITIAL_PUPILS[selectedClass] || []),
       ];
       const idx = classList.findIndex((p) => p.id === editingStudent.id);
       if (idx !== -1) {
@@ -518,7 +521,7 @@ export default function SubjectMarksPage() {
                 const clsKey = `${cls}_${selectedSubject}`;
                 const clsStatus = classUploads[clsKey];
                 const isClsUploaded = Boolean(clsStatus?.isUploaded);
-                const pupilsCount = (pupilsData[cls] || INITIAL_PUPILS[cls] || []).length || 35;
+                const pupilsCount = (pupilsData[cls] || INITIAL_PUPILS[cls] || []).length;
 
                 return (
                   <button
