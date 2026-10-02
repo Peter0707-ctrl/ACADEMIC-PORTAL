@@ -227,7 +227,7 @@ export default function TeacherShell({
                     : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
                 }`}
               >
-                Mahudhurio (Roll-Call)
+                Attendance
               </Link>
 
               <Link

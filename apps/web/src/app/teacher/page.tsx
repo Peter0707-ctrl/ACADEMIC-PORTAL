@@ -586,7 +586,7 @@ export default function TeacherDashboardPage() {
               </div>
             </Link>
 
-            {/* 3. Mahudhurio & Roll-Call */}
+            {/* 3. Attendance */}
             <Link
               href="/teacher/attendance"
               className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
@@ -601,14 +601,14 @@ export default function TeacherDashboardPage() {
               </div>
               <div className="mt-3">
                 <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  Roll-Call ya Mahudhurio
+                  Attendance
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Tazama ripoti za utoro na mahudhurio zilizotumwa moja kwa moja kutoka kwenye madarasa yote shuleni.
+                  Tazama na rekodi attendance ya kila siku kwa madarasa unayofundisha, na uwasilishe kwa Mkuu na Nidhamu.
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Mahudhurio</span>
+                <span>Fungua Attendance</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
