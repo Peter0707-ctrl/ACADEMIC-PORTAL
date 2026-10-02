@@ -595,7 +595,7 @@ export default function TeacherShell({
                   {currentUser?.fullName}
                 </span>
                 <span className="text-[10px] text-emerald-800 font-semibold block truncate max-w-[170px]">
-                  {currentUser?.identifier} • {currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.role === 'ACADEMIC' ? 'Mwl. Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
+                  {currentUser?.identifier} • {currentUser?.identifier === 'HT-2026-002' ? 'Makamu Mkuu' : currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.identifier === 'ACAD-2026-002' ? 'Msaidizi wa Taaluma' : currentUser?.role === 'ACADEMIC' ? 'Mwl. Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
                 </span>
               </div>
             </div>

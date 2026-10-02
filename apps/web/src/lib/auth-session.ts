@@ -59,6 +59,21 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     status: 'ACTIVE',
     joinedDate: '2026-01-15',
   },
+  // 2b. Makamu Mkuu wa Shule (Second Master / Deputy Headteacher - Unified HT format)
+  {
+    id: 'USR-002B',
+    fullName: 'Mwl. Frank Msaki',
+    role: 'HEADTEACHER',
+    leadershipRole: 'HEADTEACHER',
+    identifier: 'HT-2026-002',
+    email: 'secondmaster@primaryschool.ac.tz',
+    phone: '+255 754 112 234',
+    assignedClass: 'Senior Standards (Std 5 & 6)',
+    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
+    subjects: ['English Language', 'Social Studies (Maarifa ya Jamii)'],
+    status: 'ACTIVE',
+    joinedDate: '2026-01-16',
+  },
   // 3. Mwalimu wa Taaluma (Academic Master - Enters as Teacher Leader)
   {
     id: 'USR-003',
@@ -73,6 +88,21 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     subjects: ['Mathematics (Hisabati)', 'Science & Technology (Sayansi)'],
     status: 'ACTIVE',
     joinedDate: '2026-01-20',
+  },
+  // 3b. Msaidizi wa Taaluma (Assistant Academic Master - Unified ACAD format)
+  {
+    id: 'USR-003B',
+    fullName: 'Mwl. Emmanuel Lyimo',
+    role: 'ACADEMIC',
+    leadershipRole: 'ACADEMIC',
+    identifier: 'ACAD-2026-002',
+    email: 'asst.academic@primaryschool.ac.tz',
+    phone: '+255 765 223 345',
+    assignedClass: 'Standard 6 & Standard 5',
+    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 5 (Grade 5)'],
+    subjects: ['English Language', 'Mathematics (Hisabati)'],
+    status: 'ACTIVE',
+    joinedDate: '2026-01-22',
   },
   // 4. Mwalimu wa Nidhamu (Discipline Master - Enters as Teacher Leader)
   {
