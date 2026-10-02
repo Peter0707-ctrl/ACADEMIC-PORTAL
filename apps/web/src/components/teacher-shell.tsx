@@ -26,6 +26,8 @@ import {
   Check,
   Globe,
   UploadCloud,
+  Menu,
+  X,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -62,6 +64,12 @@ export default function TeacherShell({
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [allAccounts, setAllAccounts] = useState<UserAccount[]>([]);
   const [notification, setNotification] = useState<CenteredNotification | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const triggerNotification = useCallback((type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => {
     setNotification({ type, title, message });
@@ -254,28 +262,82 @@ export default function TeacherShell({
       )}
 
       {/* ===================================================================== */}
-      {/* 2. LEFT SIDEBAR: PURE LIGHT-GREEN THEME & LOGICAL HEADTEACHER ROLES */}
+      {/* 2. MOBILE TOP BAR (STICKY ON SMALL SCREENS < LG) */}
       {/* ===================================================================== */}
-      <aside className="w-full lg:w-72 xl:w-80 bg-white/95 backdrop-blur-md border-r border-emerald-200/90 shrink-0 flex flex-col justify-between shadow-xs lg:min-h-screen lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto z-30">
-        <div className="p-4 sm:p-5 space-y-5">
-          {/* School Brand / Logo */}
-          <div className="flex items-center gap-3 pb-4 border-b border-emerald-100">
-            <Link
-              href="/"
-              className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
-              title="Rudi Ukurasa wa Kwanza wa Shule"
-            >
-              <GraduationCap className="w-5 h-5 text-emerald-300" />
-              <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Shule</span>
-            </Link>
-            <div>
-              <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
-                PRIMARY &amp; NURSERY
-              </h2>
-              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                Educational ERP Portal
-              </span>
+      <div className="lg:hidden bg-white/95 backdrop-blur-md border-b border-emerald-200/90 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition-colors"
+            aria-label="Fungua Menyu ya Walimu"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center shadow-xs">
+              <GraduationCap className="w-4 h-4 text-emerald-300" />
             </div>
+            <div>
+              <h2 className="text-xs font-black text-slate-900 leading-tight">PRIMARY &amp; NURSERY</h2>
+              <span className="text-[9px] text-emerald-800 font-bold block uppercase tracking-wider">Teacher Portal</span>
+            </div>
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            {userInitials}
+          </div>
+        </div>
+      </div>
+
+      {/* Backdrop overlay for mobile drawer */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-40 lg:hidden animate-fade-in"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* ===================================================================== */}
+      {/* 3. SIDEBAR: PERSISTENT ON DESKTOP (LG+), SLIDE-IN DRAWER ON MOBILE */}
+      {/* ===================================================================== */}
+      <aside
+        className={`fixed lg:sticky top-0 left-0 h-screen z-50 lg:z-30 w-72 sm:w-80 bg-white/98 backdrop-blur-md border-r border-emerald-200/90 shrink-0 flex flex-col justify-between shadow-2xl lg:shadow-xs transition-transform duration-300 ease-in-out overflow-y-auto ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="p-4 sm:p-5 space-y-5">
+          {/* School Brand / Logo + Mobile Close Button */}
+          <div className="flex items-center justify-between pb-4 border-b border-emerald-100">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
+                title="Rudi Ukurasa wa Kwanza wa Shule"
+              >
+                <GraduationCap className="w-5 h-5 text-emerald-300" />
+                <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Shule</span>
+              </Link>
+              <div>
+                <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
+                  PRIMARY &amp; NURSERY
+                </h2>
+                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                  Educational ERP Portal
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              title="Funga Menyu"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* ================================================================= */}

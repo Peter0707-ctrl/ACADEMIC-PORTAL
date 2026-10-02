@@ -35,6 +35,8 @@ import {
   Phone,
   Mail,
   QrCode,
+  Menu,
+  X,
 } from 'lucide-react';
 import { getCurrentSession, clearCurrentSession } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
@@ -216,6 +218,7 @@ export default function ParentGuardianPortal() {
   const [selectedChildId, setSelectedChildId] = useState<string>(CHILDREN_DATA[0].id);
   const [activeTab, setActiveTab] = useState<ParentTab>('DASHBOARD');
   const [activeNotice, setActiveNotice] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Link Child State
   const [showLinkChildModal, setShowLinkChildModal] = useState(false);
@@ -327,28 +330,91 @@ export default function ParentGuardianPortal() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col lg:flex-row">
       {/* ===================================================================== */}
-      {/* 1. LEFT SIDEBAR: PARENT & GUARDIAN CANONICAL TREE NAVIGATION */}
+      {/* 1. MOBILE TOP BAR (STICKY ON SMALL SCREENS < LG) */}
       {/* ===================================================================== */}
-      <aside className="w-full lg:w-72 xl:w-80 bg-white/95 backdrop-blur-md border-r border-emerald-200/90 shrink-0 flex flex-col justify-between shadow-xs lg:min-h-screen lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto z-30">
-        <div className="p-4 sm:p-5 space-y-4">
-          {/* School Brand */}
-          <div className="flex items-center gap-3 pb-3 border-b border-emerald-100">
-            <Link
-              href="/"
-              className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
-              title="Rudi Ukurasa wa Kwanza"
-            >
-              <School className="w-5 h-5 text-emerald-300" />
-              <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Shule</span>
-            </Link>
+      <div className="lg:hidden bg-white/95 backdrop-blur-md border-b border-emerald-200/90 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition-colors"
+            aria-label="Fungua Menyu ya Mzazi"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center shadow-xs">
+              <School className="w-4 h-4 text-emerald-300" />
+            </div>
             <div>
-              <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
-                PRIMARY &amp; NURSERY
-              </h2>
-              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                Portal ya Mzazi / Mlezi
+              <h2 className="text-xs font-black text-slate-900 leading-tight">PRIMARY &amp; NURSERY</h2>
+              <span className="text-[9px] text-emerald-800 font-bold block uppercase tracking-wider">
+                Portal ya Mzazi
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Active Child Chip */}
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-100/80 border border-emerald-300 text-emerald-950 font-bold text-xs"
+          title="Badili mtoto"
+        >
+          <div className="w-5 h-5 rounded-md bg-emerald-800 text-emerald-100 flex items-center justify-center text-[10px] font-black">
+            {selectedChild.photoInitial}
+          </div>
+          <span className="text-[11px] truncate max-w-[80px]">{selectedChild.name.split(' ')[0]}</span>
+        </button>
+      </div>
+
+      {/* Backdrop overlay for mobile drawer */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-40 lg:hidden animate-fade-in"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* ===================================================================== */}
+      {/* 2. SIDEBAR: PERSISTENT ON DESKTOP, SLIDE-IN DRAWER ON MOBILE */}
+      {/* ===================================================================== */}
+      <aside
+        className={`fixed lg:sticky top-0 left-0 h-screen z-50 lg:z-30 w-72 sm:w-80 bg-white/98 backdrop-blur-md border-r border-emerald-200/90 shrink-0 flex flex-col justify-between shadow-2xl lg:shadow-xs transition-transform duration-300 ease-in-out overflow-y-auto ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="p-4 sm:p-5 space-y-4">
+          {/* School Brand + Mobile Close Button */}
+          <div className="flex items-center justify-between pb-3 border-b border-emerald-100">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
+                title="Rudi Ukurasa wa Kwanza"
+              >
+                <School className="w-5 h-5 text-emerald-300" />
+                <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Shule</span>
+              </Link>
+              <div>
+                <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
+                  PRIMARY &amp; NURSERY
+                </h2>
+                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                  Portal ya Mzazi / Mlezi
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              title="Funga Menyu"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* ================================================================= */}
@@ -397,7 +463,7 @@ export default function ParentGuardianPortal() {
             <button
               type="button"
               onClick={() => setShowLinkChildModal(true)}
-              className="w-full mt-2 py-1.5 px-3 rounded-xl bg-white hover:bg-emerald-100 text-emerald-900 border border-dashed border-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+              className="w-full mt-2 py-2 px-3 rounded-xl bg-white hover:bg-emerald-100 text-emerald-900 border border-dashed border-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
             >
               <Plus className="w-3.5 h-3.5 text-emerald-700" />
               <span>Unganisha Mtoto Mwingine</span>
