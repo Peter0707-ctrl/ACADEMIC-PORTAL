@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { getStoredAccounts, setCurrentSession, UserAccount } from '@/lib/auth-session';
 import {
   GraduationCap,
   School,
@@ -350,23 +351,64 @@ export default function PrimaryPortalHomePage() {
 
     setTimeout(() => {
       setIsLoggingIn(false);
+      const accounts = getStoredAccounts();
       const lower = cleanIdentifier.toLowerCase();
-      if (
-        lower.includes('admin') ||
-        lower.includes('headteacher') ||
-        lower.includes('academic') ||
-        lower.includes('discipline')
-      ) {
-        router.push('/admin');
+
+      // Find user by email, identifier (staff/adm no), or phone
+      let matched = accounts.find(
+        (a) =>
+          (a.email && a.email.toLowerCase() === lower) ||
+          a.identifier.toLowerCase() === lower ||
+          (a.phone && a.phone.replace(/\s+/g, '') === cleanIdentifier.replace(/\s+/g, ''))
+      );
+
+      // Keyword match fallback
+      if (!matched) {
+        if (lower.includes('headteacher')) matched = accounts.find((a) => a.role === 'HEADTEACHER');
+        else if (lower.includes('academic')) matched = accounts.find((a) => a.role === 'ACADEMIC');
+        else if (lower.includes('discipline')) matched = accounts.find((a) => a.role === 'DISCIPLINE');
+        else if (lower.includes('admin')) matched = accounts.find((a) => a.role === 'ADMIN');
+        else if (selectedRole === 'TEACHER') matched = accounts.find((a) => a.role === 'TEACHER');
+      }
+
+      if (matched) {
+        setCurrentSession(matched);
+        if (['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(matched.role)) {
+          router.push('/admin');
+        } else if (matched.role === 'TEACHER') {
+          router.push('/teacher');
+        } else if (['STUDENT', 'CANDIDATE'].includes(matched.role)) {
+          router.push('/student');
+        } else if (matched.role === 'PARENT') {
+          router.push('/parent');
+        }
       } else {
-        const roleObj = AUTH_CONFIG.roles.find((r) => r.id === selectedRole);
         triggerNotification(
-          'success',
-          'Authentication Verified',
-          `Welcome to the ${school.name} ${roleObj?.label} portal. Secure session established.`
+          'error',
+          'Account Not Found',
+          'No registered account matched this identifier. Please verify your credentials or select a quick test account below.'
         );
       }
-    }, 700);
+    }, 600);
+  };
+
+  // Instant Test Login Handler
+  const handleInstantTestLogin = (role: 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'ADMIN' | 'TEACHER' | 'CANDIDATE', teacherId?: string) => {
+    const accounts = getStoredAccounts();
+    const target = teacherId
+      ? accounts.find((a) => a.id === teacherId)
+      : accounts.find((a) => a.role === role);
+
+    if (target) {
+      setCurrentSession(target);
+      if (['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(target.role)) {
+        router.push('/admin');
+      } else if (target.role === 'TEACHER') {
+        router.push('/teacher');
+      } else if (['STUDENT', 'CANDIDATE'].includes(target.role)) {
+        router.push('/student');
+      }
+    }
   };
 
   // ---------------------------------------------------------------------------
@@ -782,45 +824,77 @@ export default function PrimaryPortalHomePage() {
               </button>
             </form>
 
-            {/* Quick Blueprint Executive Demonstration Access */}
-            <div className="mt-5 p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-2">
+            {/* Quick Blueprint Executive & Teaching Demonstration Access */}
+            <div className="mt-5 p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-emerald-950 uppercase tracking-wider">
-                  Quick Blueprint Leadership Access:
+                  1-Click Direct Test Login (Any Role):
                 </span>
                 <span className="text-[9px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-full border border-emerald-200">
                   Instant Demo
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>School Admin</span>
-                </Link>
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <Award className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Mwalimu Mkuu</span>
-                </Link>
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Mwl. wa Taaluma</span>
-                </Link>
-                <Link
-                  href="/admin"
-                  className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <Shield className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Mwl. wa Nidhamu</span>
-                </Link>
+
+              {/* Leadership Accounts */}
+              <div>
+                <span className="text-[10px] font-semibold text-slate-500 block mb-1">Executive Leadership:</span>
+                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => handleInstantTestLogin('HEADTEACHER')}
+                    className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <Award className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Mwalimu Mkuu</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInstantTestLogin('ACADEMIC')}
+                    className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Mwl. wa Taaluma</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInstantTestLogin('DISCIPLINE')}
+                    className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Mwl. wa Nidhamu</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInstantTestLogin('ADMIN')}
+                    className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>School Admin</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Teaching Staff Accounts */}
+              <div className="pt-1 border-t border-emerald-200/60">
+                <span className="text-[10px] font-semibold text-slate-500 block mb-1">Class &amp; Subject Teachers:</span>
+                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => handleInstantTestLogin('TEACHER', 'USR-005')}
+                    className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Mwl. Sarah (Std 5)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInstantTestLogin('TEACHER', 'USR-006')}
+                    className="p-2 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-400 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Mwl. Swai (Std 4)</span>
+                  </button>
+                </div>
               </div>
             </div>
 
