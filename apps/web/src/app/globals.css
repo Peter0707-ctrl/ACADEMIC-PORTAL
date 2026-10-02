@@ -5,7 +5,7 @@
 :root {
   --background: #F3FAF5;
   --foreground: #1E293B;
-  --font-family: Calibri, 'Candara', 'Segoe UI', Optima, Arial, sans-serif;
+  --font-family: 'Segoe UI Variable', 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 
 * {
