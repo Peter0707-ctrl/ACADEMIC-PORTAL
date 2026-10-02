@@ -12,10 +12,13 @@ export type UserRole =
   | 'CANDIDATE'
   | 'PARENT';
 
+export type LeadershipRole = 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'CLASS_TEACHER';
+
 export interface UserAccount {
   id: string;
   fullName: string;
   role: UserRole;
+  leadershipRole?: LeadershipRole;
   identifier: string; // Staff ID, TSC No, or Admission / Candidate No
   email?: string;
   phone?: string;
@@ -30,7 +33,7 @@ export interface UserAccount {
 }
 
 export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
-  // 1. School Admin (Uongozi Mkuu)
+  // 1. School Admin (Uongozi Mkuu wa Mfumo)
   {
     id: 'USR-001',
     fullName: 'Peter Msira',
@@ -41,42 +44,48 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     status: 'ACTIVE',
     joinedDate: '2026-01-10',
   },
-  // 2. Mwalimu Mkuu (Headteacher / Principal)
+  // 2. Mwalimu Mkuu (Headteacher / Principal - Enters as Teacher Leader)
   {
     id: 'USR-002',
     fullName: 'Mwl. Augustine Mrosso',
     role: 'HEADTEACHER',
+    leadershipRole: 'HEADTEACHER',
     identifier: 'HT-2026-001',
     email: 'headteacher@primaryschool.ac.tz',
     phone: '+255 754 112 233',
+    assignedClass: 'Senior Standards (Std 6 & 7)',
+    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'],
+    subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Social Studies (Maarifa ya Jamii)'],
     status: 'ACTIVE',
     joinedDate: '2026-01-15',
   },
-  // 3. Mwalimu wa Taaluma (Academic Master)
+  // 3. Mwalimu wa Taaluma (Academic Master - Enters as Teacher Leader)
   {
     id: 'USR-003',
     fullName: 'Mwl. Beatrice Kimaro',
     role: 'ACADEMIC',
+    leadershipRole: 'ACADEMIC',
     identifier: 'ACAD-2026-001',
     email: 'academic@primaryschool.ac.tz',
     phone: '+255 765 223 344',
     assignedClass: 'Standard 7 & Standard 4',
     assignedClasses: ['Standard 7 (Grade 7)', 'Standard 4 (Grade 4)'],
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology'],
+    subjects: ['Mathematics (Hisabati)', 'Science & Technology (Sayansi)'],
     status: 'ACTIVE',
     joinedDate: '2026-01-20',
   },
-  // 4. Mwalimu wa Nidhamu (Discipline Master)
+  // 4. Mwalimu wa Nidhamu (Discipline Master - Enters as Teacher Leader)
   {
     id: 'USR-004',
     fullName: 'Mwl. Godfrey Makere',
     role: 'DISCIPLINE',
+    leadershipRole: 'DISCIPLINE',
     identifier: 'DISC-2026-001',
     email: 'discipline@primaryschool.ac.tz',
     phone: '+255 784 334 455',
     assignedClass: 'Whole School',
-    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 5 (Grade 5)'],
-    subjects: ['Civic & Moral Education (Uraia na Maadili)'],
+    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
+    subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Vocational Skills (Stadi za Kazi)'],
     status: 'ACTIVE',
     joinedDate: '2026-02-01',
   },
@@ -271,12 +280,12 @@ export function canAccessPortal(
   if (!user) return false;
 
   if (targetPortal === 'ADMIN') {
-    // ONLY Leadership: Admin, Headteacher, Academic Master, Discipline Master
-    return ['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(user.role);
+    // ONLY System Admin (Uongozi Mkuu wa Mfumo) enters /admin to manage & delete accounts
+    return user.role === 'ADMIN';
   }
 
   if (targetPortal === 'TEACHER') {
-    // Teachers, Academic Master, Discipline Master, Headteacher, or Admin
+    // All Teaching staff: Headteacher, Academic Master, Discipline Master, and Class Teachers
     return ['TEACHER', 'ACADEMIC', 'DISCIPLINE', 'HEADTEACHER', 'ADMIN'].includes(user.role);
   }
 

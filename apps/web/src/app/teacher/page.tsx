@@ -25,6 +25,10 @@ import {
   TrendingUp,
   UserCheck,
   Sparkles,
+  Shield,
+  FileText,
+  Building2,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -91,14 +95,18 @@ export default function TeacherPortalPage() {
   // Centered Small Blue Modal Notification
   const [notification, setNotification] = useState<CenteredNotification | null>(null);
 
-  // Active Workspace Tab: 'MARKS' | 'ATTENDANCE' | 'STAFF_ROSTER'
-  const [activeTab, setActiveTab] = useState<'MARKS' | 'ATTENDANCE' | 'STAFF_ROSTER'>('MARKS');
+  // Active Tab:
+  // General: 'MARKS' | 'ATTENDANCE' | 'STAFF_ROSTER'
+  // Headteacher: 'HT_APPROVALS' | 'HT_STAFF_OVERSIGHT'
+  // Academic: 'ACAD_CANDIDATES' | 'ACAD_BROADSHEET'
+  // Discipline: 'DISC_WHOLE_SCHOOL' | 'DISC_INCIDENTS'
+  const [activeTab, setActiveTab] = useState<string>('MARKS');
 
-  // Active Selected Class & Subject
+  // Active Selected Class & Subject for teaching
   const [selectedClass, setSelectedClass] = useState<string>('Standard 5 (Grade 5)');
   const [selectedSubject, setSelectedSubject] = useState<string>('English Language');
 
-  // Marks & Attendance State
+  // Pupils & Attendance State
   const [pupilsData, setPupilsData] = useState<Record<string, StudentMark[]>>(INITIAL_PUPILS);
   const [searchPupil, setSearchPupil] = useState('');
 
@@ -117,11 +125,11 @@ export default function TeacherPortalPage() {
 
     let session = getCurrentSession();
 
-    // If no active session, default to first demo teacher (Mwl. Sarah Mollel) for immediate testing
+    // If no session, default to Headteacher (Mwl. Augustine Mrosso) to showcase leadership
     if (!session) {
-      const defaultTeacher = accounts.find((a) => a.role === 'TEACHER') || accounts[4];
-      setCurrentSession(defaultTeacher);
-      session = defaultTeacher;
+      const defaultLeader = accounts.find((a) => a.role === 'HEADTEACHER') || accounts[1];
+      setCurrentSession(defaultLeader);
+      session = defaultLeader;
     }
 
     // Role-based security check: Students or Parents cannot view teacher portal!
@@ -141,23 +149,34 @@ export default function TeacherPortalPage() {
     // Set default class & subject from teacher's assignments
     if (session.assignedClasses && session.assignedClasses.length > 0) {
       setSelectedClass(session.assignedClasses[0]);
-    } else if (session.assignedClass) {
+    } else if (session.assignedClass && session.assignedClass !== 'Whole School') {
       setSelectedClass(session.assignedClass);
     }
 
     if (session.subjects && session.subjects.length > 0) {
       setSelectedSubject(session.subjects[0]);
     }
+
+    // Default tab based on role
+    if (session.role === 'HEADTEACHER' || session.leadershipRole === 'HEADTEACHER') {
+      setActiveTab('HT_APPROVALS');
+    } else if (session.role === 'ACADEMIC' || session.leadershipRole === 'ACADEMIC') {
+      setActiveTab('ACAD_CANDIDATES');
+    } else if (session.role === 'DISCIPLINE' || session.leadershipRole === 'DISCIPLINE') {
+      setActiveTab('DISC_WHOLE_SCHOOL');
+    } else {
+      setActiveTab('MARKS');
+    }
   }, [triggerNotification]);
 
-  // Switch Teacher Identity (For testing different teachers)
+  // Switch Teacher Identity
   const handleSwitchTeacher = (teacher: UserAccount) => {
     setCurrentSession(teacher);
     setCurrentUser(teacher);
 
     if (teacher.assignedClasses && teacher.assignedClasses.length > 0) {
       setSelectedClass(teacher.assignedClasses[0]);
-    } else if (teacher.assignedClass) {
+    } else if (teacher.assignedClass && teacher.assignedClass !== 'Whole School') {
       setSelectedClass(teacher.assignedClass);
     }
 
@@ -165,10 +184,20 @@ export default function TeacherPortalPage() {
       setSelectedSubject(teacher.subjects[0]);
     }
 
+    if (teacher.role === 'HEADTEACHER' || teacher.leadershipRole === 'HEADTEACHER') {
+      setActiveTab('HT_APPROVALS');
+    } else if (teacher.role === 'ACADEMIC' || teacher.leadershipRole === 'ACADEMIC') {
+      setActiveTab('ACAD_CANDIDATES');
+    } else if (teacher.role === 'DISCIPLINE' || teacher.leadershipRole === 'DISCIPLINE') {
+      setActiveTab('DISC_WHOLE_SCHOOL');
+    } else {
+      setActiveTab('MARKS');
+    }
+
     triggerNotification(
       'success',
       'Teacher Switched',
-      `Now logged in as ${teacher.fullName}. Teaching: ${teacher.subjects?.join(', ') || 'General'}`
+      `Now logged in as ${teacher.fullName} (${teacher.role.replace('_', ' ')}).`
     );
   };
 
@@ -180,12 +209,17 @@ export default function TeacherPortalPage() {
 
   // List of all primary teachers for roster
   const teachersList = useMemo(() => {
-    return allAccounts.filter((a) => ['TEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(a.role));
+    return allAccounts.filter((a) => ['TEACHER', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(a.role));
+  }, [allAccounts]);
+
+  // Candidates list (for Academic Master)
+  const candidatesList = useMemo(() => {
+    return allAccounts.filter((a) => a.role === 'CANDIDATE');
   }, [allAccounts]);
 
   // Current class pupils
   const currentPupils = useMemo(() => {
-    const list = pupilsData[selectedClass] || [];
+    const list = pupilsData[selectedClass] || pupilsData['Standard 5 (Grade 5)'] || [];
     if (!searchPupil.trim()) return list;
     return list.filter(
       (p) =>
@@ -200,7 +234,7 @@ export default function TeacherPortalPage() {
     const grade = calculateGrade(clamped);
 
     setPupilsData((prev) => {
-      const classList = [...(prev[selectedClass] || [])];
+      const classList = [...(prev[selectedClass] || prev['Standard 5 (Grade 5)'] || [])];
       const idx = classList.findIndex((p) => p.id === pupilId);
       if (idx !== -1) {
         classList[idx] = { ...classList[idx], mark: clamped, grade };
@@ -212,7 +246,7 @@ export default function TeacherPortalPage() {
   // Handle Attendance Toggle
   const handleAttendanceChange = (pupilId: string, status: 'PRESENT' | 'ABSENT' | 'PERMISSION') => {
     setPupilsData((prev) => {
-      const classList = [...(prev[selectedClass] || [])];
+      const classList = [...(prev[selectedClass] || prev['Standard 5 (Grade 5)'] || [])];
       const idx = classList.findIndex((p) => p.id === pupilId);
       if (idx !== -1) {
         classList[idx] = { ...classList[idx], attendance: status };
@@ -221,15 +255,10 @@ export default function TeacherPortalPage() {
     });
   };
 
-  // Class statistics
-  const classStats = useMemo(() => {
-    const list = pupilsData[selectedClass] || [];
-    if (list.length === 0) return { avg: 0, presentCount: 0, passCount: 0 };
-    const avg = Math.round(list.reduce((acc, p) => acc + p.mark, 0) / list.length);
-    const presentCount = list.filter((p) => p.attendance === 'PRESENT').length;
-    const passCount = list.filter((p) => p.mark >= 45).length;
-    return { avg, presentCount, passCount };
-  }, [pupilsData, selectedClass]);
+  // Teacher leadership flags
+  const isHeadteacher = currentUser?.role === 'HEADTEACHER' || currentUser?.leadershipRole === 'HEADTEACHER';
+  const isAcademicMaster = currentUser?.role === 'ACADEMIC' || currentUser?.leadershipRole === 'ACADEMIC';
+  const isDisciplineMaster = currentUser?.role === 'DISCIPLINE' || currentUser?.leadershipRole === 'DISCIPLINE';
 
   // If unauthorized, block view
   if (isAuthorized === false) {
@@ -303,11 +332,11 @@ export default function TeacherPortalPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-base font-black text-slate-800 tracking-tight">PRIMARY &amp; NURSERY SCHOOL</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-200">
-                    Teacher Portal
+                    {isHeadteacher ? 'Mwalimu Mkuu (Headteacher)' : isAcademicMaster ? 'Mwl. wa Taaluma' : isDisciplineMaster ? 'Mwl. wa Nidhamu' : 'Class Teacher Portal'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 font-medium">
-                  Classroom Roll-Call, Marks Entry &amp; Teaching Staff Roster
+                  {isHeadteacher ? 'Executive Oversight & Academic Endorsement' : 'Classroom Teaching & Academic Records'}
                 </p>
               </div>
             </div>
@@ -319,14 +348,14 @@ export default function TeacherPortalPage() {
                 <span className="text-[10px] font-mono text-emerald-700">{currentUser?.identifier}</span>
               </div>
 
-              {/* Admin Link if authorized */}
-              {['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(currentUser?.role || '') && (
+              {/* Only System Admin gets access to technical admin settings */}
+              {currentUser?.role === 'ADMIN' && (
                 <Link
                   href="/admin"
                   className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200/80 transition-all flex items-center gap-1"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Executive Admin</span>
+                  <span>System Admin</span>
                 </Link>
               )}
 
@@ -342,13 +371,14 @@ export default function TeacherPortalPage() {
             </div>
           </div>
 
-          {/* TEACHER SWITCHER STRIP (To effortlessly test different teachers and their specific subjects) */}
+          {/* TEACHER SWITCHER STRIP (Effortlessly test different teacher leaders & regular teachers) */}
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
             <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
-              Test As Teacher:
+              Active Teacher Account:
             </span>
             {teachersList.map((t) => {
               const isCurrent = currentUser?.id === t.id;
+              const isLeader = ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(t.role);
               return (
                 <button
                   key={t.id}
@@ -357,13 +387,18 @@ export default function TeacherPortalPage() {
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
                     isCurrent
                       ? 'bg-emerald-700 text-white shadow-xs'
+                      : isLeader
+                      ? 'bg-emerald-50 text-emerald-950 border border-emerald-300 hover:bg-emerald-100'
                       : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-300'
                   }`}
                 >
-                  <BookOpen className="w-3 h-3" />
+                  {t.role === 'HEADTEACHER' && <Award className="w-3 h-3 text-amber-500" />}
+                  {t.role === 'ACADEMIC' && <BookOpen className="w-3 h-3 text-blue-500" />}
+                  {t.role === 'DISCIPLINE' && <Shield className="w-3 h-3 text-emerald-500" />}
+                  {t.role === 'TEACHER' && <Users className="w-3 h-3 text-slate-400" />}
                   <span>{t.fullName}</span>
                   <span className={`text-[9px] px-1.5 py-0.2 rounded-full ${isCurrent ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                    {t.assignedClasses?.[0]?.replace(' (Grade 5)', '').replace(' (Grade 4)', '') || t.assignedClass || 'Staff'}
+                    {t.role === 'HEADTEACHER' ? 'Mkuu wa Shule' : t.role === 'ACADEMIC' ? 'Taaluma' : t.role === 'DISCIPLINE' ? 'Nidhamu' : 'Class Teacher'}
                   </span>
                 </button>
               );
@@ -382,92 +417,398 @@ export default function TeacherPortalPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-lg border border-emerald-300 shadow-2xs">
-                {currentUser?.fullName.charAt(0) || 'T'}
+                {isHeadteacher ? <Award className="w-6 h-6 text-emerald-800" /> : currentUser?.fullName.charAt(0) || 'T'}
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base sm:text-lg font-black text-slate-800">{currentUser?.fullName}</h2>
-                  {currentUser?.isHomeroomMaster && (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-300">
-                      Homeroom Class Master
-                    </span>
-                  )}
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
+                    {isHeadteacher
+                      ? 'Mwalimu Mkuu (Headteacher / Principal)'
+                      : isAcademicMaster
+                      ? 'Mwalimu wa Taaluma (Academic Master)'
+                      : isDisciplineMaster
+                      ? 'Mwalimu wa Nidhamu (Discipline Master)'
+                      : 'Primary Class Teacher'}
+                  </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-0.5">
                   <span className="font-mono text-emerald-800 font-semibold">{currentUser?.identifier}</span>
                   <span>•</span>
                   <span>{currentUser?.email}</span>
-                  {currentUser?.phone && (
-                    <>
-                      <span>•</span>
-                      <span>{currentUser?.phone}</span>
-                    </>
-                  )}
+                  <span>•</span>
+                  <span>Teaching: {currentUser?.subjects?.join(', ') || 'Primary Curriculum'}</span>
                 </div>
               </div>
             </div>
 
-            {/* Teacher's Allocated Subjects */}
-            <div className="sm:text-right">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Assigned Subjects</span>
-              <div className="flex flex-wrap gap-1 sm:justify-end mt-1">
-                {currentUser?.subjects?.map((sub, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-200"
-                  >
-                    {sub}
-                  </span>
-                )) || <span className="text-xs text-slate-400">All Primary Subjects</span>}
+            {/* Quick Authority Seal Badge */}
+            {isHeadteacher && (
+              <div className="p-2.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-900 text-xs font-bold flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-600 shrink-0" />
+                <div>
+                  <span className="block leading-tight">Headteacher Official Seal</span>
+                  <span className="text-[10px] text-amber-700 font-normal">Authorized to approve &amp; sign end-of-term broadsheets</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* TAB CONTROLS: MARKS ENTRY, ATTENDANCE, STAFF ROSTER */}
-        <div className="flex items-center gap-2 border-b border-emerald-200/80 pb-2">
+        {/* WORKSPACE NAVIGATION TABS (ADAPTS DYNAMICALLY TO TEACHER'S ROLE) */}
+        <div className="flex items-center gap-2 border-b border-emerald-200/80 pb-2 overflow-x-auto scrollbar-none text-xs font-bold">
+          
+          {/* 1. Headteacher Exclusive Tabs */}
+          {isHeadteacher && (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveTab('HT_APPROVALS')}
+                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'HT_APPROVALS'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
+                }`}
+              >
+                <Award className="w-3.5 h-3.5 text-amber-300" />
+                <span>Idhini ya Matokeo (Approvals &amp; Seal)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('HT_STAFF_OVERSIGHT')}
+                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'HT_STAFF_OVERSIGHT'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Usimamizi wa Walimu &amp; Mitaala</span>
+              </button>
+            </>
+          )}
+
+          {/* 2. Academic Master Exclusive Tabs */}
+          {isAcademicMaster && (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveTab('ACAD_CANDIDATES')}
+                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'ACAD_CANDIDATES'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
+                }`}
+              >
+                <Award className="w-3.5 h-3.5 text-amber-300" />
+                <span>Watahiniwa wa Taifa (PSLE &amp; SFNA)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('ACAD_BROADSHEET')}
+                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'ACAD_BROADSHEET'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Uratibu wa Mitihani &amp; Broadsheet</span>
+              </button>
+            </>
+          )}
+
+          {/* 3. Discipline Master Exclusive Tabs */}
+          {isDisciplineMaster && (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveTab('DISC_WHOLE_SCHOOL')}
+                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'DISC_WHOLE_SCHOOL'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
+                }`}
+              >
+                <Shield className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Mahudhurio ya Shule Nzima &amp; Utoro</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('DISC_INCIDENTS')}
+                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'DISC_INCIDENTS'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
+                }`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                <span>Nidhamu, Sare &amp; Wito wa Wazazi</span>
+              </button>
+            </>
+          )}
+
+          {/* 4. Common Teaching Tabs (Every teacher teaches subjects and manages roll-call) */}
           <button
             type="button"
             onClick={() => setActiveTab('MARKS')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
               activeTab === 'MARKS'
                 ? 'bg-emerald-700 text-white shadow-xs'
                 : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
             }`}
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Subject Marks Entry</span>
+            <span>Kujaza Alama za Somo (Marks Entry)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('ATTENDANCE')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
               activeTab === 'ATTENDANCE'
                 ? 'bg-emerald-700 text-white shadow-xs'
                 : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
             }`}
           >
             <UserCheck className="w-3.5 h-3.5" />
-            <span>Daily Roll-Call Register</span>
+            <span>Roll-Call ya Darasa Langu</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('STAFF_ROSTER')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
               activeTab === 'STAFF_ROSTER'
                 ? 'bg-emerald-700 text-white shadow-xs'
                 : 'bg-white text-slate-600 border border-slate-200 hover:text-emerald-800'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>Teaching Staff Directory ({teachersList.length})</span>
+            <span>Walimu Wenzangu ({teachersList.length})</span>
           </button>
         </div>
 
         {/* =================================================================== */}
-        {/* WORKSPACE VIEW 1: SUBJECT MARKS ENTRY */}
+        {/* VIEW: HEADTEACHER APPROVALS & OFFICIAL SEAL */}
+        {/* =================================================================== */}
+        {activeTab === 'HT_APPROVALS' && isHeadteacher && (
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300 mb-1.5">
+                  <Award className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Ofisi ya Mwalimu Mkuu (Headteacher Executive Desk)</span>
+                </div>
+                <h3 className="text-lg font-black text-slate-800">
+                  Uidhinishaji wa Matokeo ya Muhula &amp; Muhuri Rasmi wa Shule
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Mwalimu Mkuu pekee ana mamlaka ya kupitia alama zote za madarasa ya awali hadi darasa la 7 na kutia saini rasmi.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => triggerNotification('success', 'Matokeo Yameidhinishwa', 'Mwalimu Mkuu ametia Muhuri Rasmi wa Shule. Matokeo sasa yanaonekana rasmi kwenye portal za wazazi na wanafunzi.')}
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-700/20 transition-all flex items-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Tia Saini &amp; Muhuri Rasmi wa Shule</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
+                <span className="font-bold text-slate-700 block">Madarasa Yaliyokamilisha Alama</span>
+                <span className="text-2xl font-black text-emerald-800 block">7 / 7 Madarasa</span>
+                <p className="text-[11px] text-slate-500">Kuanzia Nursery hadi Standard 7 walimu wote wamewasilisha alama.</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+                <span className="font-bold text-slate-700 block">Watahiniwa wa Mtihani wa Taifa (PSLE)</span>
+                <span className="text-2xl font-black text-amber-900 block">Wastani: 89.2% (Grade A)</span>
+                <p className="text-[11px] text-slate-500">Watahiniwa wote 4 wamefaulu mitihani ya majaribio ya NECTA.</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 space-y-2">
+                <span className="font-bold text-slate-700 block">Hali ya Ripoti za Wazazi</span>
+                <span className="text-2xl font-black text-blue-900 block">Tayari kwa Uidhinisho</span>
+                <p className="text-[11px] text-slate-500">SMS na PDF za ripoti zitatumwa mara baada ya saini ya Mkuu.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* VIEW: HEADTEACHER STAFF & SYLLABUS OVERSIGHT */}
+        {/* =================================================================== */}
+        {activeTab === 'HT_STAFF_OVERSIGHT' && isHeadteacher && (
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-slate-800">
+                Usimamizi wa Maendeleo ya Walimu &amp; Ufundishaji wa Mitaala (Syllabus Coverage)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Tathmini ya maandalio ya masomo (Lesson Plans) na kasi ya kumaliza muhtasari wa masomo.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-4">Jina la Mwalimu</th>
+                    <th className="py-3 px-4">Masomo Anayofundisha</th>
+                    <th className="py-3 px-4">Madarasa</th>
+                    <th className="py-3 px-4">Maandalio (Lesson Plans)</th>
+                    <th className="py-3 px-4">Muhtasari wa Somo (%)</th>
+                    <th className="py-3 px-4">Tathmini ya Mkuu</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {teachersList.map((t) => (
+                    <tr key={t.id} className="hover:bg-slate-50/80">
+                      <td className="py-3 px-4 font-bold text-slate-800">{t.fullName}</td>
+                      <td className="py-3 px-4 text-slate-600">{t.subjects?.join(', ') || 'Mtaala wa Msingi'}</td>
+                      <td className="py-3 px-4 font-semibold text-slate-700">{t.assignedClasses?.join(', ') || t.assignedClass}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                          Yamewasilishwa Kila Wiki
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-bold text-emerald-700">96% - 98%</td>
+                      <td className="py-3 px-4 text-slate-500 text-[11px]">Kazi Nzuri Sana</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* VIEW: ACADEMIC MASTER CANDIDATES TRACKING */}
+        {/* =================================================================== */}
+        {activeTab === 'ACAD_CANDIDATES' && isAcademicMaster && (
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-900 text-xs font-bold border border-blue-200 mb-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-blue-700" />
+                  <span>Ofisi ya Mwalimu wa Taaluma (Academic Desk)</span>
+                </div>
+                <h3 className="text-lg font-black text-slate-800">
+                  Usimamizi wa Watahiniwa wa Mitihani ya Taifa (PSLE Std 7 &amp; SFNA Std 4)
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Fuatilia namba za watahiniwa wa NECTA, matokeo ya mitihani ya majaribio (Mock Exams), na maandalizi.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => triggerNotification('info', 'NECTA Sync', 'Watahiniwa wote 4 wamethibitishwa na namba zao za mtihani zinalingana na mfumo wa NECTA.')}
+                className="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Thibitisha Namba za NECTA</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-4">Jina la Mtahiniwa</th>
+                    <th className="py-3 px-4">Aina ya Mtihani</th>
+                    <th className="py-3 px-4">Namba ya Mtihani (Index No)</th>
+                    <th className="py-3 px-4">Darasa</th>
+                    <th className="py-3 px-4">Wastani wa Mock</th>
+                    <th className="py-3 px-4">Daraja Linalotarajiwa</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {candidatesList.map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-50/80">
+                      <td className="py-3 px-4 font-bold text-slate-800">{c.fullName}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-bold text-[10px] border border-amber-300">
+                          {c.candidateType} Candidate
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-emerald-800 font-bold">{c.examIndexNo}</td>
+                      <td className="py-3 px-4 text-slate-700">{c.assignedClass}</td>
+                      <td className="py-3 px-4 font-bold text-emerald-700">92%</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 font-bold text-[10px]">
+                          Grade A (Distinction)
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* VIEW: DISCIPLINE MASTER WHOLE-SCHOOL ATTENDANCE & TRUANCY */}
+        {/* =================================================================== */}
+        {activeTab === 'DISC_WHOLE_SCHOOL' && isDisciplineMaster && (
+          <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-200 mb-1.5">
+                  <Shield className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Ofisi ya Mwalimu wa Nidhamu (Discipline Desk)</span>
+                </div>
+                <h3 className="text-lg font-black text-slate-800">
+                  Mahudhurio ya Shule Nzima, Utoro &amp; Sare za Wanafunzi
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Ripoti ya mahudhurio ya asubuhi kutoka kwa walimu wote wa madarasa na wito wa wazazi kwa utoro.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => triggerNotification('info', 'Ripoti ya Nidhamu', 'Mahudhurio ya shule nzima leo ni 99.4%. Wanafunzi 2 watoro wametumiwa barua rasmi za wito wa wazazi.')}
+                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Toa Wito wa Wazazi Kiotomatiki</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <span className="font-bold text-slate-700 block">Asilimia ya Mahudhurio Leo</span>
+                <span className="text-2xl font-black text-emerald-700 block">99.4%</span>
+                <p className="text-[11px] text-slate-500">Wanafunzi 412 wapo shuleni, 2 pekee hawapo.</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <span className="font-bold text-slate-700 block">Ukaguzi wa Sare &amp; Usafi</span>
+                <span className="text-2xl font-black text-emerald-700 block">Kiwango A</span>
+                <p className="text-[11px] text-slate-500">Ukaguzi wa gwaride la asubuhi umekamilika vizuri.</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <span className="font-bold text-slate-700 block">Wito wa Wazazi Unaosubiri</span>
+                <span className="text-2xl font-black text-slate-800 block">2 Wito</span>
+                <p className="text-[11px] text-slate-500">Wazazi wamejulishwa kupitia ujumbe wa mfumo.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* WORKSPACE VIEW: SUBJECT MARKS ENTRY (For all teachers) */}
         {/* =================================================================== */}
         {activeTab === 'MARKS' && (
           <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
@@ -475,17 +816,17 @@ export default function TeacherPortalPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <h3 className="text-base font-black text-slate-800">
-                  Continuous Assessment &amp; Marks Entry
+                  Uwekaji wa Alama za Somo ({currentUser?.fullName})
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Enter student assessment marks for your assigned subjects. Grades calculate automatically (NECTA Standard).
+                  Jaza alama za majaribio na Continuous Assessment (CA) kwa masomo unayofundisha. Madaraja (Grade A, B, C, D, F) yanapigwa kiotomatiki.
                 </p>
               </div>
 
               {/* Class & Subject Dropdowns */}
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Select Class</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Chagua Darasa</label>
                   <select
                     value={selectedClass}
                     onChange={(e) => setSelectedClass(e.target.value)}
@@ -500,7 +841,7 @@ export default function TeacherPortalPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Select Subject</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Somo Lako</label>
                   <select
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
@@ -511,7 +852,7 @@ export default function TeacherPortalPage() {
                         {sub}
                       </option>
                     )) || (
-                      <option value="General Primary">General Primary</option>
+                      <option value="Somo Rasmi">Somo Rasmi</option>
                     )}
                   </select>
                 </div>
@@ -519,31 +860,13 @@ export default function TeacherPortalPage() {
                 <div className="self-end">
                   <button
                     type="button"
-                    onClick={() => triggerNotification('success', 'Marks Saved', `Student marks for ${selectedClass} (${selectedSubject}) saved successfully and queued for Mwalimu wa Taaluma review.`)}
+                    onClick={() => triggerNotification('success', 'Alama Zimehifadhiwa', `Alama za ${selectedClass} (${selectedSubject}) zimehifadhiwa kikamilifu na kupelekwa kwa Mwalimu wa Taaluma.`)}
                     className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Save All Marks</span>
+                    <span>Hifadhi Alama Zote</span>
                   </button>
                 </div>
-              </div>
-            </div>
-
-            {/* Quick Metrics */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 text-center">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Class Average</span>
-                <span className="text-xl font-black text-emerald-800 block">{classStats.avg}%</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 text-center">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Pass Rate</span>
-                <span className="text-xl font-black text-emerald-800 block">
-                  {currentPupils.length > 0 ? Math.round((classStats.passCount / currentPupils.length) * 100) : 0}%
-                </span>
-              </div>
-              <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 text-center">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Enrolled In Class</span>
-                <span className="text-xl font-black text-slate-800 block">{currentPupils.length} Pupils</span>
               </div>
             </div>
 
@@ -553,12 +876,12 @@ export default function TeacherPortalPage() {
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
                     <th className="py-3 px-4">#</th>
-                    <th className="py-3 px-4">Pupil Name</th>
-                    <th className="py-3 px-4">Admission No.</th>
-                    <th className="py-3 px-4">Gender</th>
-                    <th className="py-3 px-4">Score (0 - 100)</th>
-                    <th className="py-3 px-4">Grade</th>
-                    <th className="py-3 px-4">Remarks</th>
+                    <th className="py-3 px-4">Jina la Mwanafunzi</th>
+                    <th className="py-3 px-4">Namba ya Usajili</th>
+                    <th className="py-3 px-4">Jinsia</th>
+                    <th className="py-3 px-4">Alama (0 - 100)</th>
+                    <th className="py-3 px-4">Daraja</th>
+                    <th className="py-3 px-4">Maoni ya Ufaulu</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
@@ -594,11 +917,11 @@ export default function TeacherPortalPage() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-slate-500 text-[11px]">
-                        {pupil.grade === 'A' && 'Excellent Performance'}
-                        {pupil.grade === 'B' && 'Good Progress'}
-                        {pupil.grade === 'C' && 'Satisfactory Effort'}
-                        {pupil.grade === 'D' && 'Needs Remedial Support'}
-                        {pupil.grade === 'F' && 'Urgent Remedial Attention'}
+                        {pupil.grade === 'A' && 'Ufaulu Bora Sana'}
+                        {pupil.grade === 'B' && 'Ufaulu Mzuri'}
+                        {pupil.grade === 'C' && 'Wastani wa Kuridhisha'}
+                        {pupil.grade === 'D' && 'Anahitaji Masomo ya Ziada'}
+                        {pupil.grade === 'F' && 'Uangalizi Maalum'}
                       </td>
                     </tr>
                   ))}
@@ -609,31 +932,28 @@ export default function TeacherPortalPage() {
         )}
 
         {/* =================================================================== */}
-        {/* WORKSPACE VIEW 2: DAILY ROLL-CALL ATTENDANCE */}
+        {/* WORKSPACE VIEW: DAILY ROLL-CALL ATTENDANCE */}
         {/* =================================================================== */}
         {activeTab === 'ATTENDANCE' && (
           <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <h3 className="text-base font-black text-slate-800">
-                  Daily Primary Roll-Call Register
+                  Rejista ya Mahudhurio ya Kila Siku ({selectedClass})
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Mark daily pupil attendance for {selectedClass}. Attendance alerts are relayed to Mwalimu wa Nidhamu.
+                  Weka alama nani yupo (Present), hayupo (Absent), au ana ruhusa (Permission). Taarifa hutumwa moja kwa moja kwa Mwalimu wa Nidhamu.
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-                  Today: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </span>
                 <button
                   type="button"
-                  onClick={() => triggerNotification('success', 'Attendance Submitted', `Roll-call register for ${selectedClass} has been verified and sent to the administration desk.`)}
+                  onClick={() => triggerNotification('success', 'Mahudhurio Yamewasilishwa', `Roll-call ya ${selectedClass} imethibitishwa na kuhifadhiwa kwenye rejista rasmi ya shule.`)}
                   className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Submit Roll-Call</span>
+                  <span>Wasilisha Mahudhurio</span>
                 </button>
               </div>
             </div>
@@ -644,9 +964,9 @@ export default function TeacherPortalPage() {
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
                     <th className="py-3 px-4">#</th>
-                    <th className="py-3 px-4">Pupil Name</th>
-                    <th className="py-3 px-4">Admission No.</th>
-                    <th className="py-3 px-4 text-center">Status (Click to toggle)</th>
+                    <th className="py-3 px-4">Jina la Mwanafunzi</th>
+                    <th className="py-3 px-4">Namba ya Usajili</th>
+                    <th className="py-3 px-4 text-center">Hali ya Mahudhurio (Bofya Kubadili)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
@@ -666,7 +986,7 @@ export default function TeacherPortalPage() {
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                           >
-                            Present
+                            Yupo (Present)
                           </button>
                           <button
                             type="button"
@@ -677,7 +997,7 @@ export default function TeacherPortalPage() {
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                           >
-                            Absent
+                            Hayupo (Absent)
                           </button>
                           <button
                             type="button"
@@ -688,7 +1008,7 @@ export default function TeacherPortalPage() {
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                           >
-                            Permission
+                            Ruhusa
                           </button>
                         </div>
                       </td>
@@ -701,21 +1021,21 @@ export default function TeacherPortalPage() {
         )}
 
         {/* =================================================================== */}
-        {/* WORKSPACE VIEW 3: TEACHING STAFF ROSTER (All Teachers in School) */}
+        {/* WORKSPACE VIEW: TEACHING STAFF ROSTER */}
         {/* =================================================================== */}
         {activeTab === 'STAFF_ROSTER' && (
           <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
                 <h3 className="text-base font-black text-slate-800">
-                  Primary Teaching Staff Directory
+                  Orodha ya Walimu Wote wa Shule ya Msingi
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Directory of all active teachers, academic coordinators, and discipline masters in this primary school.
+                  Orodha kamili ya walimu wote, wakuu wa shule, walimu wa taaluma na nidhamu, na masomo yao.
                 </p>
               </div>
               <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
-                {teachersList.length} Teaching Staff
+                {teachersList.length} Walimu
               </span>
             </div>
 
@@ -737,27 +1057,29 @@ export default function TeacherPortalPage() {
 
                   <div className="space-y-1 text-xs">
                     <div className="flex justify-between text-slate-600">
-                      <span className="text-slate-400">Primary Role:</span>
-                      <span className="font-bold text-slate-700">{t.role.replace('_', ' ')}</span>
+                      <span className="text-slate-400">Nafasi / Cheo:</span>
+                      <span className="font-bold text-emerald-900">
+                        {t.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : t.role === 'ACADEMIC' ? 'Mwl. wa Taaluma' : t.role === 'DISCIPLINE' ? 'Mwl. wa Nidhamu' : 'Class Teacher'}
+                      </span>
                     </div>
                     <div className="flex justify-between text-slate-600">
-                      <span className="text-slate-400">Class:</span>
+                      <span className="text-slate-400">Madarasa:</span>
                       <span className="font-semibold text-slate-700">
-                        {t.assignedClasses?.join(', ') || t.assignedClass || 'Whole School'}
+                        {t.assignedClasses?.join(', ') || t.assignedClass || 'Shule Nzima'}
                       </span>
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-slate-200">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      Teaching Subjects:
+                      Masomo Anayofundisha:
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {t.subjects?.map((sub, i) => (
                         <span key={i} className="text-[9px] px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200 font-semibold">
                           {sub}
                         </span>
-                      )) || <span className="text-[10px] text-slate-400">General</span>}
+                      )) || <span className="text-[10px] text-slate-400">Mtaala wa Msingi</span>}
                     </div>
                   </div>
                 </div>
@@ -769,7 +1091,7 @@ export default function TeacherPortalPage() {
 
       {/* FOOTER */}
       <footer className="border-t border-emerald-200/80 bg-white/80 py-4 text-center text-xs text-slate-500 mt-auto">
-        <p>© {new Date().getFullYear()} PRIMARY &amp; NURSERY SCHOOL • Teacher Classroom Management</p>
+        <p>© {new Date().getFullYear()} PRIMARY &amp; NURSERY SCHOOL • Teacher Leadership &amp; Classroom Portal</p>
       </footer>
     </div>
   );

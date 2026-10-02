@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   GraduationCap,
   Shield,
@@ -32,26 +31,178 @@ import {
   X,
   Check,
   AlertTriangle,
+  Flame,
   Info,
-  LogOut,
 } from 'lucide-react';
-import {
-  UserAccount,
-  getStoredAccounts,
-  saveStoredAccounts,
-  getCurrentSession,
-  setCurrentSession,
-  clearCurrentSession,
-  canAccessPortal,
-} from '@/lib/auth-session';
 
+// =============================================================================
+// TYPES & DATA STRUCTURES
+// =============================================================================
 export type ExecutiveRole = 'ADMIN' | 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE';
+
+export interface UserAccount {
+  id: string;
+  fullName: string;
+  role: 'ADMIN' | 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'TEACHER' | 'STUDENT' | 'CANDIDATE';
+  identifier: string; // Staff ID or Admission / Candidate No
+  email?: string;
+  phone?: string;
+  assignedClass?: string;
+  subjects?: string[];
+  candidateType?: 'PSLE' | 'SFNA'; // Standard 7 or Standard 4
+  examIndexNo?: string;
+  status: 'ACTIVE' | 'SUSPENDED';
+  joinedDate: string;
+}
 
 interface CenteredNotification {
   type: 'info' | 'success' | 'warning' | 'error';
   title: string;
   message: string;
 }
+
+// =============================================================================
+// PRE-LOADED / HARDCODED BLUEPRINT ACCOUNTS (For Immediate Feature Exploration)
+// =============================================================================
+const INITIAL_ACCOUNTS: UserAccount[] = [
+  // School Admin (Uongozi wa Juu)
+  {
+    id: 'USR-001',
+    fullName: 'Peter Msira',
+    role: 'ADMIN',
+    identifier: 'ADM-2026-001',
+    email: 'admin@primaryschool.ac.tz',
+    phone: '+255 779 304 500',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-10',
+  },
+  // Mwalimu Mkuu (Headteacher)
+  {
+    id: 'USR-002',
+    fullName: 'Mwl. Augustine Mrosso',
+    role: 'HEADTEACHER',
+    identifier: 'HT-2026-001',
+    email: 'headteacher@primaryschool.ac.tz',
+    phone: '+255 754 112 233',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-15',
+  },
+  // Mwalimu wa Taaluma (Academic Teacher)
+  {
+    id: 'USR-003',
+    fullName: 'Mwl. Beatrice Kimaro',
+    role: 'ACADEMIC',
+    identifier: 'ACAD-2026-001',
+    email: 'academic@primaryschool.ac.tz',
+    phone: '+255 765 223 344',
+    assignedClass: 'Standard 7 & Standard 4',
+    subjects: ['Mathematics (Hisabati)', 'Science & Technology'],
+    status: 'ACTIVE',
+    joinedDate: '2026-01-20',
+  },
+  // Mwalimu wa Nidhamu (Discipline Teacher)
+  {
+    id: 'USR-004',
+    fullName: 'Mwl. Godfrey Makere',
+    role: 'DISCIPLINE',
+    identifier: 'DISC-2026-001',
+    email: 'discipline@primaryschool.ac.tz',
+    phone: '+255 784 334 455',
+    assignedClass: 'Whole School',
+    subjects: ['Civic & Moral Education (Uraia na Maadili)'],
+    status: 'ACTIVE',
+    joinedDate: '2026-02-01',
+  },
+  // Class Teachers
+  {
+    id: 'USR-005',
+    fullName: 'Mwl. Sarah Mollel',
+    role: 'TEACHER',
+    identifier: 'TCH-2026-012',
+    email: 'sarah.mollel@primaryschool.ac.tz',
+    phone: '+255 712 445 566',
+    assignedClass: 'Standard 5 (Grade 5)',
+    subjects: ['English Language', 'Kiswahili'],
+    status: 'ACTIVE',
+    joinedDate: '2026-02-15',
+  },
+  {
+    id: 'USR-006',
+    fullName: 'Mwl. Emmanuel Swai',
+    role: 'TEACHER',
+    identifier: 'TCH-2026-015',
+    email: 'emmanuel.swai@primaryschool.ac.tz',
+    phone: '+255 767 556 677',
+    assignedClass: 'Standard 4 (Grade 4)',
+    subjects: ['Social Studies (Maarifa ya Jamii)', 'Vocational Skills'],
+    status: 'ACTIVE',
+    joinedDate: '2026-02-20',
+  },
+  // Candidates (Standard 7 PSLE & Standard 4 SFNA)
+  {
+    id: 'USR-007',
+    fullName: 'Kelvin Shirima',
+    role: 'CANDIDATE',
+    identifier: 'PSLE-2026-0428',
+    assignedClass: 'Standard 7 (Grade 7)',
+    candidateType: 'PSLE',
+    examIndexNo: 'PSLE/2026/0428',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-08',
+  },
+  {
+    id: 'USR-008',
+    fullName: 'Neema Massawe',
+    role: 'CANDIDATE',
+    identifier: 'PSLE-2026-0429',
+    assignedClass: 'Standard 7 (Grade 7)',
+    candidateType: 'PSLE',
+    examIndexNo: 'PSLE/2026/0429',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-08',
+  },
+  {
+    id: 'USR-009',
+    fullName: 'Juma Bakari',
+    role: 'CANDIDATE',
+    identifier: 'SFNA-2026-0112',
+    assignedClass: 'Standard 4 (Grade 4)',
+    candidateType: 'SFNA',
+    examIndexNo: 'SFNA/2026/0112',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-10',
+  },
+  {
+    id: 'USR-010',
+    fullName: 'Fatma Hassan',
+    role: 'CANDIDATE',
+    identifier: 'SFNA-2026-0113',
+    assignedClass: 'Standard 4 (Grade 4)',
+    candidateType: 'SFNA',
+    examIndexNo: 'SFNA/2026/0113',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-10',
+  },
+  // Regular Pupils
+  {
+    id: 'USR-011',
+    fullName: 'Baraka David',
+    role: 'STUDENT',
+    identifier: 'PUP-2026-085',
+    assignedClass: 'Standard 5 (Grade 5)',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-12',
+  },
+  {
+    id: 'USR-012',
+    fullName: 'Amina Rashid',
+    role: 'STUDENT',
+    identifier: 'PUP-2026-092',
+    assignedClass: 'Standard 3 (Grade 3)',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-14',
+  },
+];
 
 const PRIMARY_CLASSES = [
   'Nursery & Day Care',
@@ -78,17 +229,11 @@ const PRIMARY_SUBJECTS = [
 ];
 
 export default function ExecutiveManagementPortal() {
-  const router = useRouter();
-
   // Active Executive View tab: Admin, Headteacher, Academic Teacher, Discipline Teacher
   const [activeExecutiveRole, setActiveExecutiveRole] = useState<ExecutiveRole>('ADMIN');
 
-  // Session & Authorization
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
-
-  // Accounts state (from shared persistent store)
-  const [accounts, setAccounts] = useState<UserAccount[]>([]);
+  // Accounts state
+  const [accounts, setAccounts] = useState<UserAccount[]>(INITIAL_ACCOUNTS);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('ALL');
 
@@ -116,34 +261,6 @@ export default function ExecutiveManagementPortal() {
 
   const dismissNotification = useCallback(() => {
     setNotification(null);
-  }, []);
-
-  // Initialize and Check Strict Role Security
-  useEffect(() => {
-    const list = getStoredAccounts();
-    setAccounts(list);
-
-    let session = getCurrentSession();
-
-    // If no session, default to School Admin for immediate testing
-    if (!session) {
-      const defaultAdmin = list.find((a) => a.role === 'ADMIN') || list[0];
-      setCurrentSession(defaultAdmin);
-      session = defaultAdmin;
-    }
-
-    // Role-based security check: Teachers, Students, Parents cannot enter admin area!
-    if (!canAccessPortal(session, 'ADMIN')) {
-      setIsAuthorized(false);
-      return;
-    }
-
-    setIsAuthorized(true);
-    setCurrentUser(session);
-
-    if (['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(session.role)) {
-      setActiveExecutiveRole(session.role as ExecutiveRole);
-    }
   }, []);
 
   // Filtered Accounts
@@ -192,7 +309,7 @@ export default function ExecutiveManagementPortal() {
     );
   };
 
-  // Add Account Handler (Persisted to shared store)
+  // Add Account Handler
   const handleAddAccount = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -209,7 +326,6 @@ export default function ExecutiveManagementPortal() {
       email: newEmail.trim() || undefined,
       phone: newPhone.trim() || undefined,
       assignedClass: ['STUDENT', 'CANDIDATE', 'TEACHER', 'ACADEMIC'].includes(newRole) ? newAssignedClass : undefined,
-      assignedClasses: ['TEACHER', 'ACADEMIC'].includes(newRole) ? [newAssignedClass] : undefined,
       subjects: ['TEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(newRole) ? newSelectedSubjects : undefined,
       candidateType: newRole === 'CANDIDATE' ? newCandidateType : undefined,
       examIndexNo: newRole === 'CANDIDATE' ? (newExamIndexNo.trim() || newIdentifier.trim()) : undefined,
@@ -217,9 +333,7 @@ export default function ExecutiveManagementPortal() {
       joinedDate: new Date().toISOString().split('T')[0],
     };
 
-    const updated = [newAcc, ...accounts];
-    setAccounts(updated);
-    saveStoredAccounts(updated);
+    setAccounts((prev) => [newAcc, ...prev]);
     setShowAddModal(false);
 
     // Reset Form
@@ -232,56 +346,14 @@ export default function ExecutiveManagementPortal() {
     triggerNotification('success', 'Account Added', `Successfully provisioned ${newAcc.fullName} as ${newAcc.role.replace('_', ' ')}.`);
   };
 
-  // Delete Account Handler (Persisted to shared store)
+  // Delete Account Handler
   const confirmDeleteAccount = () => {
     if (!accountToDelete) return;
-    const updated = accounts.filter((a) => a.id !== accountToDelete.id);
-    setAccounts(updated);
-    saveStoredAccounts(updated);
-
+    setAccounts((prev) => prev.filter((a) => a.id !== accountToDelete.id));
     const deletedName = accountToDelete.fullName;
     setAccountToDelete(null);
-    triggerNotification('info', 'Account Removed', `${deletedName} has been permanently deleted from the school database.`);
+    triggerNotification('info', 'Account Removed', `${deletedName} has been permanently deleted from the school system.`);
   };
-
-  // Logout Handler
-  const handleLogout = () => {
-    clearCurrentSession();
-    router.push('/');
-  };
-
-  // If unauthorized role attempts to enter /admin, block access cleanly!
-  if (isAuthorized === false) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
-        <div className="w-full max-w-sm rounded-3xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-6 shadow-2xl border border-rose-500/30 text-center space-y-4 animate-scale-in">
-          <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-400/40 flex items-center justify-center mx-auto text-rose-400">
-            <Shield className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-white">Access Restricted</h3>
-            <p className="text-xs text-blue-100/90 leading-relaxed">
-              Only primary school executive leadership (School Admin, Headteacher, Academic Master, Discipline Master) may access the Administration Portal.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 pt-2">
-            <Link
-              href="/teacher"
-              className="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 font-bold text-xs transition-colors shadow-sm"
-            >
-              Go to Teacher Portal
-            </Link>
-            <Link
-              href="/"
-              className="w-full py-2 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-xs transition-colors"
-            >
-              Return to Login Page
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col">
@@ -554,7 +626,7 @@ export default function ExecutiveManagementPortal() {
       {/* ===================================================================== */}
       {/* 4. TOP EXECUTIVE NAVIGATION & ROLE SWITCHER */}
       {/* ===================================================================== */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-emerald-200/80 sticky top-0 z-40 shadow-xs">
+      <header className="bg-white/90 backdrop-blur-md border-b border-emerald-200/80 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             {/* School Crest & Identity */}
@@ -580,30 +652,21 @@ export default function ExecutiveManagementPortal() {
               </div>
             </div>
 
-            {/* Back to Home & Logout */}
+            {/* Back to Home & Portal Switcher Notice */}
             <div className="flex items-center gap-2.5 self-end md:self-auto">
               <Link
-                href="/teacher"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200/80 transition-all"
+                href="/"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all border border-slate-200"
               >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Teacher Workspace</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Login</span>
               </Link>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold transition-all border border-slate-200 hover:border-rose-200"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Logout</span>
-              </button>
             </div>
           </div>
 
           {/* EXECUTIVE ROLE SWITCHER TABS (Instantly view features of each leadership position) */}
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
+            <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider shrink-0 mr-1">
               Active Executive View:
             </span>
 
@@ -718,7 +781,9 @@ export default function ExecutiveManagementPortal() {
           </div>
         </div>
 
-        {/* ROLE SPECIFIC DASHBOARD VIEWS */}
+        {/* =================================================================== */}
+        {/* ROLE SPECIFIC DASHBOARD VIEW */}
+        {/* =================================================================== */}
 
         {/* 1. MWALIMU MKUU (HEADTEACHER) VIEW */}
         {activeExecutiveRole === 'HEADTEACHER' && (
@@ -750,7 +815,7 @@ export default function ExecutiveManagementPortal() {
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                 <span className="text-xs font-bold text-slate-700">Teacher Performance &amp; Syllabus Log</span>
                 <p className="text-[11px] text-slate-500">
-                  All assigned primary teachers have submitted weekly lesson plans and scheme of work logs.
+                  All 6 assigned primary teachers have submitted weekly lesson plans and scheme of work logs.
                 </p>
                 <div className="pt-2">
                   <span className="text-xs font-bold text-emerald-700">98% Syllabus Coverage On Schedule</span>
@@ -763,7 +828,7 @@ export default function ExecutiveManagementPortal() {
                   Standard 7 PSLE Mock Examination series 1 completed. School average: 218.4 / 250 (Grade A).
                 </p>
                 <div className="pt-2">
-                  <span className="text-xs font-bold text-amber-700">{stats.totalCandidates} Candidates Verified in NECTA Portal</span>
+                  <span className="text-xs font-bold text-amber-700">All 4 Candidates Verified in NECTA Portal</span>
                 </div>
               </div>
 
@@ -796,7 +861,7 @@ export default function ExecutiveManagementPortal() {
               </div>
               <button
                 type="button"
-                onClick={() => triggerNotification('info', 'Broadsheet Generated', 'Standard Competition Ranking (1, 2, 2, 4) computed for mock examination. Class average: 88.5%')}
+                onClick={() => triggerNotification('info', 'Broadsheet Generated', 'Standard Competition Ranking (1, 2, 2, 4) computed for Standard 7 mock examination. Class average: 88.5%')}
                 className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm"
               >
                 <FileText className="w-4 h-4" />
@@ -1121,7 +1186,9 @@ export default function ExecutiveManagementPortal() {
         </div>
       </main>
 
-      {/* FOOTER */}
+      {/* ===================================================================== */}
+      {/* 7. FOOTER */}
+      {/* ===================================================================== */}
       <footer className="border-t border-emerald-200/80 bg-white/80 py-4 text-center text-xs text-slate-500 mt-auto">
         <p>© {new Date().getFullYear()} PRIMARY &amp; NURSERY SCHOOL • Executive Administrative Blueprint</p>
       </footer>
