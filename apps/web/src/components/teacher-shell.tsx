@@ -20,8 +20,12 @@ import {
   FileText,
   Building2,
   AlertTriangle,
+  ChevronDown,
   ChevronRight,
   Home,
+  Check,
+  Globe,
+  Plus,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -58,6 +62,7 @@ export default function TeacherShell({
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [allAccounts, setAllAccounts] = useState<UserAccount[]>([]);
   const [notification, setNotification] = useState<CenteredNotification | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const triggerNotification = useCallback((type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => {
     setNotification({ type, title, message });
@@ -121,8 +126,8 @@ export default function TeacherShell({
 
     triggerNotification(
       'success',
-      'Teacher Switched',
-      `Now operating as ${teacher.fullName} (${teacher.role.replace('_', ' ')}).`
+      'Akaunti Imebadilishwa',
+      `Sasa unafanya kazi kama ${teacher.fullName} (${teacher.role.replace('_', ' ')}).`
     );
   };
 
@@ -132,64 +137,30 @@ export default function TeacherShell({
   };
 
   const teachersList = useMemo(() => {
-    return allAccounts.filter((a) => ['TEACHER', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(a.role));
+    return allAccounts.filter((a) => ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER'].includes(a.role));
   }, [allAccounts]);
 
   const isHeadteacher = currentUser?.role === 'HEADTEACHER' || currentUser?.leadershipRole === 'HEADTEACHER';
   const isAcademicMaster = currentUser?.role === 'ACADEMIC' || currentUser?.leadershipRole === 'ACADEMIC';
   const isDisciplineMaster = currentUser?.role === 'DISCIPLINE' || currentUser?.leadershipRole === 'DISCIPLINE';
-  const isLeader = isHeadteacher || isAcademicMaster || isDisciplineMaster;
-
-  // Navigation Links based on role
-  const navLinks = useMemo(() => {
-    const links = [
-      { href: '/teacher', label: 'Dashboard', icon: Home },
-    ];
-
-    if (isHeadteacher) {
-      links.push(
-        { href: '/teacher/approvals', label: 'Idhini ya Matokeo & Muhuri', icon: Award },
-        { href: '/teacher/curriculum', label: 'Usimamizi wa Mitaala', icon: TrendingUp },
-      );
-    }
-
-    if (isAcademicMaster) {
-      links.push(
-        { href: '/teacher/candidates', label: 'Watahiniwa NECTA', icon: Award },
-        { href: '/teacher/broadsheet', label: 'Uratibu wa Broadsheet', icon: FileText },
-        { href: '/teacher/curriculum', label: 'Mitaala & Walimu', icon: TrendingUp },
-      );
-    }
-
-    if (isDisciplineMaster) {
-      links.push(
-        { href: '/teacher/discipline', label: 'Nidhamu & Utoro', icon: Shield },
-      );
-    }
-
-    // Common teaching pages (Every teacher teaches and conducts roll-call)
-    links.push(
-      { href: '/teacher/marks', label: 'Kujaza Alama za Somo', icon: FileSpreadsheet },
-      { href: '/teacher/attendance', label: 'Roll-Call ya Darasa', icon: UserCheck },
-      { href: '/teacher/staff', label: 'Walimu Wenzangu', icon: Users },
-    );
-
-    return links;
-  }, [isHeadteacher, isAcademicMaster, isDisciplineMaster]);
 
   if (isAuthorized === false) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
         {notification && (
-          <div className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-6 shadow-2xl text-center space-y-4">
-            <AlertCircle className="w-8 h-8 text-rose-400 mx-auto" />
-            <h3 className="text-base font-bold">{notification.title}</h3>
-            <p className="text-xs text-blue-100/90">{notification.message}</p>
+          <div className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-6 shadow-2xl border border-rose-500/30 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-400/30 flex items-center justify-center mx-auto text-rose-400">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-base font-bold">{notification.title}</h2>
+              <p className="text-xs text-blue-100/90 leading-relaxed">{notification.message}</p>
+            </div>
             <Link
-              href="/teacher"
-              className="block w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-xs"
+              href="/"
+              className="inline-block w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors shadow-md"
             >
-              Return to Teacher Dashboard
+              Rudi Ukurasa Mkuu
             </Link>
           </div>
         )}
@@ -197,9 +168,21 @@ export default function TeacherShell({
     );
   }
 
+  // Determine user initials for avatar
+  const getInitials = (name?: string) => {
+    if (!name) return 'ED';
+    const parts = name.replace(/^(Mwl\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, '').trim().split(' ');
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  };
+
+  const userInitials = getInitials(currentUser?.fullName);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col">
-      {/* 1. Centered Small Blue Notification Modal */}
+    <div className="min-h-screen bg-[#F0F5FA] text-slate-800 font-sans flex flex-col lg:flex-row">
+      {/* ===================================================================== */}
+      {/* 1. CENTERED SMALL BLUE NOTIFICATION MODAL */}
+      {/* ===================================================================== */}
       {notification && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
           <div
@@ -208,6 +191,7 @@ export default function TeacherShell({
           >
             <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mx-auto text-blue-300">
               {notification.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400" />}
+              {notification.type === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-400" />}
               {notification.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
               {notification.type === 'info' && <Info className="w-5 h-5 text-blue-300" />}
             </div>
@@ -220,166 +204,318 @@ export default function TeacherShell({
               onClick={dismissNotification}
               className="w-full py-2 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-md shadow-blue-900/40"
             >
-              Understood
+              Nimeelewa
             </button>
           </div>
         </div>
       )}
 
-      {/* 2. Top Header & Identity */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-emerald-200/80 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div className="flex items-center gap-3">
+      {/* ===================================================================== */}
+      {/* 2. LEFT SIDEBAR: EXACT ARCHITECTURE FROM USER'S REFERENCE SCREENSHOT */}
+      {/* ===================================================================== */}
+      <aside className="w-full lg:w-72 xl:w-80 bg-white border-r border-slate-200/90 shrink-0 flex flex-col justify-between shadow-xs lg:min-h-screen lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto z-30">
+        <div className="p-4 sm:p-5 space-y-5">
+          {/* School Brand / Logo */}
+          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+            <Link
+              href="/"
+              className="w-10 h-10 rounded-xl bg-[#0F2942] text-white flex flex-col items-center justify-center shadow-md shadow-slate-900/20 shrink-0 hover:bg-blue-900 transition-colors"
+              title="Return to School Home"
+            >
+              <GraduationCap className="w-5 h-5 text-blue-400" />
+              <span className="text-[7px] font-black uppercase tracking-wider text-slate-300">Logo</span>
+            </Link>
+            <div>
+              <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
+                PRIMARY &amp; NURSERY
+              </h2>
+              <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider block">
+                Educational ERP Portal
+              </span>
+            </div>
+          </div>
+
+          {/* ================================================================= */}
+          {/* GROUP 1: DASHBOARD (PRIMARY ACTIVE PILL BUTTON AS IN SCREENSHOT) */}
+          {/* ================================================================= */}
+          <div className="space-y-1">
+            <Link
+              href="/teacher"
+              className={`w-full p-3 rounded-xl transition-all flex items-center justify-between text-left font-bold text-xs ${
+                pathname === '/teacher'
+                  ? 'bg-[#0F2942] text-white shadow-md shadow-blue-950/20'
+                  : 'bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Home className={`w-4 h-4 ${pathname === '/teacher' ? 'text-blue-300' : 'text-slate-600'}`} />
+                <span>Dashboard</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 ${pathname === '/teacher' ? 'text-blue-300' : 'text-slate-400'}`} />
+            </Link>
+
+            {/* Sub-items under Dashboard (Cleanly spaced vertically as in screenshot) */}
+            <div className="pl-6 pr-1 pt-1.5 pb-2 space-y-1">
               <Link
-                href="/"
-                className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-800/20 hover:bg-emerald-800 transition-colors"
-                title="Return to School Home"
+                href="/teacher/marks"
+                className={`block py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  pathname === '/teacher/marks'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600 pl-2.5'
+                    : 'text-slate-600 hover:text-blue-900 hover:bg-slate-50'
+                }`}
               >
-                <GraduationCap className="w-5 h-5" />
-                <span className="text-[7px] font-black uppercase tracking-wider">Logo</span>
+                Kujaza Alama &amp; Madaraja
               </Link>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-black text-slate-800 tracking-tight">PRIMARY &amp; NURSERY SCHOOL</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-200">
-                    {isHeadteacher ? 'Mwalimu Mkuu' : isAcademicMaster ? 'Taaluma' : isDisciplineMaster ? 'Nidhamu' : 'Portal ya Mwalimu'}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 font-medium">
-                  {isHeadteacher ? 'Executive Oversight & Academic Endorsement' : 'Classroom Teaching & Multi-Activity Workspace'}
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3 self-end md:self-auto">
-              <div className="text-right hidden sm:block">
-                <span className="text-xs font-bold text-slate-800 block">{currentUser?.fullName}</span>
-                <span className="text-[10px] font-mono text-emerald-700">{currentUser?.identifier}</span>
-              </div>
-
-              {currentUser?.role === 'ADMIN' && (
-                <Link
-                  href="/admin"
-                  className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200/80 transition-all flex items-center gap-1"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>System Admin</span>
-                </Link>
-              )}
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold transition-all border border-slate-200 hover:border-rose-200"
-                title="Sign Out"
+              <Link
+                href="/teacher/attendance"
+                className={`block py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  pathname === '/teacher/attendance'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600 pl-2.5'
+                    : 'text-slate-600 hover:text-blue-900 hover:bg-slate-50'
+                }`}
               >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Logout</span>
-              </button>
+                Mahudhurio (Roll-Call)
+              </Link>
+
+              <Link
+                href="/teacher/curriculum"
+                className={`block py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  pathname === '/teacher/curriculum'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600 pl-2.5'
+                    : 'text-slate-600 hover:text-blue-900 hover:bg-slate-50'
+                }`}
+              >
+                Mitaala &amp; Maazimio
+              </Link>
+
+              <Link
+                href="/teacher/staff"
+                className={`block py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  pathname === '/teacher/staff'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600 pl-2.5'
+                    : 'text-slate-600 hover:text-blue-900 hover:bg-slate-50'
+                }`}
+              >
+                Walimu Wangu (Staff)
+              </Link>
             </div>
           </div>
 
-          {/* Teacher Switcher Strip */}
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
-              Active Teacher Account:
-            </span>
-            {teachersList.map((t) => {
-              const isCurrent = currentUser?.id === t.id;
-              const isLeaderAccount = ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(t.role);
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handleSwitchTeacher(t)}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
-                    isCurrent
-                      ? 'bg-emerald-700 text-white shadow-xs'
-                      : isLeaderAccount
-                      ? 'bg-emerald-50 text-emerald-950 border border-emerald-300 hover:bg-emerald-100'
-                      : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-300'
-                  }`}
-                >
-                  {t.role === 'HEADTEACHER' && <Award className="w-3 h-3 text-amber-500" />}
-                  {t.role === 'ACADEMIC' && <BookOpen className="w-3 h-3 text-blue-500" />}
-                  {t.role === 'DISCIPLINE' && <Shield className="w-3 h-3 text-emerald-500" />}
-                  {t.role === 'TEACHER' && <Users className="w-3 h-3 text-slate-400" />}
-                  <span>{t.fullName}</span>
-                  <span className={`text-[9px] px-1.5 py-0.2 rounded-full ${isCurrent ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                    {t.role === 'HEADTEACHER' ? 'Mkuu wa Shule' : t.role === 'ACADEMIC' ? 'Taaluma' : t.role === 'DISCIPLINE' ? 'Nidhamu' : 'Class Teacher'}
-                  </span>
-                </button>
-              );
-            })}
+          {/* ================================================================= */}
+          {/* GROUP 2: UONGOZI WA SHULE (LEADERSHIP ACTIVITIES) */}
+          {/* ================================================================= */}
+          <div className="space-y-1 pt-2 border-t border-slate-100">
+            <div className="px-2 py-1 flex items-center justify-between text-slate-700">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                Usimamizi &amp; Mitihani
+              </span>
+              <Award className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+
+            <div className="space-y-1">
+              <Link
+                href="/teacher/approvals"
+                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                  pathname === '/teacher/approvals'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Award className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Idhini ya Matokeo &amp; Muhuri</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold">
+                  Mkuu
+                </span>
+              </Link>
+
+              <Link
+                href="/teacher/candidates"
+                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                  pathname === '/teacher/candidates'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Watahiniwa wa Taifa (NECTA)</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold">
+                  Taaluma
+                </span>
+              </Link>
+
+              <Link
+                href="/teacher/broadsheet"
+                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                  pathname === '/teacher/broadsheet'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Broadsheet ya Shule</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">
+                  Ripoti
+                </span>
+              </Link>
+
+              <Link
+                href="/teacher/discipline"
+                className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                  pathname === '/teacher/discipline'
+                    ? 'bg-blue-50 text-blue-900 font-bold border-l-2 border-blue-600'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Nidhamu &amp; Utoro</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
+                  Nidhamu
+                </span>
+              </Link>
+            </div>
           </div>
 
-          {/* Activity Multi-Page Navigation Bar */}
-          <nav className="mt-3 pt-2 border-t border-emerald-100 flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
-                    isActive
-                      ? 'bg-emerald-700 text-white shadow-xs'
-                      : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-emerald-50 hover:text-emerald-800'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-      </header>
+          {/* ================================================================= */}
+          {/* GROUP 3: UTAWALA WA MFUMO (SYSTEM ADMIN) */}
+          {/* ================================================================= */}
+          <div className="space-y-1 pt-2 border-t border-slate-100">
+            <div className="px-2 py-1 flex items-center justify-between text-slate-700">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                Utawala wa Mfumo
+              </span>
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+            </div>
 
-      {/* 3. Main Page Shell Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6">
-        {/* Breadcrumb & Page Title Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/95 rounded-3xl border border-emerald-200/80 p-5 shadow-xs">
+            <Link
+              href="/admin"
+              className="w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
+                <span>Watumiaji Wote &amp; Kufuta</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">
+                Admin
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        {/* ================================================================= */}
+        {/* SIDEBAR FOOTER: ROLE SWITCHER & LANGUAGE PILL (EXACT LIKE SCREENSHOT) */}
+        {/* ================================================================= */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/70 space-y-3">
+          {/* Fast 1-Click Role Switcher */}
           <div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-              <Link href="/teacher" className="hover:text-emerald-700 flex items-center gap-1">
-                <Home className="w-3 h-3" />
-                <span>Portal ya Walimu</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">
+              Badili Akaunti (Kujaribu):
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {teachersList.map((t) => {
+                const isCurrent = currentUser?.id === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => handleSwitchTeacher(t)}
+                    className={`py-1 px-2 rounded-lg text-[10px] font-bold truncate text-left transition-all ${
+                      isCurrent
+                        ? 'bg-[#0F2942] text-white shadow-xs'
+                        : 'bg-white hover:bg-blue-50 text-slate-700 border border-slate-200'
+                    }`}
+                    title={`${t.fullName} (${t.role})`}
+                  >
+                    {t.role === 'HEADTEACHER' ? 'Mkuu wa Shule' : t.role === 'ACADEMIC' ? 'Mwl. Taaluma' : t.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Language Pill (Exact look as bottom left of candidate screenshot) */}
+          <div className="pt-1 flex items-center justify-between">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0F2942] text-white text-[10px] font-bold shadow-xs">
+              <Globe className="w-3.5 h-3.5 text-blue-300" />
+              <span>LANGUAGE: SWA</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-blue-500/30 text-blue-200 text-[9px]">TZ</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-[11px] font-bold text-slate-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
+              title="Ondoka kwenye mfumo"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Toka</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* ===================================================================== */}
+      {/* 3. RIGHT MAIN WORKSPACE: TOP BAR + PAGE CONTENT */}
+      {/* ===================================================================== */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header Bar (Matching AjiraMarket Top Bar) */}
+        <header className="bg-white border-b border-slate-200/90 sticky top-0 z-20 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between shadow-xs">
+          {/* Quick Breadcrumb / Term Status */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+              <Link href="/teacher" className="hover:text-blue-900 transition-colors">
+                Primary Portal
               </Link>
               {pathname !== '/teacher' && (
                 <>
                   <ChevronRight className="w-3 h-3 text-slate-400" />
-                  <span className="font-semibold text-emerald-800">{pageTitle || 'Shughuli'}</span>
+                  <span className="text-slate-800 font-bold">{pageTitle || 'Ukurasa'}</span>
                 </>
               )}
             </div>
-            <h1 className="text-lg sm:text-xl font-black text-slate-900">{pageTitle || 'Dashibodi Kuu'}</h1>
-            {pageDescription && (
-              <p className="text-xs text-slate-500 mt-0.5">{pageDescription}</p>
-            )}
+            <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
+              Muhula wa 1, 2026
+            </span>
           </div>
 
-          {/* Quick Context Pill */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            {isHeadteacher && (
-              <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-amber-600" />
-                <span>Mamlaka ya Mkuu wa Shule</span>
-              </span>
-            )}
-            {currentUser?.assignedClasses && (
-              <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold">
-                Madarasa: {currentUser.assignedClasses.join(', ')}
-              </span>
-            )}
-          </div>
-        </div>
+          {/* Right Controls: Available Badge + User Profile Chip */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Status Badge (Like 'Available for Work' in the screenshot) */}
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Amilifu Kazini</span>
+            </div>
 
-        {/* Injected Page Content */}
-        {children}
-      </main>
+            {/* User Profile Chip (Avatar + Full Name + Role Dropdown) */}
+            <div className="flex items-center gap-2.5 pl-2 sm:border-l border-slate-200">
+              <div className="w-9 h-9 rounded-full bg-[#0F2942] text-blue-200 flex items-center justify-center font-bold text-xs ring-2 ring-blue-500/20 shadow-xs">
+                {userInitials}
+              </div>
+              <div className="text-left hidden md:block">
+                <span className="text-xs font-black text-slate-800 block leading-tight truncate max-w-[150px]">
+                  {currentUser?.fullName}
+                </span>
+                <span className="text-[10px] text-slate-500 block truncate max-w-[150px]">
+                  {currentUser?.identifier} • {currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.role === 'ACADEMIC' ? 'Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Nidhamu' : 'Class Teacher'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
