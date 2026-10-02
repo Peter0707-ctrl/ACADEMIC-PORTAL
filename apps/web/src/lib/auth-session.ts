@@ -32,21 +32,10 @@ export interface UserAccount {
   joinedDate: string;
 }
 
+// STRICT USER TESTING: ONLY Headmaster (Mwalimu Mkuu) account active. All other test accounts deleted.
 export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
-  // 1. School Admin (Uongozi Mkuu wa Mfumo)
   {
     id: 'USR-001',
-    fullName: 'Peter Msira',
-    role: 'ADMIN',
-    identifier: 'ADM-2026-001',
-    email: 'admin@primaryschool.ac.tz',
-    phone: '+255 779 304 500',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-10',
-  },
-  // 2. Mwalimu Mkuu (Headteacher / Principal - Enters as Teacher Leader)
-  {
-    id: 'USR-002',
     fullName: 'Mwl. Augustine Mrosso',
     role: 'HEADTEACHER',
     leadershipRole: 'HEADTEACHER',
@@ -59,193 +48,12 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     status: 'ACTIVE',
     joinedDate: '2026-01-15',
   },
-  // 2b. Makamu Mkuu wa Shule (Second Master / Deputy Headteacher - Unified HT format)
-  {
-    id: 'USR-002B',
-    fullName: 'Mwl. Frank Msaki',
-    role: 'HEADTEACHER',
-    leadershipRole: 'HEADTEACHER',
-    identifier: 'HT-2026-002',
-    email: 'secondmaster@primaryschool.ac.tz',
-    phone: '+255 754 112 234',
-    assignedClass: 'Senior Standards (Std 5 & 6)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['English Language', 'Social Studies (Maarifa ya Jamii)'],
-    status: 'ACTIVE',
-    joinedDate: '2026-01-16',
-  },
-  // 3. Mwalimu wa Taaluma (Academic Master - Enters as Teacher Leader)
-  {
-    id: 'USR-003',
-    fullName: 'Mwl. Beatrice Kimaro',
-    role: 'ACADEMIC',
-    leadershipRole: 'ACADEMIC',
-    identifier: 'ACAD-2026-001',
-    email: 'academic@primaryschool.ac.tz',
-    phone: '+255 765 223 344',
-    assignedClass: 'Standard 7 & Standard 4',
-    assignedClasses: ['Standard 7 (Grade 7)', 'Standard 4 (Grade 4)'],
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology (Sayansi)'],
-    status: 'ACTIVE',
-    joinedDate: '2026-01-20',
-  },
-  // 3b. Msaidizi wa Taaluma (Assistant Academic Master - Unified ACAD format)
-  {
-    id: 'USR-003B',
-    fullName: 'Mwl. Emmanuel Lyimo',
-    role: 'ACADEMIC',
-    leadershipRole: 'ACADEMIC',
-    identifier: 'ACAD-2026-002',
-    email: 'asst.academic@primaryschool.ac.tz',
-    phone: '+255 765 223 345',
-    assignedClass: 'Standard 6 & Standard 5',
-    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 5 (Grade 5)'],
-    subjects: ['English Language', 'Mathematics (Hisabati)'],
-    status: 'ACTIVE',
-    joinedDate: '2026-01-22',
-  },
-  // 4. Mwalimu wa Nidhamu (Discipline Master - Enters as Teacher Leader)
-  {
-    id: 'USR-004',
-    fullName: 'Mwl. Godfrey Makere',
-    role: 'DISCIPLINE',
-    leadershipRole: 'DISCIPLINE',
-    identifier: 'DISC-2026-001',
-    email: 'discipline@primaryschool.ac.tz',
-    phone: '+255 784 334 455',
-    assignedClass: 'Whole School',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Vocational Skills (Stadi za Kazi)'],
-    status: 'ACTIVE',
-    joinedDate: '2026-02-01',
-  },
-  // 5. Class Teacher (Standard 5 Homeroom Master)
-  {
-    id: 'USR-005',
-    fullName: 'Mwl. Sarah Mollel',
-    role: 'TEACHER',
-    identifier: 'TCH-2026-012',
-    email: 'sarah.mollel@primaryschool.ac.tz',
-    phone: '+255 712 445 566',
-    assignedClass: 'Standard 5 (Grade 5)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['English Language', 'Kiswahili'],
-    isHomeroomMaster: true,
-    status: 'ACTIVE',
-    joinedDate: '2026-02-15',
-  },
-  // 6. Subject Teacher (Standard 4 & 3)
-  {
-    id: 'USR-006',
-    fullName: 'Mwl. Emmanuel Swai',
-    role: 'TEACHER',
-    identifier: 'TCH-2026-015',
-    email: 'emmanuel.swai@primaryschool.ac.tz',
-    phone: '+255 767 556 677',
-    assignedClass: 'Standard 4 (Grade 4)',
-    assignedClasses: ['Standard 4 (Grade 4)', 'Standard 3 (Grade 3)'],
-    subjects: ['Social Studies (Maarifa ya Jamii)', 'Vocational Skills'],
-    isHomeroomMaster: false,
-    status: 'ACTIVE',
-    joinedDate: '2026-02-20',
-  },
-  // 7. Subject Teacher (Science & Math)
-  {
-    id: 'USR-007',
-    fullName: 'Mwl. Juma Mwita',
-    role: 'TEACHER',
-    identifier: 'TCH-2026-018',
-    email: 'juma.mwita@primaryschool.ac.tz',
-    phone: '+255 789 667 788',
-    assignedClass: 'Standard 6 & 7',
-    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'],
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology'],
-    isHomeroomMaster: false,
-    status: 'ACTIVE',
-    joinedDate: '2026-02-25',
-  },
-  // 8. Candidates (Standard 7 PSLE & Standard 4 SFNA)
-  {
-    id: 'USR-008',
-    fullName: 'Kelvin Shirima',
-    role: 'CANDIDATE',
-    identifier: 'PSLE-2026-0428',
-    assignedClass: 'Standard 7 (Grade 7)',
-    candidateType: 'PSLE',
-    examIndexNo: 'PSLE/2026/0428',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-08',
-  },
-  {
-    id: 'USR-009',
-    fullName: 'Neema Massawe',
-    role: 'CANDIDATE',
-    identifier: 'PSLE-2026-0429',
-    assignedClass: 'Standard 7 (Grade 7)',
-    candidateType: 'PSLE',
-    examIndexNo: 'PSLE/2026/0429',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-08',
-  },
-  {
-    id: 'USR-010',
-    fullName: 'Juma Bakari',
-    role: 'CANDIDATE',
-    identifier: 'SFNA-2026-0112',
-    assignedClass: 'Standard 4 (Grade 4)',
-    candidateType: 'SFNA',
-    examIndexNo: 'SFNA/2026/0112',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-10',
-  },
-  {
-    id: 'USR-011',
-    fullName: 'Fatma Hassan',
-    role: 'CANDIDATE',
-    identifier: 'SFNA-2026-0113',
-    assignedClass: 'Standard 4 (Grade 4)',
-    candidateType: 'SFNA',
-    examIndexNo: 'SFNA/2026/0113',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-10',
-  },
-  // 9. Regular Pupils
-  {
-    id: 'USR-012',
-    fullName: 'Baraka David',
-    role: 'STUDENT',
-    identifier: 'PUP-2026-085',
-    assignedClass: 'Standard 5 (Grade 5)',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-12',
-  },
-  {
-    id: 'USR-013',
-    fullName: 'Amina Rashid',
-    role: 'STUDENT',
-    identifier: 'PUP-2026-092',
-    assignedClass: 'Standard 3 (Grade 3)',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-14',
-  },
-  // 10. Parent Account
-  {
-    id: 'USR-014',
-    fullName: 'Mzee Bakari Juma (Mzazi)',
-    role: 'PARENT',
-    identifier: '+255755123456',
-    phone: '+255 755 123 456',
-    email: 'bakari.parent@gmail.com',
-    assignedClass: 'Parent of Juma Bakari (Std 4)',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-15',
-  },
 ];
 
-const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v2';
-const SESSION_STORAGE_KEY = 'academic_portal_active_session_v2';
+const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v5';
+const SESSION_STORAGE_KEY = 'academic_portal_active_session_v5';
 
-// Get Stored Accounts (guarantees all blueprint roles exist)
+// Get Stored Accounts (guarantees strictly Mwalimu Mkuu is returned in this phase)
 export function getStoredAccounts(): UserAccount[] {
   if (typeof window === 'undefined') return INITIAL_BLUEPRINT_ACCOUNTS;
   try {
@@ -255,16 +63,16 @@ export function getStoredAccounts(): UserAccount[] {
       return INITIAL_BLUEPRINT_ACCOUNTS;
     }
     const parsed: UserAccount[] = JSON.parse(raw);
-    // Ensure all leadership and blueprint accounts are present
-    const missing = INITIAL_BLUEPRINT_ACCOUNTS.filter(
-      (bp) => !parsed.some((p) => p.id === bp.id || p.identifier === bp.identifier)
-    );
-    if (missing.length > 0) {
-      const merged = [...parsed, ...missing];
-      localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(merged));
-      return merged;
+    const onlyHeadmaster = parsed.filter((a) => a.identifier === 'HT-2026-001');
+    if (onlyHeadmaster.length === 0) {
+      localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(INITIAL_BLUEPRINT_ACCOUNTS));
+      return INITIAL_BLUEPRINT_ACCOUNTS;
     }
-    return parsed;
+    if (onlyHeadmaster.length !== parsed.length) {
+      localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(onlyHeadmaster));
+      return onlyHeadmaster;
+    }
+    return onlyHeadmaster;
   } catch {
     return INITIAL_BLUEPRINT_ACCOUNTS;
   }
@@ -282,15 +90,23 @@ export function saveStoredAccounts(accounts: UserAccount[]): void {
 
 export const setStoredAccounts = saveStoredAccounts;
 
-// Get Current Logged-in Session
+// Get Current Logged-in Session (guarantees Headmaster as active session)
 export function getCurrentSession(): UserAccount | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') return INITIAL_BLUEPRINT_ACCOUNTS[0];
   try {
     const raw = localStorage.getItem(SESSION_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    if (!raw) {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(INITIAL_BLUEPRINT_ACCOUNTS[0]));
+      return INITIAL_BLUEPRINT_ACCOUNTS[0];
+    }
+    const parsed: UserAccount = JSON.parse(raw);
+    if (parsed.identifier !== 'HT-2026-001') {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(INITIAL_BLUEPRINT_ACCOUNTS[0]));
+      return INITIAL_BLUEPRINT_ACCOUNTS[0];
+    }
+    return parsed;
   } catch {
-    return null;
+    return INITIAL_BLUEPRINT_ACCOUNTS[0];
   }
 }
 
@@ -322,17 +138,14 @@ export function canAccessPortal(
   if (!user) return false;
 
   if (targetPortal === 'ADMIN') {
-    // ONLY System Admin (Uongozi Mkuu wa Mfumo) enters /admin to manage & delete accounts
     return user.role === 'ADMIN';
   }
 
   if (targetPortal === 'TEACHER') {
-    // All Teaching staff: Headteacher, Academic Master, Discipline Master, and Class Teachers
     return ['TEACHER', 'ACADEMIC', 'DISCIPLINE', 'HEADTEACHER', 'ADMIN'].includes(user.role);
   }
 
   if (targetPortal === 'STUDENT') {
-    // Only Students, Candidates, or Admin
     return ['STUDENT', 'CANDIDATE', 'ADMIN'].includes(user.role);
   }
 
