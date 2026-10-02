@@ -37,61 +37,135 @@ import { notifyUser } from '@/lib/notifications';
 import { INITIAL_PUPILS, StudentMark, calculateGrade, getRemarksForGrade } from '@/lib/teacher-data';
 
 // =============================================================================
-// TYPES & DATA STRUCTURES: SCHOOL ACADEMIC CALENDAR & SUBMISSION
+// TYPES & DATA STRUCTURES: COMPLETE SCHOOL ACADEMIC CALENDAR & SUBMISSIONS
 // =============================================================================
 
-type AssessmentScope =
-  | 'JANUARY_ONLY' // Mtihani wa Januari Pekee (Monthly Test 1)
-  | 'MONTHLY_ALL' // Majaribio ya Mwezi (Januari & Februari)
-  | 'UP_TO_MIDTERM' // Mpaka Nusu Muhula (Mid-Term)
-  | 'FULL_TERM'; // Muhula Mzima (Full Term)
+type SchoolTerm = 'TERM_1' | 'TERM_2';
 
 interface CalendarPeriod {
-  id: AssessmentScope;
+  id: string;
+  term: SchoolTerm;
   month: string;
   name: string;
   shortName: string;
-  termPhase: string;
+  badge: string;
   formula: string;
-  description: string;
+  targetField: 'monthlyTest1' | 'monthlyTest2' | 'midtermExam' | 'terminalExam';
 }
 
 const SCHOOL_CALENDAR_PERIODS: CalendarPeriod[] = [
+  // MUHULA WA 1 (Januari – Juni)
   {
-    id: 'JANUARY_ONLY',
+    id: 'JANUARY',
+    term: 'TERM_1',
     month: 'Januari',
-    name: 'Mtihani wa Mwezi wa 1 (January Test)',
-    shortName: 'Januari (Monthly 1)',
-    termPhase: 'Mwanzo wa Muhula',
-    formula: 'Wastani = Monthly_Test_1 (Alama ya Januari Pekee)',
-    description: 'Wastani na madaraja yanakokotolewa kwa mtihani wa Januari pekee. Hakuna mwanafunzi anayepewa sifuri kwa mitihani ambayo haijafanyika bado.',
+    name: 'Mtihani wa Mwezi wa 1 (Januari)',
+    shortName: 'Januari',
+    badge: 'Mwezi 1',
+    formula: 'Wastani = Alama ya Mtihani wa Januari Pekee (Monthly 1)',
+    targetField: 'monthlyTest1',
   },
   {
-    id: 'MONTHLY_ALL',
+    id: 'FEBRUARY',
+    term: 'TERM_1',
     month: 'Februari',
-    name: 'Mtihani wa Mwezi wa 2 (February Test)',
-    shortName: 'Februari (Monthly 2)',
-    termPhase: 'Majaribio ya Mwezi',
-    formula: 'Wastani = (Monthly 1 + Monthly 2) / 2',
-    description: 'Wastani wa majaribio yaliyokwishafanyika (Januari & Februari). Hupakiwa na kuunganishwa bila kufuta rekodi za mwanzo.',
+    name: 'Mtihani wa Mwezi wa 2 (Februari)',
+    shortName: 'Februari',
+    badge: 'Mwezi 2',
+    formula: 'Wastani = (Januari + Februari) / 2',
+    targetField: 'monthlyTest2',
   },
   {
-    id: 'UP_TO_MIDTERM',
+    id: 'MARCH_MIDTERM',
+    term: 'TERM_1',
     month: 'Machi',
     name: 'Mtihani wa Nusu Muhula (Mid-Term)',
-    shortName: 'Nusu Muhula (Mid-Term)',
-    termPhase: 'Katikati ya Muhula',
+    shortName: 'Machi (Mid-Term)',
+    badge: 'Nusu Muhula',
     formula: 'Wastani = (Majaribio ya Mwezi * 40%) + (Mid-Term * 60%)',
-    description: 'Wastani wa maendeleo ya mwanafunzi kuanzia mwanzo wa muhula hadi mtihani wa kati (Mid-Term).',
+    targetField: 'midtermExam',
   },
   {
-    id: 'FULL_TERM',
-    month: 'Aprili / Mei',
-    name: 'Mtihani wa Mwisho wa Muhula (Terminal)',
-    shortName: 'Muhula Mzima (Terminal)',
-    termPhase: 'Mwisho wa Muhula',
+    id: 'APRIL',
+    term: 'TERM_1',
+    month: 'Aprili',
+    name: 'Majaribio ya Mwezi wa 4 (Aprili)',
+    shortName: 'Aprili',
+    badge: 'Mwezi 4',
+    formula: 'Wastani = Maendeleo ya Majaribio hadi Aprili',
+    targetField: 'monthlyTest2',
+  },
+  {
+    id: 'MAY',
+    term: 'TERM_1',
+    month: 'Mei',
+    name: 'Majaribio ya Mwezi wa 5 (Mei)',
+    shortName: 'Mei',
+    badge: 'Mwezi 5',
+    formula: 'Wastani = Maendeleo ya Majaribio hadi Mei',
+    targetField: 'monthlyTest2',
+  },
+  {
+    id: 'JUNE_TERMINAL',
+    term: 'TERM_1',
+    month: 'Juni',
+    name: 'Mtihani wa Mwisho wa Muhula wa 1 (Terminal)',
+    shortName: 'Juni (Terminal)',
+    badge: 'Muhula Mzima',
     formula: 'Wastani = (Majaribio * 30%) + (Mid-Term * 30%) + (Terminal * 40%)',
-    description: 'Wastani rasmi wa mwisho wa muhula unaojumuisha majaribio ya mwezi, mid-term na mtihani wa mwisho (Terminal).',
+    targetField: 'terminalExam',
+  },
+
+  // MUHULA WA 2 (Julai – Desemba)
+  {
+    id: 'JULY',
+    term: 'TERM_2',
+    month: 'Julai',
+    name: 'Mtihani wa Mwezi wa 1 wa Muhula wa 2 (Julai)',
+    shortName: 'Julai',
+    badge: 'Mwezi 7',
+    formula: 'Wastani = Alama ya Julai Pekee',
+    targetField: 'monthlyTest1',
+  },
+  {
+    id: 'AUGUST',
+    term: 'TERM_2',
+    month: 'Agosti',
+    name: 'Mtihani wa Mwezi wa 2 wa Muhula wa 2 (Agosti)',
+    shortName: 'Agosti',
+    badge: 'Mwezi 8',
+    formula: 'Wastani = (Julai + Agosti) / 2',
+    targetField: 'monthlyTest2',
+  },
+  {
+    id: 'SEPTEMBER_MIDTERM',
+    term: 'TERM_2',
+    month: 'Septemba',
+    name: 'Mtihani wa Nusu Muhula wa 2 (Mid-Term)',
+    shortName: 'Septemba (Mid-Term)',
+    badge: 'Nusu Muhula 2',
+    formula: 'Wastani = (Majaribio * 40%) + (Mid-Term * 60%)',
+    targetField: 'midtermExam',
+  },
+  {
+    id: 'OCTOBER',
+    term: 'TERM_2',
+    month: 'Oktoba',
+    name: 'Majaribio ya Pre-National (Oktoba)',
+    shortName: 'Oktoba',
+    badge: 'Mwezi 10',
+    formula: 'Wastani = Maendeleo ya Oktoba',
+    targetField: 'monthlyTest2',
+  },
+  {
+    id: 'NOVEMBER_ANNUAL',
+    term: 'TERM_2',
+    month: 'Novemba',
+    name: 'Mtihani wa Mwisho wa Mwaka (Annual Exam)',
+    shortName: 'Novemba (Annual)',
+    badge: 'Mwisho wa Mwaka',
+    formula: 'Wastani = (Majaribio * 30%) + (Mid-Term * 30%) + (Annual * 40%)',
+    targetField: 'terminalExam',
   },
 ];
 
@@ -102,8 +176,8 @@ interface SubjectSubmissionRecord {
   teacherStaffId: string;
   studentsCount: number;
   averageMark: string | number;
-  scope: AssessmentScope;
-  scopeTitle: string;
+  periodId: string;
+  periodTitle: string;
   submittedAt: string;
   submittedDate: string;
   fileName?: string;
@@ -127,10 +201,10 @@ interface ClassUploadStatus {
 const STORAGE_REGISTERED_PUPILS_KEY = 'academic_portal_registered_pupils_v2';
 const STORAGE_SUBJECT_SUBMISSIONS_KEY = 'academic_subject_submissions_v1';
 
-// Dynamic score calculation engine based on active school calendar period
+// Dynamic score calculation engine based on selected month / calendar milestone
 function computeStudentScore(
   p: { monthlyTest1?: number; monthlyTest2?: number; midtermExam?: number; terminalExam?: number },
-  scope: AssessmentScope
+  periodId: string
 ) {
   const t1 = Number(p.monthlyTest1) || 0;
   const t2 = Number(p.monthlyTest2) || 0;
@@ -139,12 +213,14 @@ function computeStudentScore(
 
   let finalMark = 0;
 
-  switch (scope) {
-    case 'JANUARY_ONLY':
+  switch (periodId) {
+    case 'JANUARY':
+    case 'JULY':
       finalMark = t1;
       break;
 
-    case 'MONTHLY_ALL':
+    case 'FEBRUARY':
+    case 'AUGUST':
       if (t1 > 0 && t2 > 0) {
         finalMark = Math.round((t1 + t2) / 2);
       } else if (t1 > 0) {
@@ -156,7 +232,8 @@ function computeStudentScore(
       }
       break;
 
-    case 'UP_TO_MIDTERM': {
+    case 'MARCH_MIDTERM':
+    case 'SEPTEMBER_MIDTERM': {
       const mAvg = t1 > 0 && t2 > 0 ? (t1 + t2) / 2 : t1 > 0 ? t1 : t2;
       if (mid > 0 && mAvg > 0) {
         finalMark = Math.round(mAvg * 0.4 + mid * 0.6);
@@ -170,7 +247,22 @@ function computeStudentScore(
       break;
     }
 
-    case 'FULL_TERM':
+    case 'APRIL':
+    case 'MAY':
+    case 'OCTOBER': {
+      const mAvg = t1 > 0 && t2 > 0 ? (t1 + t2) / 2 : t1 > 0 ? t1 : t2;
+      if (mid > 0 && mAvg > 0) {
+        finalMark = Math.round(mAvg * 0.4 + mid * 0.6);
+      } else if (mAvg > 0) {
+        finalMark = Math.round(mAvg);
+      } else {
+        finalMark = mid || t1 || t2 || 0;
+      }
+      break;
+    }
+
+    case 'JUNE_TERMINAL':
+    case 'NOVEMBER_ANNUAL':
     default: {
       const validMonthly = [t1, t2].filter((m) => m > 0);
       const mAvg =
@@ -178,7 +270,6 @@ function computeStudentScore(
           ? validMonthly.reduce((a, b) => a + b, 0) / validMonthly.length
           : 0;
 
-      // Progressive calculation if terminal exam hasn't taken place yet
       if (term === 0 && mid > 0) {
         finalMark = Math.round(mAvg * 0.4 + mid * 0.6);
       } else if (term === 0 && mid === 0 && mAvg > 0) {
@@ -212,8 +303,11 @@ export default function SubjectMarksPage() {
   // Modal State for Registering Students via Excel
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  // Active School Calendar Assessment Scope (Default: January Test)
-  const [assessmentScope, setAssessmentScope] = useState<AssessmentScope>('JANUARY_ONLY');
+  // Active School Term ('TERM_1' or 'TERM_2')
+  const [activeTerm, setActiveTerm] = useState<SchoolTerm>('TERM_1');
+
+  // Active Selected Calendar Period ID (default: 'JANUARY')
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string>('JANUARY');
 
   // Submissions state to Academic Master (stored in localStorage)
   const [subjectSubmissions, setSubjectSubmissions] = useState<Record<string, SubjectSubmissionRecord>>(() => {
@@ -261,7 +355,7 @@ export default function SubjectMarksPage() {
     }
   }, []);
 
-  // 1. Teacher's Assigned Classes and Subjects (Stable array references)
+  // Teacher's Assigned Classes and Subjects
   const teacherClasses: string[] = useMemo(() => {
     if (currentUser?.assignedClasses && currentUser.assignedClasses.length > 0) {
       return currentUser.assignedClasses;
@@ -312,7 +406,6 @@ export default function SubjectMarksPage() {
     notes: string;
   } | null>(null);
 
-  // Set of students whose marks were adjusted individually
   const [adjustedStudentIds, setAdjustedStudentIds] = useState<Record<string, string>>({});
 
   // Active key for current selection
@@ -320,22 +413,21 @@ export default function SubjectMarksPage() {
   const currentUpload = classUploads[currentKey] || { isUploaded: false };
   const isExcelUploaded = Boolean(currentUpload.isUploaded);
   const uploadedFileName = currentUpload.fileName || null;
-  const uploadedAt = currentUpload.uploadedAt || null;
 
   // Active submission for this class and subject
   const currentSubmission = subjectSubmissions[currentKey] || null;
   const isSubmittedToAcademic = Boolean(currentSubmission && currentSubmission.status === 'SUBMITTED');
 
-  // Active School Calendar Period
-  const activePeriod =
-    SCHOOL_CALENDAR_PERIODS.find((p) => p.id === assessmentScope) || SCHOOL_CALENDAR_PERIODS[0];
+  // Filter available periods by the active term
+  const termPeriods = useMemo(() => {
+    return SCHOOL_CALENDAR_PERIODS.filter((p) => p.term === activeTerm);
+  }, [activeTerm]);
 
-  // If a submission already exists for this subject, default to its scope
-  useEffect(() => {
-    if (currentSubmission?.scope) {
-      setAssessmentScope(currentSubmission.scope);
-    }
-  }, [currentKey]);
+  // Current active calendar period
+  const activePeriod = useMemo(() => {
+    const found = termPeriods.find((p) => p.id === selectedPeriodId);
+    return found || termPeriods[0] || SCHOOL_CALENDAR_PERIODS[0];
+  }, [termPeriods, selectedPeriodId]);
 
   // Handler: Download Student Registration Template
   const handleDownloadRosterTemplate = () => {
@@ -413,7 +505,7 @@ export default function SubjectMarksPage() {
             notifyUser(
               'success',
               'Wanafunzi Wamesajiliwa Kikamilifu!',
-              `Wanafunzi wote ${registeredList.length} wamesajiliwa kwenye ${selectedClass} na wameingizwa moja kwa moja kwenye jedwali la matokeo!`
+              `Wanafunzi wote ${registeredList.length} wamesajiliwa kwenye ${selectedClass} na wameingizwa kwenye jedwali la matokeo!`
             );
             return;
           }
@@ -479,7 +571,7 @@ export default function SubjectMarksPage() {
     notifyUser(
       'success',
       'Wanafunzi wa Majaribio Wamesajiliwa!',
-      `Wanafunzi ${generated.length} wamesajiliwa kwa mafanikio katika ${selectedClass} na kuonekana kwenye orodha ya matokeo.`
+      `Wanafunzi ${generated.length} wamesajiliwa kwa mafanikio katika ${selectedClass}.`
     );
   };
 
@@ -497,7 +589,7 @@ export default function SubjectMarksPage() {
 
   const isMarksActive = isExcelUploaded || hasMarksInSelectedClass;
 
-  // Live computed list of pupils based dynamically on active School Calendar Period
+  // Live computed list of pupils based dynamically on active period
   const classPupils = useMemo(() => {
     const list =
       pupilsData[selectedClass] ||
@@ -508,7 +600,7 @@ export default function SubjectMarksPage() {
     const computed = list.map((pupil) => {
       const { monthlyAvg, finalMark, grade, remarks, hasAnyScore } = computeStudentScore(
         pupil,
-        assessmentScope
+        activePeriod.id
       );
       return {
         ...pupil,
@@ -520,7 +612,6 @@ export default function SubjectMarksPage() {
       };
     });
 
-    // Sort descending by calculated mark if marks are active
     const sorted = isMarksActive ? [...computed].sort((a, b) => b.mark - a.mark) : [...computed];
 
     const withRank = sorted.map((pupil, idx) => ({
@@ -534,50 +625,33 @@ export default function SubjectMarksPage() {
         p.name.toLowerCase().includes(searchPupil.toLowerCase()) ||
         p.admNo.toLowerCase().includes(searchPupil.toLowerCase())
     );
-  }, [pupilsData, selectedClass, searchPupil, isMarksActive, assessmentScope]);
+  }, [pupilsData, selectedClass, searchPupil, isMarksActive, activePeriod.id]);
 
-  // Download Excel / CSV Template based on the chosen period
-  const handleDownloadTemplate = (templateType: 'FULL' | 'JAN_ONLY' = 'FULL') => {
+  // Download Excel / CSV Template
+  const handleDownloadTemplate = () => {
     const list =
       pupilsData[selectedClass] ||
       INITIAL_PUPILS[selectedClass] ||
       INITIAL_PUPILS['Standard 6 (Grade 6)'] ||
       [];
 
-    let headers = '';
-    let rows = '';
-
-    if (templateType === 'JAN_ONLY') {
-      headers = 'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Monthly_Test_1_Januari\n';
-      rows = list
-        .map(
-          (p) =>
-            `${p.admNo},"${p.name}",${p.gender},${p.monthlyTest1 > 0 ? p.monthlyTest1 : ''}`
-        )
-        .join('\n');
-    } else {
-      headers =
-        'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Monthly_Test_1,Monthly_Test_2,Wastani_Monthly,Mid_Term,Terminal_Exam,Wastani_Muhula,Daraja\n';
-      rows = list
-        .map(
-          (p) =>
-            `${p.admNo},"${p.name}",${p.gender},${p.monthlyTest1 > 0 ? p.monthlyTest1 : ''},${
-              p.monthlyTest2 > 0 ? p.monthlyTest2 : ''
-            },${p.monthlyAvg > 0 ? p.monthlyAvg : ''},${p.midtermExam > 0 ? p.midtermExam : ''},${
-              p.terminalExam > 0 ? p.terminalExam : ''
-            },${p.mark > 0 ? p.mark : ''},${p.mark > 0 ? p.grade : ''}`
-        )
-        .join('\n');
-    }
+    const headers =
+      'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Monthly_Test_1_Jan,Monthly_Test_2_Feb,Mid_Term_Machi,Terminal_Exam_Juni\n';
+    const rows = list
+      .map(
+        (p) =>
+          `${p.admNo},"${p.name}",${p.gender},${p.monthlyTest1 > 0 ? p.monthlyTest1 : ''},${
+            p.monthlyTest2 > 0 ? p.monthlyTest2 : ''
+          },${p.midtermExam > 0 ? p.midtermExam : ''},${p.terminalExam > 0 ? p.terminalExam : ''}`
+      )
+      .join('\n');
 
     const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(headers + rows);
     const link = document.createElement('a');
     link.setAttribute('href', csvContent);
     link.setAttribute(
       'download',
-      templateType === 'JAN_ONLY'
-        ? `Kigezo_Januari_${selectedClass.replace(/\s+/g, '_')}_${selectedSubject.replace(/\s+/g, '_')}.csv`
-        : `Kigezo_Matokeo_${selectedClass.replace(/\s+/g, '_')}_${selectedSubject.replace(/\s+/g, '_')}.csv`
+      `Kigezo_Matokeo_${selectedClass.replace(/\s+/g, '_')}_${selectedSubject.replace(/\s+/g, '_')}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -586,9 +660,7 @@ export default function SubjectMarksPage() {
     notifyUser(
       'success',
       'Kigezo Kimepakuliwa Kikamilifu!',
-      `Kigezo cha Excel cha ${selectedClass} (${
-        templateType === 'JAN_ONLY' ? 'Januari Pekee' : 'Mitihani Yote'
-      }) kimepakuliwa.`
+      `Kigezo cha Excel cha ${selectedClass} kwa somo la ${selectedSubject} kimepakuliwa.`
     );
   };
 
@@ -611,40 +683,26 @@ export default function SubjectMarksPage() {
               []),
           ];
 
-          // Parse header to identify which columns are present
           const headers = lines[0]
             .toLowerCase()
             .split(',')
             .map((c) => c.replace(/["\r]/g, '').trim());
 
           let t1Idx = headers.findIndex(
-            (h) =>
-              h.includes('monthly_1') ||
-              h.includes('january') ||
-              h.includes('jan') ||
-              h.includes('test_1')
+            (h) => h.includes('monthly_1') || h.includes('january') || h.includes('jan') || h.includes('jul')
           );
           let t2Idx = headers.findIndex(
-            (h) =>
-              h.includes('monthly_2') ||
-              h.includes('february') ||
-              h.includes('feb') ||
-              h.includes('test_2')
+            (h) => h.includes('monthly_2') || h.includes('february') || h.includes('feb') || h.includes('aug')
           );
-          let midIdx = headers.findIndex((h) => h.includes('mid') || h.includes('nusu'));
+          let midIdx = headers.findIndex((h) => h.includes('mid') || h.includes('nusu') || h.includes('machi'));
           let termIdx = headers.findIndex(
-            (h) =>
-              h.includes('terminal') ||
-              h.includes('term') ||
-              h.includes('muhula') ||
-              h.includes('mwisho')
+            (h) => h.includes('terminal') || h.includes('term') || h.includes('muhula') || h.includes('juni')
           );
 
-          // Positional fallback if standard columns
           if (t1Idx === -1 && headers.length >= 4) t1Idx = 3;
           if (t2Idx === -1 && headers.length >= 5) t2Idx = 4;
-          if (midIdx === -1 && headers.length >= 7) midIdx = 6;
-          if (termIdx === -1 && headers.length >= 8) termIdx = 7;
+          if (midIdx === -1 && headers.length >= 6) midIdx = 5;
+          if (termIdx === -1 && headers.length >= 7) termIdx = 6;
 
           let imported = 0;
           for (let i = 1; i < lines.length; i++) {
@@ -657,7 +715,6 @@ export default function SubjectMarksPage() {
               if (idx !== -1) {
                 const cur = updatedList[idx];
 
-                // Auto-merge: update only columns that were provided in this upload
                 const newT1 =
                   t1Idx !== -1 && cols[t1Idx] !== undefined && cols[t1Idx] !== ''
                     ? parseInt(cols[t1Idx], 10)
@@ -700,15 +757,10 @@ export default function SubjectMarksPage() {
             },
           }));
 
-          // Intelligently set calendar step if only January uploaded
-          if (t1Idx !== -1 && t2Idx === -1 && midIdx === -1 && termIdx === -1) {
-            setAssessmentScope('JANUARY_ONLY');
-          }
-
           notifyUser(
             'success',
             'Faili Limepakiwa & Kuunganishwa!',
-            `Faili "${file.name}" limepakiwa kikamilifu kwa ${selectedClass}! Alama za wanafunzi zimehifadhiwa bila kufuta mitihani iliyotangulia.`
+            `Alama za wanafunzi ${imported} zimehifadhiwa bila kufuta mitihani ya miezi mingine.`
           );
         }
       } catch (err) {
@@ -719,7 +771,7 @@ export default function SubjectMarksPage() {
   };
 
   // Instant simulation based on active calendar period
-  const simulateActivePeriodUpload = (targetScope: AssessmentScope) => {
+  const simulateActivePeriodUpload = () => {
     const list = [
       ...(pupilsData[selectedClass] ||
         INITIAL_PUPILS[selectedClass] ||
@@ -734,48 +786,24 @@ export default function SubjectMarksPage() {
       const genMid = Math.min(100, Math.max(65, 80 + ((index * 4) % 19)));
       const genTerm = Math.min(100, Math.max(66, 82 + ((index * 6) % 17)));
 
-      if (targetScope === 'JANUARY_ONLY') {
-        return {
-          ...p,
-          monthlyTest1: genT1,
-          monthlyTest2: 0,
-          midtermExam: 0,
-          terminalExam: 0,
-        };
-      } else if (targetScope === 'MONTHLY_ALL') {
-        return {
-          ...p,
-          monthlyTest1: curT1,
-          monthlyTest2: genT2,
-        };
-      } else if (targetScope === 'UP_TO_MIDTERM') {
-        return {
-          ...p,
-          monthlyTest1: curT1,
-          monthlyTest2: p.monthlyTest2 > 0 ? p.monthlyTest2 : genT2,
-          midtermExam: genMid,
-        };
+      if (activePeriod.id === 'JANUARY' || activePeriod.id === 'JULY') {
+        return { ...p, monthlyTest1: genT1 };
+      } else if (activePeriod.id === 'FEBRUARY' || activePeriod.id === 'AUGUST') {
+        return { ...p, monthlyTest1: curT1, monthlyTest2: genT2 };
+      } else if (activePeriod.id.includes('MIDTERM')) {
+        return { ...p, monthlyTest1: curT1, monthlyTest2: p.monthlyTest2 > 0 ? p.monthlyTest2 : genT2, midtermExam: genMid };
       } else {
-        return {
-          ...p,
-          monthlyTest1: genT1,
-          monthlyTest2: genT2,
-          midtermExam: genMid,
-          terminalExam: genTerm,
-        };
+        return { ...p, monthlyTest1: genT1, monthlyTest2: genT2, midtermExam: genMid, terminalExam: genTerm };
       }
     });
 
     setPupilsData((prev) => ({ ...prev, [selectedClass]: updated }));
-    setAssessmentScope(targetScope);
-
-    const simName = `matokeo_${activePeriod.month.toLowerCase()}_${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '_')}.csv`;
 
     setClassUploads((prev) => ({
       ...prev,
       [currentKey]: {
         isUploaded: true,
-        fileName: simName,
+        fileName: `matokeo_${activePeriod.month.toLowerCase()}_${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '_')}.csv`,
         uploadedAt: new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }),
       },
     }));
@@ -783,7 +811,7 @@ export default function SubjectMarksPage() {
     notifyUser(
       'success',
       'Matokeo Yamepakiwa!',
-      `Alama za ${activePeriod.name} zimeingizwa kwa wanafunzi wote wa ${selectedClass} na wastani umekokotolewa kiotomatiki.`
+      `Alama za ${activePeriod.name} zimehifadhiwa na wastani umekokotolewa kiotomatiki.`
     );
   };
 
@@ -816,7 +844,7 @@ export default function SubjectMarksPage() {
     notifyUser(
       'info',
       'Matokeo Yamewekwa Upya',
-      `Matokeo ya ${selectedClass} kwa somo la ${selectedSubject} yamefutwa. Jedwali sasa liko tayari kupokea mitihani upya.`
+      `Matokeo ya ${selectedClass} kwa somo la ${selectedSubject} yamefutwa.`
     );
   };
 
@@ -856,7 +884,7 @@ export default function SubjectMarksPage() {
 
     const { monthlyAvg, finalMark, grade, remarks } = computeStudentScore(
       { monthlyTest1: t1, monthlyTest2: t2, midtermExam: mid, terminalExam: term },
-      assessmentScope
+      activePeriod.id
     );
 
     setPupilsData((prev) => {
@@ -891,7 +919,7 @@ export default function SubjectMarksPage() {
     notifyUser(
       'success',
       'Alama Zimebadilishwa Kikamilifu!',
-      `Alama za mwanafunzi ${editingStudent.name} (${editingStudent.admNo}) zimerekebishwa! Wastani mpya: ${finalMark}% (${grade}).`
+      `Alama za mwanafunzi ${editingStudent.name} (${editingStudent.admNo}) zimerekebishwa! Wastani: ${finalMark}% (${grade}).`
     );
 
     setEditingStudent(null);
@@ -926,8 +954,8 @@ export default function SubjectMarksPage() {
         teacherStaffId: currentUser?.identifier || 'TCH-2026-001',
         studentsCount: classPupils.length,
         averageMark: averageScore,
-        scope: assessmentScope,
-        scopeTitle: activePeriod.name,
+        periodId: activePeriod.id,
+        periodTitle: activePeriod.name,
         submittedAt: timeStr,
         submittedDate: dateStr,
         fileName:
@@ -986,9 +1014,9 @@ export default function SubjectMarksPage() {
   return (
     <TeacherShell
       pageTitle="Kujaza Alama za Somo (Excel Spreadsheet Grid)"
-      pageDescription="Matokeo yanapangwa kulingana na Kalenda ya Shule (k.m. Januari pekee, au mpaka Mid-Term). Wastani na madaraja huhesabiwa kiotomatiki na kuwasilishwa kwa Mwalimu wa Taaluma."
+      pageDescription="Matokeo yanapangwa kulingana na Kalenda Kamili ya Shule. Chagua mwezi wowote, wastani na madaraja huhesabiwa kiotomatiki na kuwasilishwa kwa Mwalimu wa Taaluma."
     >
-      <div className="space-y-5 animate-fade-in">
+      <div className="space-y-4 animate-fade-in">
         {/* Hidden file input for Excel upload */}
         <input
           type="file"
@@ -999,281 +1027,261 @@ export default function SubjectMarksPage() {
         />
 
         {/* ===================================================================== */}
-        {/* 0. TEACHER'S ASSIGNED CLASSES & SUBJECT SELECTION BAR */}
+        {/* 0. TEACHER'S ASSIGNED CLASSES & SUBJECT BAR */}
         {/* ===================================================================== */}
-        <div className="p-5 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-3.5">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-emerald-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-950/20">
-                <GraduationCap className="w-5 h-5 text-emerald-300" />
+        <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-2xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-emerald-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                <GraduationCap className="w-4 h-4 text-emerald-300" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-black text-slate-900">
-                    Madarasa Ninayofundisha (My Teaching Classes)
-                  </h2>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-black border border-emerald-300">
-                    {teacherClasses.length} Madarasa
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  Bofya darasa unalotaka kuona wanafunzi wake na kupakia au kuwasilisha matokeo ya somo.
+                <h2 className="text-xs font-black text-slate-900">
+                  Madarasa Ninayofundisha ({teacherClasses.length})
+                </h2>
+                <p className="text-[10px] text-slate-500">
+                  Bofya darasa unalotaka kusimamia matokeo yake:
                 </p>
               </div>
             </div>
 
-            {/* Subject Selector Dropdown */}
-            <div className="flex items-center gap-2 shrink-0 bg-emerald-50/70 p-1.5 px-2.5 rounded-xl border border-emerald-200">
-              <BookOpen className="w-4 h-4 text-emerald-800 shrink-0" />
-              <label htmlFor="subject-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
-                Somo:
-              </label>
-              <select
-                id="subject-select"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="text-xs font-bold py-1 px-2.5 rounded-lg bg-white border border-emerald-300 text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 max-w-[280px] truncate shadow-2xs"
-              >
-                {teacherSubjects.map((sub) => (
-                  <option key={sub} value={sub}>
-                    {sub}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Subject Selector */}
+              <div className="flex items-center gap-1.5 bg-emerald-50/70 p-1 px-2.5 rounded-xl border border-emerald-200">
+                <BookOpen className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
+                <label htmlFor="subject-select" className="text-[11px] font-bold text-slate-700 whitespace-nowrap">
+                  Somo:
+                </label>
+                <select
+                  id="subject-select"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  className="text-xs font-bold py-1 px-2 rounded-lg bg-white border border-emerald-300 text-emerald-950 focus:outline-none max-w-[260px] truncate shadow-2xs"
+                >
+                  {teacherSubjects.map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Interactive Class Selector Tabs */}
-          <div className="space-y-2">
-            {/* Hidden Input for Student Registration Roster */}
-            <input
-              type="file"
-              ref={rosterFileInputRef}
-              onChange={handleUploadRosterFile}
-              accept=".xlsx,.xls,.csv"
-              className="hidden"
-            />
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-950">
-                Chagua Darasa Uone Wanafunzi Wake:
-              </span>
-
-              {/* Action Button: Register Students by Excel */}
+              {/* Register Students Button */}
               <button
                 type="button"
                 onClick={() => setShowRegisterModal(true)}
-                className="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] shadow-xs transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer"
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] shadow-2xs transition-all flex items-center gap-1 cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5 text-amber-300" />
-                <span>+ Sajili Wanafunzi kwa Excel ({selectedClass})</span>
+                <span>+ Sajili Wanafunzi ({selectedClass})</span>
               </button>
             </div>
+          </div>
 
-            {/* Grid of Teacher Classes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-              {teacherClasses.map((cls) => {
-                const isSelected = selectedClass === cls;
-                const clsKey = `${cls}_${selectedSubject}`;
-                const clsStatus = classUploads[clsKey];
-                const isClsUploaded = Boolean(clsStatus?.isUploaded);
-                const pupilsCount = (pupilsData[cls] || INITIAL_PUPILS[cls] || []).length;
-                const isSub = Boolean(subjectSubmissions[clsKey]?.status === 'SUBMITTED');
+          {/* Grid of Teacher Classes */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            {teacherClasses.map((cls) => {
+              const isSelected = selectedClass === cls;
+              const clsKey = `${cls}_${selectedSubject}`;
+              const clsStatus = classUploads[clsKey];
+              const isClsUploaded = Boolean(clsStatus?.isUploaded);
+              const pupilsCount = (pupilsData[cls] || INITIAL_PUPILS[cls] || []).length;
+              const isSub = Boolean(subjectSubmissions[clsKey]?.status === 'SUBMITTED');
 
-                return (
-                  <button
-                    key={cls}
-                    type="button"
-                    onClick={() => setSelectedClass(cls)}
-                    className={`p-3 rounded-2xl text-left transition-all border flex flex-col justify-between gap-2 ${
-                      isSelected
-                        ? 'bg-gradient-to-br from-emerald-800 via-emerald-900 to-emerald-950 text-white border-emerald-950 shadow-md shadow-emerald-950/25 ring-2 ring-emerald-500/40'
-                        : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-emerald-200/90 hover:border-emerald-400 shadow-2xs'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
+              return (
+                <button
+                  key={cls}
+                  type="button"
+                  onClick={() => setSelectedClass(cls)}
+                  className={`p-2.5 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? 'bg-gradient-to-br from-emerald-800 via-emerald-900 to-emerald-950 text-white border-emerald-950 shadow-md shadow-emerald-950/20 ring-2 ring-emerald-500/30'
+                      : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-emerald-200/90 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`text-xs font-black block truncate ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                      {cls}
+                    </span>
+                    {isSelected ? (
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    ) : (
+                      <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-1 text-[10px]">
+                    <span className={`font-bold ${isSelected ? 'text-emerald-200' : 'text-slate-600'}`}>
+                      {pupilsCount} Wanafunzi
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {isSub && (
                         <span
-                          className={`text-xs font-black block leading-snug ${
-                            isSelected ? 'text-white' : 'text-slate-900'
+                          className={`px-1 py-0.2 rounded font-black text-[9px] ${
+                            isSelected ? 'bg-emerald-400 text-emerald-950' : 'bg-emerald-700 text-white'
                           }`}
                         >
-                          {cls}
+                          ✓ Taaluma
                         </span>
-                        <span
-                          className={`text-[10px] font-semibold block ${
-                            isSelected ? 'text-emerald-200' : 'text-slate-500'
-                          }`}
-                        >
-                          {selectedSubject.split('(')[0]}
-                        </span>
-                      </div>
-                      {isSelected ? (
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 mt-0.5 shadow-sm" />
-                      ) : (
-                        <Users className="w-4 h-4 text-slate-400 shrink-0" />
                       )}
-                    </div>
-
-                    <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-emerald-100/20 text-[10px]">
-                      <span className={`font-bold ${isSelected ? 'text-emerald-200' : 'text-slate-600'}`}>
-                        {pupilsCount} Wanafunzi
+                      <span
+                        className={`px-1.5 py-0.2 rounded-full font-bold text-[9px] border ${
+                          isClsUploaded
+                            ? isSelected
+                              ? 'bg-emerald-500/30 text-emerald-100 border-emerald-400/40'
+                              : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            : isSelected
+                            ? 'bg-amber-400/20 text-amber-200 border-amber-400/30'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}
+                      >
+                        {isClsUploaded ? 'Maksi Zipopo' : 'Inasubiri'}
                       </span>
-                      <div className="flex items-center gap-1">
-                        {isSub && (
-                          <span
-                            className={`px-1.5 py-0.5 rounded-md font-bold text-[9px] ${
-                              isSelected ? 'bg-emerald-400 text-emerald-950' : 'bg-emerald-700 text-white'
-                            }`}
-                            title="Matokeo yamewasilishwa kwa Mwalimu wa Taaluma"
-                          >
-                            ✓ Taaluma
-                          </span>
-                        )}
-                        <span
-                          className={`px-2 py-0.5 rounded-full font-black text-[9px] border ${
-                            isClsUploaded
-                              ? isSelected
-                                ? 'bg-emerald-500/30 text-emerald-100 border-emerald-400/40'
-                                : 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                              : isSelected
-                              ? 'bg-amber-400/20 text-amber-200 border-amber-400/30'
-                              : 'bg-amber-50 text-amber-800 border-amber-200'
-                          }`}
-                        >
-                          {isClsUploaded ? '✓ Maksi Zipopo' : '⏳ Inasubiri'}
-                        </span>
-                      </div>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* ===================================================================== */}
-        {/* 1. UNIFIED PROFESSIONAL SCHOOL CALENDAR ASSESSMENT & SUBMISSION FORM */}
+        {/* 1. COMPACT, CLEAN & PROFESSIONAL SCHOOL CALENDAR ASSESSMENT CONTROL */}
+        {/* (Eliminates all repetitive cards, integrates calendar & submission) */}
         {/* ===================================================================== */}
-        <div
-          className={`p-5 rounded-3xl border shadow-xs space-y-4 transition-all ${
-            isSubmittedToAcademic
-              ? 'bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/50 border-emerald-400 ring-2 ring-emerald-500/20'
-              : 'bg-white/95 border-emerald-200/90'
-          }`}
-        >
-          {/* Header Bar: Title & Live Academic Status */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-100">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-800 text-white flex items-center justify-center shadow-xs">
-                <Calendar className="w-5 h-5 text-emerald-300" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <span>Kalenda ya Mitihani ya Muhula &amp; Uwasilishaji kwa Taaluma</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold">
-                    Muhula wa 1, 2026
-                  </span>
-                </h3>
-                <p className="text-[11px] text-slate-500">
-                  Chagua mtihani kulingana na kalenda ya shule. Wastani na madaraja yatahesabiwa kiotomatiki kulingana na mtihani uliouchagua.
-                </p>
+        <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-3">
+          {/* Top Bar: Term Switcher & Live Academic Submission Status */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-emerald-100">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span className="text-xs font-black text-slate-900">
+                Kalenda ya Mitihani ya Shule (Mwezi kwa Mwezi):
+              </span>
+
+              {/* Term Switcher */}
+              <div className="flex items-center gap-1 bg-emerald-50 p-0.5 rounded-lg border border-emerald-200 text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTerm('TERM_1');
+                    setSelectedPeriodId('JANUARY');
+                  }}
+                  className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
+                    activeTerm === 'TERM_1'
+                      ? 'bg-emerald-800 text-white shadow-2xs font-black'
+                      : 'text-emerald-900 hover:bg-emerald-100'
+                  }`}
+                >
+                  Muhula wa 1 (Jan – Jun)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTerm('TERM_2');
+                    setSelectedPeriodId('JULY');
+                  }}
+                  className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
+                    activeTerm === 'TERM_2'
+                      ? 'bg-emerald-800 text-white shadow-2xs font-black'
+                      : 'text-emerald-900 hover:bg-emerald-100'
+                  }`}
+                >
+                  Muhula wa 2 (Jul – Des)
+                </button>
               </div>
             </div>
 
-            {/* Live Submission Status Badge */}
-            <div className="flex items-center gap-2 shrink-0">
+            {/* Submission Status Badge */}
+            <div className="flex items-center gap-1.5 shrink-0">
               {isSubmittedToAcademic ? (
-                <div className="px-3 py-1.5 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 flex items-center gap-1.5 text-xs font-black">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                <span className="px-2.5 py-1 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 flex items-center gap-1 text-[11px] font-black">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
                   <span>✓ Imewasilishwa kwa Taaluma ({currentSubmission.submittedAt})</span>
-                </div>
+                </span>
               ) : (
-                <div className="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 flex items-center gap-1.5 text-xs font-bold">
-                  <Clock className="w-4 h-4 text-amber-600" />
-                  <span>⏳ Bado Haijawasilishwa kwa Taaluma</span>
-                </div>
+                <span className="px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 flex items-center gap-1 text-[11px] font-bold">
+                  <Clock className="w-3.5 h-3.5 text-amber-600" />
+                  <span>⏳ Bado Haijawasilishwa</span>
+                </span>
               )}
             </div>
           </div>
 
-          {/* Stepper / Timeline: 4 School Calendar Periods */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-            {SCHOOL_CALENDAR_PERIODS.map((period, pIdx) => {
-              const isSelected = assessmentScope === period.id;
+          {/* Stepper / Timeline: Complete Months of the Selected Term */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {termPeriods.map((period) => {
+              const isSelected = selectedPeriodId === period.id;
+
               return (
                 <button
                   key={period.id}
                   type="button"
-                  onClick={() => setAssessmentScope(period.id)}
-                  className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
+                  onClick={() => setSelectedPeriodId(period.id)}
+                  className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-1 ${
                     isSelected
-                      ? 'bg-emerald-800 text-white border-emerald-950 shadow-md shadow-emerald-950/20 ring-2 ring-emerald-500/30'
-                      : 'bg-emerald-50/50 hover:bg-emerald-100/60 text-slate-800 border-emerald-200'
+                      ? 'bg-emerald-800 text-white border-emerald-950 shadow-sm ring-2 ring-emerald-500/30'
+                      : 'bg-emerald-50/40 hover:bg-emerald-100/70 text-slate-800 border-emerald-200'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-1">
                     <span className={`text-[10px] font-black uppercase tracking-wider ${isSelected ? 'text-emerald-200' : 'text-emerald-800'}`}>
-                      Hatua {pIdx + 1} • {period.month}
+                      {period.badge}
                     </span>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-emerald-300 shrink-0" />}
+                    {isSelected && <Check className="w-3 h-3 text-emerald-300 shrink-0" />}
                   </div>
-                  <span className={`text-xs font-black block leading-snug ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                  <span className={`text-xs font-black block leading-tight ${isSelected ? 'text-white' : 'text-slate-900'}`}>
                     {period.shortName}
-                  </span>
-                  <span className={`text-[10px] font-medium block truncate ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
-                    {period.termPhase}
                   </span>
                 </button>
               );
             })}
           </div>
 
-          {/* Active Context Banner & Action Toolbar */}
-          <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div className="space-y-0.5 text-xs">
+          {/* Action Toolbar & Context Info (All essential tools in ONE clean row) */}
+          <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 text-xs">
+            <div className="space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-black text-emerald-950">
-                  Matokeo Yanayofanyiwa Kazi: <span className="text-emerald-800 underline decoration-emerald-500 font-black">{activePeriod.name}</span>
+                <span className="font-black text-emerald-950 text-xs">
+                  Mtihani Amilifu: <span className="text-emerald-800 underline font-black">{activePeriod.name}</span>
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-white border border-emerald-300 text-emerald-900 font-bold">
+                <span className="text-[10px] px-2 py-0.2 rounded-md bg-white border border-emerald-300 text-emerald-900 font-bold">
                   Wastani wa Sasa: <strong className="font-black">{isMarksActive ? `${averageScore}%` : '—'}</strong>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-600">
-                {activePeriod.description} <span className="font-mono text-emerald-900 font-semibold">• Formula: {activePeriod.formula}</span>
+              <p className="text-[11px] text-slate-600 font-mono">
+                {activePeriod.formula}
               </p>
             </div>
 
-            {/* Integrated Action Buttons */}
+            {/* Compact Tool Buttons */}
             <div className="flex flex-wrap items-center gap-2 shrink-0">
-              {/* Upload Excel / CSV button */}
+              {/* Upload Excel */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-100 text-emerald-950 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
-                title="Pakia faili la Excel au CSV la alama za darasa hili"
+                title="Pakia faili la Excel au CSV la matokeo"
               >
                 <UploadCloud className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Pakia Excel / CSV</span>
+                <span>Pakia Excel</span>
               </button>
 
-              {/* 1-Click Test Data for this active period */}
+              {/* 1-Click Test Data */}
               <button
                 type="button"
-                onClick={() => simulateActivePeriodUpload(assessmentScope)}
-                className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
-                title="Weka alama za majaribio kwa mtihani huu mara moja"
+                onClick={simulateActivePeriodUpload}
+                className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 font-bold text-xs flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                title="Weka alama za majaribio za mwezi huu"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>Weka Maksi ({activePeriod.month})</span>
+                <span>Maksi za Mfano</span>
               </button>
 
-              {/* Download Template */}
+              {/* Template Download */}
               <button
                 type="button"
-                onClick={() => handleDownloadTemplate(assessmentScope === 'JANUARY_ONLY' ? 'JAN_ONLY' : 'FULL')}
-                className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                onClick={handleDownloadTemplate}
+                className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold text-xs flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                 title="Pakua kigezo cha Excel"
               >
                 <Download className="w-3.5 h-3.5 text-slate-600" />
@@ -1286,15 +1294,15 @@ export default function SubjectMarksPage() {
                   <button
                     type="button"
                     onClick={handleSubmitToAcademicMaster}
-                    className="px-3.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                    className="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5 text-emerald-300" />
-                    <span>Wasilisha Upya ({activePeriod.shortName})</span>
+                    <span>Wasilisha Upya ({activePeriod.month})</span>
                   </button>
 
                   <Link
                     href={`/teacher/broadsheet?class=${encodeURIComponent(selectedClass)}`}
-                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all"
+                    className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-1 shadow-2xs transition-all"
                   >
                     <ExternalLink className="w-3.5 h-3.5 text-emerald-700" />
                     <span>Broadsheet →</span>
@@ -1305,24 +1313,24 @@ export default function SubjectMarksPage() {
                   type="button"
                   onClick={handleSubmitToAcademicMaster}
                   disabled={!isMarksActive}
-                  className={`px-4 py-1.5 rounded-xl font-bold text-xs shadow-md flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-md flex items-center gap-1.5 transition-all cursor-pointer ${
                     isMarksActive
                       ? 'bg-emerald-800 hover:bg-emerald-900 text-white shadow-emerald-950/20'
                       : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                   }`}
                 >
                   <Send className="w-3.5 h-3.5 text-emerald-300" />
-                  <span>Wasilisha kwa Mwl. Taaluma ({activePeriod.month})</span>
+                  <span>Wasilisha kwa Taaluma ({activePeriod.month})</span>
                 </button>
               )}
 
-              {/* Reset if marks active */}
+              {/* Reset if marks are active */}
               {isMarksActive && (
                 <button
                   type="button"
                   onClick={handleClearExcelResults}
                   className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
-                  title="Weka upya alama zote za darasa hili"
+                  title="Futa matokeo ili kuanza upya"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
@@ -1334,20 +1342,20 @@ export default function SubjectMarksPage() {
         {/* ===================================================================== */}
         {/* 2. SUMMARY STATS CARDS */}
         {/* ===================================================================== */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               Wanafunzi Wote
             </span>
-            <p className="text-2xl font-black text-slate-900 mt-1">{totalStudents}</p>
+            <p className="text-xl font-black text-slate-900 mt-0.5">{totalStudents}</p>
             <span className="text-[10px] text-emerald-800 font-semibold">{selectedClass}</span>
           </div>
 
-          <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs">
+          <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               Wastani ({activePeriod.shortName})
             </span>
-            <p className="text-2xl font-black text-emerald-800 mt-1">
+            <p className="text-xl font-black text-emerald-800 mt-0.5">
               {isMarksActive ? `${averageScore}%` : '—'}
             </p>
             <span className="text-[10px] text-emerald-700 font-semibold">
@@ -1355,11 +1363,11 @@ export default function SubjectMarksPage() {
             </span>
           </div>
 
-          <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs">
+          <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               Wenye Daraja A
             </span>
-            <p className="text-2xl font-black text-emerald-700 mt-1">
+            <p className="text-xl font-black text-emerald-700 mt-0.5">
               {isMarksActive ? gradeACount : '—'}
             </p>
             <span className="text-[10px] text-emerald-700 font-semibold">
@@ -1367,11 +1375,11 @@ export default function SubjectMarksPage() {
             </span>
           </div>
 
-          <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs">
+          <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               Wenye Daraja B
             </span>
-            <p className="text-2xl font-black text-blue-700 mt-1">
+            <p className="text-xl font-black text-blue-700 mt-0.5">
               {isMarksActive ? gradeBCount : '—'}
             </p>
             <span className="text-[10px] text-blue-700 font-semibold">
@@ -1379,11 +1387,11 @@ export default function SubjectMarksPage() {
             </span>
           </div>
 
-          <div className="p-4 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs col-span-2 sm:col-span-1">
+          <div className="p-3.5 rounded-2xl bg-white/95 border border-emerald-200/90 shadow-2xs col-span-2 sm:col-span-1">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               Daraja C / D / F
             </span>
-            <p className="text-2xl font-black text-amber-700 mt-1">
+            <p className="text-xl font-black text-amber-700 mt-0.5">
               {isMarksActive ? gradeCCount + gradeDCount : '—'}
             </p>
             <span className="text-[10px] text-amber-700 font-semibold">
@@ -1392,27 +1400,8 @@ export default function SubjectMarksPage() {
           </div>
         </div>
 
-        {/* Formula Bar Banner (Excel Style) */}
-        <div className="p-2.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono text-emerald-950">
-          <div className="flex items-center gap-2 truncate">
-            <span className="px-2 py-0.5 rounded-md bg-emerald-800 text-white font-bold text-[10px]">
-              fx Formula ({activePeriod.shortName})
-            </span>
-            <span className="truncate font-semibold">{activePeriod.formula}</span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0 font-sans text-[11px] font-bold text-slate-600">
-            <span className="text-emerald-800">A (81-100)</span>
-            <span>•</span>
-            <span className="text-blue-800">B (65-80)</span>
-            <span>•</span>
-            <span className="text-amber-800">C (45-64)</span>
-            <span>•</span>
-            <span className="text-rose-800">D/F (0-44)</span>
-          </div>
-        </div>
-
         {/* Search & Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -1420,7 +1409,7 @@ export default function SubjectMarksPage() {
               value={searchPupil}
               onChange={(e) => setSearchPupil(e.target.value)}
               placeholder={`Tafuta mwanafunzi wa ${selectedClass}...`}
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-emerald-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white border border-emerald-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 shadow-2xs"
             />
           </div>
 
@@ -1447,37 +1436,61 @@ export default function SubjectMarksPage() {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-emerald-800 text-white font-bold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-3 border-r border-emerald-700 text-center w-10">#</th>
-                  <th className="py-3 px-3 border-r border-emerald-700 min-w-[120px]">Namba ya Usajili</th>
-                  <th className="py-3 px-3 border-r border-emerald-700 min-w-[200px]">Jina Kamili la Mwanafunzi</th>
-                  <th className="py-3 px-2 border-r border-emerald-700 text-center w-12">Jinsia</th>
-                  <th className={`py-3 px-2 border-r border-emerald-700 text-center min-w-[85px] ${assessmentScope === 'JANUARY_ONLY' ? 'bg-emerald-950 font-black' : 'bg-emerald-900/60'}`}>
+                  <th className="py-2.5 px-3 border-r border-emerald-700 text-center w-10">#</th>
+                  <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[120px]">Namba ya Usajili</th>
+                  <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[190px]">Jina Kamili la Mwanafunzi</th>
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-12">Jinsia</th>
+                  <th
+                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
+                      activePeriod.id === 'JANUARY' || activePeriod.id === 'JULY'
+                        ? 'bg-emerald-950 font-black ring-1 ring-emerald-400 inset-0'
+                        : 'bg-emerald-900/60'
+                    }`}
+                  >
                     Monthly 1 (Jan)
                   </th>
-                  <th className={`py-3 px-2 border-r border-emerald-700 text-center min-w-[85px] ${assessmentScope === 'MONTHLY_ALL' ? 'bg-emerald-950 font-black' : 'bg-emerald-900/60'}`}>
+                  <th
+                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
+                      activePeriod.id === 'FEBRUARY' || activePeriod.id === 'AUGUST'
+                        ? 'bg-emerald-950 font-black ring-1 ring-emerald-400'
+                        : 'bg-emerald-900/60'
+                    }`}
+                  >
                     Monthly 2 (Feb)
                   </th>
-                  <th className="py-3 px-2 border-r border-emerald-700 text-center bg-emerald-950/80 min-w-[85px]">
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center bg-emerald-950/80 min-w-[85px]">
                     Wastani Monthly
                   </th>
-                  <th className={`py-3 px-2 border-r border-emerald-700 text-center min-w-[85px] ${assessmentScope === 'UP_TO_MIDTERM' ? 'bg-blue-950 font-black' : 'bg-blue-900/60'}`}>
-                    Mid-Term
+                  <th
+                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
+                      activePeriod.id.includes('MIDTERM')
+                        ? 'bg-blue-950 font-black ring-1 ring-blue-400'
+                        : 'bg-blue-900/60'
+                    }`}
+                  >
+                    Mid-Term (Machi)
                   </th>
-                  <th className={`py-3 px-2 border-r border-emerald-700 text-center min-w-[85px] ${assessmentScope === 'FULL_TERM' ? 'bg-indigo-950 font-black' : 'bg-indigo-900/60'}`}>
-                    Terminal
+                  <th
+                    className={`py-2.5 px-2 border-r border-emerald-700 text-center min-w-[85px] ${
+                      activePeriod.id.includes('TERMINAL') || activePeriod.id.includes('ANNUAL')
+                        ? 'bg-indigo-950 font-black ring-1 ring-indigo-400'
+                        : 'bg-indigo-900/60'
+                    }`}
+                  >
+                    Terminal (Juni)
                   </th>
-                  <th className="py-3 px-2 border-r border-emerald-700 text-center bg-amber-900/80 min-w-[95px]">
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center bg-amber-900/80 min-w-[95px]">
                     <div className="leading-tight">
                       <span>Wastani (%)</span>
-                      <span className="block text-[8px] font-mono text-amber-200 uppercase font-black tracking-normal">
+                      <span className="block text-[8px] font-mono text-amber-200 uppercase font-black">
                         {activePeriod.shortName}
                       </span>
                     </div>
                   </th>
-                  <th className="py-3 px-2 border-r border-emerald-700 text-center w-16">Daraja</th>
-                  <th className="py-3 px-2 border-r border-emerald-700 text-center w-14">Nafasi</th>
-                  <th className="py-3 px-3 border-r border-emerald-700 min-w-[160px]">Maoni ya Mwalimu</th>
-                  <th className="py-3 px-3 text-center min-w-[110px] bg-emerald-900/80">Hatua / Marekebisho</th>
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-16">Daraja</th>
+                  <th className="py-2.5 px-2 border-r border-emerald-700 text-center w-14">Nafasi</th>
+                  <th className="py-2.5 px-3 border-r border-emerald-700 min-w-[150px]">Maoni ya Mwalimu</th>
+                  <th className="py-2.5 px-3 text-center min-w-[100px] bg-emerald-900/80">Marekebisho</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-100 text-slate-800">
@@ -1492,17 +1505,17 @@ export default function SubjectMarksPage() {
                       }`}
                     >
                       {/* Row Index */}
-                      <td className="py-2.5 px-3 font-mono text-slate-400 text-center border-r border-slate-100">
+                      <td className="py-2 px-3 font-mono text-slate-400 text-center border-r border-slate-100">
                         {idx + 1}
                       </td>
 
                       {/* Admission Number */}
-                      <td className="py-2.5 px-3 font-mono text-emerald-900 font-semibold border-r border-slate-100 whitespace-nowrap">
+                      <td className="py-2 px-3 font-mono text-emerald-900 font-semibold border-r border-slate-100 whitespace-nowrap">
                         {pupil.admNo}
                       </td>
 
-                      {/* Pupil Name + Adjusted Tag */}
-                      <td className="py-2.5 px-3 font-bold text-slate-900 border-r border-slate-100 whitespace-nowrap">
+                      {/* Pupil Name */}
+                      <td className="py-2 px-3 font-bold text-slate-900 border-r border-slate-100 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <span>{pupil.name}</span>
                           {isAdjusted && (
@@ -1517,30 +1530,42 @@ export default function SubjectMarksPage() {
                       </td>
 
                       {/* Gender */}
-                      <td className="py-2.5 px-2 text-center text-slate-600 font-bold border-r border-slate-100">
+                      <td className="py-2 px-2 text-center text-slate-600 font-bold border-r border-slate-100">
                         {pupil.gender}
                       </td>
 
                       {/* Monthly Test 1 (Jan) */}
-                      <td className={`py-2.5 px-2 text-center font-mono font-semibold border-r border-slate-100 ${assessmentScope === 'JANUARY_ONLY' ? 'bg-emerald-50/50' : ''}`}>
+                      <td
+                        className={`py-2 px-2 text-center font-mono font-semibold border-r border-slate-100 ${
+                          activePeriod.id === 'JANUARY' || activePeriod.id === 'JULY'
+                            ? 'bg-emerald-50/60 font-bold'
+                            : ''
+                        }`}
+                      >
                         {pupil.monthlyTest1 > 0 ? (
-                          <span className="font-bold text-slate-900">{pupil.monthlyTest1}</span>
+                          <span className="text-slate-900">{pupil.monthlyTest1}</span>
                         ) : (
                           <span className="text-slate-300 font-normal">—</span>
                         )}
                       </td>
 
                       {/* Monthly Test 2 (Feb) */}
-                      <td className={`py-2.5 px-2 text-center font-mono font-semibold border-r border-slate-100 ${assessmentScope === 'MONTHLY_ALL' ? 'bg-emerald-50/50' : ''}`}>
+                      <td
+                        className={`py-2 px-2 text-center font-mono font-semibold border-r border-slate-100 ${
+                          activePeriod.id === 'FEBRUARY' || activePeriod.id === 'AUGUST'
+                            ? 'bg-emerald-50/60 font-bold'
+                            : ''
+                        }`}
+                      >
                         {pupil.monthlyTest2 > 0 ? (
-                          <span className="font-bold text-slate-900">{pupil.monthlyTest2}</span>
+                          <span className="text-slate-900">{pupil.monthlyTest2}</span>
                         ) : (
                           <span className="text-slate-300 font-normal">—</span>
                         )}
                       </td>
 
                       {/* Monthly Average */}
-                      <td className="py-2.5 px-2 text-center font-mono font-bold text-emerald-950 bg-emerald-50/40 border-r border-slate-100">
+                      <td className="py-2 px-2 text-center font-mono font-bold text-emerald-950 bg-emerald-50/40 border-r border-slate-100">
                         {pupil.monthlyAvg > 0 ? (
                           <span>{pupil.monthlyAvg}</span>
                         ) : (
@@ -1549,7 +1574,11 @@ export default function SubjectMarksPage() {
                       </td>
 
                       {/* Midterm Exam */}
-                      <td className={`py-2.5 px-2 text-center font-mono font-semibold text-blue-900 border-r border-slate-100 ${assessmentScope === 'UP_TO_MIDTERM' ? 'bg-blue-50/50' : ''}`}>
+                      <td
+                        className={`py-2 px-2 text-center font-mono font-semibold text-blue-900 border-r border-slate-100 ${
+                          activePeriod.id.includes('MIDTERM') ? 'bg-blue-50/60 font-bold' : ''
+                        }`}
+                      >
                         {pupil.midtermExam > 0 ? (
                           <span className="font-bold">{pupil.midtermExam}</span>
                         ) : (
@@ -1558,7 +1587,13 @@ export default function SubjectMarksPage() {
                       </td>
 
                       {/* Terminal Exam */}
-                      <td className={`py-2.5 px-2 text-center font-mono font-semibold text-indigo-900 border-r border-slate-100 ${assessmentScope === 'FULL_TERM' ? 'bg-indigo-50/50' : ''}`}>
+                      <td
+                        className={`py-2 px-2 text-center font-mono font-semibold text-indigo-900 border-r border-slate-100 ${
+                          activePeriod.id.includes('TERMINAL') || activePeriod.id.includes('ANNUAL')
+                            ? 'bg-indigo-50/60 font-bold'
+                            : ''
+                        }`}
+                      >
                         {pupil.terminalExam > 0 ? (
                           <span className="font-bold">{pupil.terminalExam}</span>
                         ) : (
@@ -1566,8 +1601,8 @@ export default function SubjectMarksPage() {
                         )}
                       </td>
 
-                      {/* Final Mark (%) Calculated according to active School Calendar Period */}
-                      <td className="py-2.5 px-2 text-center font-mono font-black text-slate-900 bg-amber-50/50 border-r border-slate-100 text-sm">
+                      {/* Final Mark (%) */}
+                      <td className="py-2 px-2 text-center font-mono font-black text-slate-900 bg-amber-50/50 border-r border-slate-100 text-sm">
                         {pupil.hasAnyScore ? (
                           <span className="font-bold text-amber-950">{pupil.mark}%</span>
                         ) : (
@@ -1576,7 +1611,7 @@ export default function SubjectMarksPage() {
                       </td>
 
                       {/* Grade Badge */}
-                      <td className="py-2.5 px-2 text-center border-r border-slate-100">
+                      <td className="py-2 px-2 text-center border-r border-slate-100">
                         {pupil.hasAnyScore ? (
                           <span
                             className={`px-2 py-0.5 rounded-full font-black text-[10px] ${
@@ -1597,12 +1632,12 @@ export default function SubjectMarksPage() {
                       </td>
 
                       {/* Rank */}
-                      <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-600 border-r border-slate-100">
+                      <td className="py-2 px-2 text-center font-mono font-bold text-slate-600 border-r border-slate-100">
                         {pupil.hasAnyScore && pupil.rank ? `#${pupil.rank}` : '—'}
                       </td>
 
                       {/* Remarks */}
-                      <td className="py-2.5 px-3 text-slate-600 text-[11px] font-medium border-r border-slate-100 whitespace-nowrap">
+                      <td className="py-2 px-3 text-slate-600 text-[11px] font-medium border-r border-slate-100 whitespace-nowrap">
                         {pupil.hasAnyScore ? (
                           pupil.remarks || getRemarksForGrade(pupil.grade)
                         ) : (
@@ -1611,11 +1646,11 @@ export default function SubjectMarksPage() {
                       </td>
 
                       {/* Action Button: Edit Single Student */}
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2 px-3 text-center">
                         <button
                           type="button"
                           onClick={() => handleOpenStudentEdit(pupil)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px] flex items-center gap-1 mx-auto transition-colors cursor-pointer"
+                          className="px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px] flex items-center gap-1 mx-auto transition-colors cursor-pointer"
                         >
                           <Edit3 className="w-3 h-3 text-emerald-700" />
                           <span>Rekebisha</span>
@@ -1689,7 +1724,7 @@ export default function SubjectMarksPage() {
 
                   <div>
                     <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
-                      Mid-Term:
+                      Mid-Term (Machi):
                     </label>
                     <input
                       type="number"
@@ -1705,7 +1740,7 @@ export default function SubjectMarksPage() {
 
                   <div>
                     <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
-                      Terminal (Mwisho wa Muhula):
+                      Terminal (Juni / Mwisho):
                     </label>
                     <input
                       type="number"
@@ -1735,7 +1770,7 @@ export default function SubjectMarksPage() {
                             midtermExam: editingStudent.midtermExam,
                             terminalExam: editingStudent.terminalExam,
                           },
-                          assessmentScope
+                          activePeriod.id
                         ).finalMark
                       }
                       %
@@ -1754,7 +1789,7 @@ export default function SubjectMarksPage() {
                             midtermExam: editingStudent.midtermExam,
                             terminalExam: editingStudent.terminalExam,
                           },
-                          assessmentScope
+                          activePeriod.id
                         ).grade
                       }
                     </span>
@@ -1808,7 +1843,7 @@ export default function SubjectMarksPage() {
         )}
 
         {/* ===================================================================== */}
-        {/* STUDENT ROSTER REGISTRATION MODAL (REGISTER STUDENTS VIA EXCEL) */}
+        {/* STUDENT ROSTER REGISTRATION MODAL */}
         {/* ===================================================================== */}
         {showRegisterModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
@@ -1841,7 +1876,7 @@ export default function SubjectMarksPage() {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-emerald-950 flex items-center gap-1.5">
                     <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
-                    <span>Muundo wa Faili la Excel / CSV la Kusajili Wanafunzi:</span>
+                    <span>Muundo wa Faili la Excel / CSV:</span>
                   </span>
                   <button
                     type="button"
@@ -1874,11 +1909,6 @@ export default function SubjectMarksPage() {
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Faili litakapopakiwa, wanafunzi hao wataingizwa mara moja kwenye darasa la{' '}
-                  <strong>{selectedClass}</strong> na idadi ya wanafunzi itaonekana kwenye kadi ya
-                  darasa na jedwali la matokeo.
-                </p>
               </div>
 
               {/* Action Buttons */}
