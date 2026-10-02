@@ -445,13 +445,8 @@ export default function TeacherShell({
             </span>
           </div>
 
-          {/* Right Controls: Available Badge + User Profile Chip */}
+          {/* Right Controls: User Profile Chip */}
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Status Badge */}
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-950 border border-emerald-300 text-xs font-bold shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-              <span>Amilifu Kazini</span>
-            </div>
 
             {/* User Profile Chip (Avatar + Full Name + Role) */}
             <Link
