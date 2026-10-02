@@ -391,31 +391,85 @@ export default function HeadteacherApprovalsPage() {
             </div>
           </div>
 
-          {/* Classes Summary & Pass Rates */}
+          {/* Classes Submitted by Academic Master & Approved */}
           <div>
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-              Muhtasari wa Madarasa Yote Yaliyoidhinishwa (Pass Rate Summary)
-            </h4>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                  Madarasa Yaliyowasilishwa na Mwalimu wa Taaluma (Academic Broadsheets)
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Masomo 6 ya kila darasa yameunganishwa na kuhakikiwa na AI kabla ya kufika hapa kwa ajili ya muhuri rasmi.
+                </p>
+              </div>
+              <Link
+                href="/teacher/broadsheet"
+                className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 underline"
+              >
+                <span>Fungua Broadsheet Kuu</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-200">
-                <span className="text-xs text-slate-500 block">Darasa la 7 (PSLE Candidates)</span>
-                <span className="text-xl font-black text-emerald-900 block mt-1">100% Pass Rate</span>
-                <span className="text-[11px] text-emerald-700 font-bold">Watahiniwa 86 • Wastani: 88.4%</span>
+              <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-800">Standard 7 (Grade 7)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-950 text-[9px] font-black border border-emerald-300">
+                    AI Verified ✓
+                  </span>
+                </div>
+                <div className="text-xl font-black text-emerald-900">100% Pass Rate</div>
+                <div className="text-[11px] text-emerald-800 font-bold">Watahiniwa 35 • Wastani: 89.2%</div>
+                <div className="text-[10px] text-slate-500 flex items-center justify-between pt-1 border-t border-emerald-100">
+                  <span>Masomo 6 Yameunganishwa</span>
+                  <span className="text-emerald-700 font-bold">{hasApprovedTermResults ? 'Imewekwa Muhuri' : 'Inasubiri Muhuri'}</span>
+                </div>
               </div>
-              <div className="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-200">
-                <span className="text-xs text-slate-500 block">Darasa la 6 (Grade 6)</span>
-                <span className="text-xl font-black text-emerald-900 block mt-1">94.2% Pass Rate</span>
-                <span className="text-[11px] text-emerald-700 font-bold">Wanafunzi 92 • Wastani: 79.1%</span>
+
+              <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-800">Standard 6 (Grade 6)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-950 text-[9px] font-black border border-emerald-300">
+                    AI Verified ✓
+                  </span>
+                </div>
+                <div className="text-xl font-black text-emerald-900">97.1% Pass Rate</div>
+                <div className="text-[11px] text-emerald-800 font-bold">Wanafunzi 35 • Wastani: 81.4%</div>
+                <div className="text-[10px] text-slate-500 flex items-center justify-between pt-1 border-t border-emerald-100">
+                  <span>Masomo 6 Yameunganishwa</span>
+                  <span className="text-emerald-700 font-bold">{hasApprovedTermResults ? 'Imewekwa Muhuri' : 'Inasubiri Muhuri'}</span>
+                </div>
               </div>
-              <div className="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-200">
-                <span className="text-xs text-slate-500 block">Darasa la 5 (Grade 5)</span>
-                <span className="text-xl font-black text-emerald-900 block mt-1">91.8% Pass Rate</span>
-                <span className="text-[11px] text-emerald-700 font-bold">Wanafunzi 98 • Wastani: 76.5%</span>
+
+              <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-800">Standard 5 (Grade 5)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-950 text-[9px] font-black border border-emerald-300">
+                    AI Verified ✓
+                  </span>
+                </div>
+                <div className="text-xl font-black text-emerald-900">94.3% Pass Rate</div>
+                <div className="text-[11px] text-emerald-800 font-bold">Wanafunzi 35 • Wastani: 78.6%</div>
+                <div className="text-[10px] text-slate-500 flex items-center justify-between pt-1 border-t border-emerald-100">
+                  <span>Masomo 6 Yameunganishwa</span>
+                  <span className="text-emerald-700 font-bold">{hasApprovedTermResults ? 'Imewekwa Muhuri' : 'Inasubiri Muhuri'}</span>
+                </div>
               </div>
-              <div className="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-200">
-                <span className="text-xs text-slate-500 block">Darasa la 4 (SFNA Candidates)</span>
-                <span className="text-xl font-black text-emerald-900 block mt-1">96.5% Pass Rate</span>
-                <span className="text-[11px] text-emerald-700 font-bold">Watahiniwa 104 • Wastani: 82.3%</span>
+
+              <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-800">Standard 4 (Grade 4)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-950 text-[9px] font-black border border-emerald-300">
+                    AI Verified ✓
+                  </span>
+                </div>
+                <div className="text-xl font-black text-emerald-900">97.1% Pass Rate</div>
+                <div className="text-[11px] text-emerald-800 font-bold">Watahiniwa 35 • Wastani: 83.5%</div>
+                <div className="text-[10px] text-slate-500 flex items-center justify-between pt-1 border-t border-emerald-100">
+                  <span>Masomo 6 Yameunganishwa</span>
+                  <span className="text-emerald-700 font-bold">{hasApprovedTermResults ? 'Imewekwa Muhuri' : 'Inasubiri Muhuri'}</span>
+                </div>
               </div>
             </div>
           </div>

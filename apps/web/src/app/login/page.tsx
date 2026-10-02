@@ -62,27 +62,6 @@ export default function LoginPage() {
       description: 'Usimamizi Mkuu, Idhini ya Matokeo, Broadsheet & Ualimu',
     },
     {
-      title: 'Makamu Mkuu (Second Master)',
-      roleLabel: 'Deputy Headteacher',
-      user: {
-        id: 'USR-002B',
-        fullName: 'Mwl. Frank Msaki',
-        role: 'SECOND_MASTER',
-        leadershipRole: 'SECOND_MASTER',
-        identifier: 'HT-2026-002',
-        email: 'secondmaster@primaryschool.ac.tz',
-        phone: '+255 756 334 556',
-        assignedClass: 'Senior Standards (Std 5 & 6)',
-        assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-        subjects: ['Science & Technology (Sayansi na Teknolojia)', 'Mathematics (Hisabati)'],
-        status: 'ACTIVE',
-        joinedDate: '2026-01-16',
-      },
-      path: '/teacher',
-      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-      description: 'Usimamizi wa Shule, Uratibu wa Walimu & Kufundisha',
-    },
-    {
       title: 'Mwl. Taaluma',
       roleLabel: 'Academic Master',
       user: {
@@ -247,7 +226,7 @@ export default function LoginPage() {
           localStorage.setItem('user_roles', JSON.stringify([matched.role]));
         }
 
-        if (['HEADTEACHER', 'SECOND_MASTER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER'].includes(matched.role)) {
+        if (['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER'].includes(matched.role)) {
           router.push('/teacher');
         } else if (matched.role === 'PARENT') {
           router.push('/parent');

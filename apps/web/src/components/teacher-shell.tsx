@@ -112,33 +112,12 @@ export default function TeacherShell({
     }
 
     // Role-specific check if page requires specific leadership role
-    const isExecutive =
-      ['HEADTEACHER', 'SECOND_MASTER'].includes(session.role) ||
-      ['HEADTEACHER', 'SECOND_MASTER'].includes(session.leadershipRole || '');
-
-    if (requiredRole && requiredRole === 'HEADTEACHER' && !isExecutive && session.role !== 'ADMIN') {
+    if (requiredRole && session.role !== requiredRole && session.leadershipRole !== requiredRole && session.role !== 'ADMIN') {
       setIsAuthorized(false);
       triggerNotification(
         'error',
         'Eneo Lililozuiliwa',
-        `Sehemu hii imehifadhiwa mahsusi kwa Uongozi wa Shule (Mwalimu Mkuu & Makamu Mkuu wa Shule). Utaelekezwa kwenye Dashibodi Kuu.`
-      );
-      setTimeout(() => {
-        router.push('/teacher');
-      }, 2500);
-      return;
-    } else if (
-      requiredRole &&
-      requiredRole !== 'HEADTEACHER' &&
-      session.role !== requiredRole &&
-      session.leadershipRole !== requiredRole &&
-      session.role !== 'ADMIN'
-    ) {
-      setIsAuthorized(false);
-      triggerNotification(
-        'error',
-        'Eneo Lililozuiliwa',
-        `Sehemu hii imehifadhiwa mahsusi kwa ${requiredRole === 'ACADEMIC' ? 'Mwalimu wa Taaluma' : 'Mwalimu wa Nidhamu'}. Utaelekezwa kwenye Dashibodi Kuu.`
+        `Sehemu hii imehifadhiwa mahsusi kwa ${requiredRole === 'HEADTEACHER' ? 'Mwalimu Mkuu' : requiredRole === 'ACADEMIC' ? 'Mwalimu wa Taaluma' : 'Mwalimu wa Nidhamu'}. Utaelekezwa kwenye Dashibodi Kuu.`
       );
       setTimeout(() => {
         router.push('/teacher');
@@ -150,14 +129,35 @@ export default function TeacherShell({
     setCurrentUser(session);
   }, [requiredRole, router, triggerNotification]);
 
-  const handleLogout = () => {
-    clearCurrentSession();
-    router.push('/login');
+  // Switch Teacher Identity
+  const handleSwitchTeacher = (teacher: UserAccount) => {
+    setCurrentSession(teacher);
+    setCurrentUser(teacher);
+
+    // If on a page requiring specific role that the new teacher doesn't have, redirect to /teacher
+    if (requiredRole && teacher.role !== requiredRole && teacher.leadershipRole !== requiredRole && teacher.role !== 'ADMIN') {
+      router.push('/teacher');
+    } else {
+      router.refresh();
+    }
+
+    triggerNotification(
+      'success',
+      'Akaunti ya Mwalimu Imebadilishwa',
+      `Sasa unafanya kazi kama ${teacher.fullName} (${teacher.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : teacher.role === 'ACADEMIC' ? 'Taaluma' : teacher.role === 'DISCIPLINE' ? 'Nidhamu' : 'Class Teacher'}).`
+    );
   };
 
+  const handleLogout = () => {
+    clearCurrentSession();
+    router.push('/');
+  };
+
+  const teachersList = useMemo(() => {
+    return allAccounts.filter((a) => ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER'].includes(a.role));
+  }, [allAccounts]);
+
   const isHeadteacher = currentUser?.role === 'HEADTEACHER' || currentUser?.leadershipRole === 'HEADTEACHER';
-  const isSecondMaster = currentUser?.role === 'SECOND_MASTER' || currentUser?.leadershipRole === 'SECOND_MASTER';
-  const isExecutiveLeader = isHeadteacher || isSecondMaster;
   const isAcademicMaster = currentUser?.role === 'ACADEMIC' || currentUser?.leadershipRole === 'ACADEMIC';
   const isDisciplineMaster = currentUser?.role === 'DISCIPLINE' || currentUser?.leadershipRole === 'DISCIPLINE';
   const isAdmin = currentUser?.role === 'ADMIN';
@@ -468,10 +468,38 @@ export default function TeacherShell({
         </div>
 
         {/* ================================================================= */}
-        {/* SIDEBAR FOOTER: LANGUAGE PILL & LOGOUT */}
+        {/* SIDEBAR FOOTER: ROLE SWITCHER & LANGUAGE PILL */}
         {/* ================================================================= */}
-        <div className="p-4 border-t border-emerald-100 bg-emerald-50/50">
-          <div className="flex items-center justify-between">
+        <div className="p-4 border-t border-emerald-100 bg-emerald-50/50 space-y-3">
+          {/* Fast 1-Click Role Switcher for School Staff */}
+          <div>
+            <span className="text-[10px] font-black text-emerald-900 uppercase tracking-wider block mb-1.5">
+              Badili Akaunti (Kujaribu):
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {teachersList.map((t) => {
+                const isCurrent = currentUser?.id === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => handleSwitchTeacher(t)}
+                    className={`py-1 px-2 rounded-lg text-[10px] font-bold truncate text-left transition-all ${
+                      isCurrent
+                        ? 'bg-emerald-800 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-100 text-slate-700 border border-emerald-200'
+                    }`}
+                    title={`${t.fullName} (${t.role})`}
+                  >
+                    {t.role === 'HEADTEACHER' ? 'Mkuu wa Shule' : t.role === 'ACADEMIC' ? 'Mwl. Taaluma' : t.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Language Pill & Logout */}
+          <div className="pt-1 flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900 text-white text-[10px] font-bold shadow-xs">
               <Globe className="w-3.5 h-3.5 text-emerald-300" />
               <span>LUGHA: SWA</span>
@@ -533,16 +561,7 @@ export default function TeacherShell({
                   {currentUser?.fullName}
                 </span>
                 <span className="text-[10px] text-emerald-800 font-semibold block truncate max-w-[170px]">
-                  {currentUser?.identifier} •{' '}
-                  {currentUser?.role === 'HEADTEACHER'
-                    ? 'Mwalimu Mkuu'
-                    : currentUser?.role === 'SECOND_MASTER'
-                    ? 'Makamu Mkuu'
-                    : currentUser?.role === 'ACADEMIC'
-                    ? 'Mwl. Taaluma'
-                    : currentUser?.role === 'DISCIPLINE'
-                    ? 'Mwl. Nidhamu'
-                    : 'Class Teacher'}
+                  {currentUser?.identifier} • {currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.role === 'ACADEMIC' ? 'Mwl. Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
                 </span>
               </div>
             </div>

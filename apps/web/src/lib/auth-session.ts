@@ -5,7 +5,6 @@
 export type UserRole =
   | 'ADMIN'
   | 'HEADTEACHER'
-  | 'SECOND_MASTER'
   | 'ACADEMIC'
   | 'DISCIPLINE'
   | 'TEACHER'
@@ -13,7 +12,7 @@ export type UserRole =
   | 'CANDIDATE'
   | 'PARENT';
 
-export type LeadershipRole = 'HEADTEACHER' | 'SECOND_MASTER' | 'ACADEMIC' | 'DISCIPLINE' | 'CLASS_TEACHER';
+export type LeadershipRole = 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'CLASS_TEACHER';
 
 export interface UserAccount {
   id: string;
@@ -59,21 +58,6 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Social Studies (Maarifa ya Jamii)'],
     status: 'ACTIVE',
     joinedDate: '2026-01-15',
-  },
-  // 2B. Makamu Mkuu wa Shule (Second Master / Deputy Headteacher - Same Format)
-  {
-    id: 'USR-002B',
-    fullName: 'Mwl. Frank Msaki',
-    role: 'SECOND_MASTER',
-    leadershipRole: 'SECOND_MASTER',
-    identifier: 'HT-2026-002',
-    email: 'secondmaster@primaryschool.ac.tz',
-    phone: '+255 756 334 556',
-    assignedClass: 'Senior Standards (Std 5 & 6)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['Science & Technology (Sayansi na Teknolojia)', 'Mathematics (Hisabati)'],
-    status: 'ACTIVE',
-    joinedDate: '2026-01-16',
   },
   // 3. Mwalimu wa Taaluma (Academic Master - Enters as Teacher Leader)
   {
@@ -313,8 +297,8 @@ export function canAccessPortal(
   }
 
   if (targetPortal === 'TEACHER') {
-    // All Teaching staff: Headteacher, Second Master, Academic Master, Discipline Master, and Class Teachers
-    return ['TEACHER', 'ACADEMIC', 'DISCIPLINE', 'HEADTEACHER', 'SECOND_MASTER', 'ADMIN'].includes(user.role);
+    // All Teaching staff: Headteacher, Academic Master, Discipline Master, and Class Teachers
+    return ['TEACHER', 'ACADEMIC', 'DISCIPLINE', 'HEADTEACHER', 'ADMIN'].includes(user.role);
   }
 
   if (targetPortal === 'STUDENT') {
