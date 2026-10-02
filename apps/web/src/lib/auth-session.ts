@@ -1,18 +1,18 @@
 // =============================================================================
-// AUTHENTICATION & SESSION MANAGEMENT BLUEPRINT (ACADEMIC PORTAL)
-// Supports multi-teacher accounts with role-based permissions and teaching loads
+// SHARED AUTHENTICATION & MULTI-TEACHER SESSION ENGINE (ACADEMIC PORTAL)
+// Supports all primary school teaching staff: Headmaster, Academic Master,
+// Discipline Master, and Subject/Class Teachers.
 // =============================================================================
 
 export type UserRole =
+  | 'ADMIN'
   | 'HEADTEACHER'
   | 'ACADEMIC'
   | 'DISCIPLINE'
   | 'TEACHER'
-  | 'ACCOUNTANT'
-  | 'PARENT'
   | 'STUDENT'
   | 'CANDIDATE'
-  | 'ADMIN';
+  | 'PARENT';
 
 export type LeadershipRole = 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'CLASS_TEACHER';
 
@@ -34,7 +34,9 @@ export interface UserAccount {
   joinedDate: string;
 }
 
-// Complete Faculty Roster: Every teacher has their assigned classes and subjects
+// Complete Primary School Faculty Roster:
+// In Tanzania primary schools, Headmasters, Academic Masters, and Discipline Masters
+// also teach classes and have subjects assigned!
 export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
   {
     id: 'USR-001',
@@ -44,9 +46,10 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     identifier: 'HT-2026-001',
     email: 'headteacher@primaryschool.ac.tz',
     phone: '+255 754 112 233',
-    assignedClass: 'Senior Standards (Std 6 & 7)',
-    assignedClasses: ['Standard 7 (Grade 7)', 'Standard 6 (Grade 6)'],
+    assignedClass: 'Standard 6 & 7',
+    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'],
     subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Social Studies (Maarifa ya Jamii)'],
+    isHomeroomMaster: false,
     status: 'ACTIVE',
     joinedDate: '2026-01-15',
   },
@@ -55,79 +58,79 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     fullName: 'Mwl. Beatrice Kimaro',
     role: 'ACADEMIC',
     leadershipRole: 'ACADEMIC',
-    identifier: 'ACAD-2026-001',
+    identifier: 'ACAD-2026-002',
     email: 'academic@primaryschool.ac.tz',
-    phone: '+255 765 223 344',
-    assignedClass: 'Standard 7 (Grade 7)',
-    assignedClasses: ['Standard 7 (Grade 7)', 'Standard 4 (Grade 4)'],
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology (Sayansi)'],
+    phone: '+255 784 223 344',
+    assignedClass: 'Standard 6 (Grade 6)',
+    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'],
+    subjects: ['Science & Technology (Sayansi)', 'Mathematics (Hisabati)'],
     isHomeroomMaster: true,
     status: 'ACTIVE',
-    joinedDate: '2026-01-20',
+    joinedDate: '2026-01-15',
   },
   {
     id: 'USR-003',
-    fullName: 'Mwl. Sarah Mollel',
-    role: 'TEACHER',
-    leadershipRole: 'CLASS_TEACHER',
-    identifier: 'TCH-2026-012',
-    email: 'sarah.mollel@primaryschool.ac.tz',
-    phone: '+255 712 445 566',
-    assignedClass: 'Standard 6 (Grade 6)',
-    assignedClasses: ['Standard 6 (Grade 6)'],
-    subjects: ['English Language', 'Kiswahili'],
+    fullName: 'Mwl. Emmanuel Lyimo',
+    role: 'DISCIPLINE',
+    leadershipRole: 'DISCIPLINE',
+    identifier: 'DISC-2026-003',
+    email: 'discipline@primaryschool.ac.tz',
+    phone: '+255 768 334 455',
+    assignedClass: 'Standard 5 (Grade 5)',
+    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
+    subjects: ['Kiswahili', 'Civic & Moral Education (Uraia)'],
     isHomeroomMaster: true,
     status: 'ACTIVE',
-    joinedDate: '2026-02-15',
+    joinedDate: '2026-01-15',
   },
   {
     id: 'USR-004',
-    fullName: 'Mwl. Emmanuel Lyimo',
+    fullName: 'Mwl. Sarah Mollel',
     role: 'TEACHER',
     leadershipRole: 'CLASS_TEACHER',
-    identifier: 'TCH-2026-014',
-    email: 'emmanuel.lyimo@primaryschool.ac.tz',
-    phone: '+255 765 223 345',
-    assignedClass: 'Standard 5 (Grade 5)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology (Sayansi)'],
+    identifier: 'TCH-2026-004',
+    email: 'sarah.mollel@primaryschool.ac.tz',
+    phone: '+255 712 445 566',
+    assignedClass: 'Standard 6 (Grade 6)',
+    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 4 (Grade 4)'],
+    subjects: ['English Language', 'Vocational Skills (Stadi za Kazi)'],
     isHomeroomMaster: true,
     status: 'ACTIVE',
-    joinedDate: '2026-01-22',
+    joinedDate: '2026-01-15',
   },
   {
     id: 'USR-005',
     fullName: 'Mwl. Emmanuel Swai',
     role: 'TEACHER',
     leadershipRole: 'CLASS_TEACHER',
-    identifier: 'TCH-2026-015',
+    identifier: 'TCH-2026-005',
     email: 'emmanuel.swai@primaryschool.ac.tz',
-    phone: '+255 767 556 677',
-    assignedClass: 'Standard 4 (Grade 4)',
-    assignedClasses: ['Standard 4 (Grade 4)', 'Standard 3 (Grade 3)'],
-    subjects: ['Social Studies (Maarifa ya Jamii)', 'Vocational Skills'],
+    phone: '+255 754 556 677',
+    assignedClass: 'Standard 7 (Grade 7)',
+    assignedClasses: ['Standard 7 (Grade 7)', 'Standard 5 (Grade 5)'],
+    subjects: ['Mathematics (Hisabati)', 'ICT / Computer Studies (Tehama)'],
     isHomeroomMaster: true,
     status: 'ACTIVE',
-    joinedDate: '2026-02-20',
+    joinedDate: '2026-01-15',
   },
   {
     id: 'USR-006',
     fullName: 'Mwl. Godfrey Makere',
-    role: 'DISCIPLINE',
-    leadershipRole: 'DISCIPLINE',
-    identifier: 'DISC-2026-001',
-    email: 'discipline@primaryschool.ac.tz',
-    phone: '+255 784 334 455',
-    assignedClass: 'Standard 5 (Grade 5)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Vocational Skills'],
+    role: 'TEACHER',
+    identifier: 'TCH-2026-006',
+    email: 'godfrey.makere@primaryschool.ac.tz',
+    phone: '+255 765 667 788',
+    assignedClass: 'Standard 4 (Grade 4)',
+    assignedClasses: ['Standard 4 (Grade 4)', 'Standard 3 (Grade 3)'],
+    subjects: ['Social Studies (Maarifa ya Jamii)', 'Science & Technology'],
+    isHomeroomMaster: false,
     status: 'ACTIVE',
-    joinedDate: '2026-02-01',
+    joinedDate: '2026-01-15',
   },
 ];
 
-const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v6';
-const SESSION_STORAGE_KEY = 'academic_portal_active_session_v6';
+const ACCOUNTS_STORAGE_KEY = 'academic_portal_faculty_accounts_v7';
+const SESSION_STORAGE_KEY = 'academic_portal_active_teacher_v7';
 
 // Get Stored Accounts
 export function getStoredAccounts(): UserAccount[] {
@@ -138,7 +141,12 @@ export function getStoredAccounts(): UserAccount[] {
       localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(INITIAL_BLUEPRINT_ACCOUNTS));
       return INITIAL_BLUEPRINT_ACCOUNTS;
     }
-    return JSON.parse(raw);
+    const parsed: UserAccount[] = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(INITIAL_BLUEPRINT_ACCOUNTS));
+      return INITIAL_BLUEPRINT_ACCOUNTS;
+    }
+    return parsed;
   } catch {
     return INITIAL_BLUEPRINT_ACCOUNTS;
   }
@@ -166,6 +174,10 @@ export function getCurrentSession(): UserAccount | null {
       return INITIAL_BLUEPRINT_ACCOUNTS[0];
     }
     const parsed: UserAccount = JSON.parse(raw);
+    if (!parsed || !parsed.id || !parsed.role) {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(INITIAL_BLUEPRINT_ACCOUNTS[0]));
+      return INITIAL_BLUEPRINT_ACCOUNTS[0];
+    }
     return parsed;
   } catch {
     return INITIAL_BLUEPRINT_ACCOUNTS[0];
@@ -182,12 +194,13 @@ export function setCurrentSession(user: UserAccount): void {
   }
 }
 
+// Clear Active Session (Logout)
 export function logoutSession(): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem(SESSION_STORAGE_KEY);
   } catch (err) {
-    console.error('Failed to logout session', err);
+    console.error('Failed to clear session', err);
   }
 }
 
@@ -195,18 +208,30 @@ export function clearCurrentSession(): void {
   logoutSession();
 }
 
+// Strict Role-Based Access Control Validator
 export function canAccessPortal(
   user: UserAccount | null,
-  portalRole: 'TEACHER' | 'ADMIN' | 'PARENT' | 'STUDENT'
+  targetPortal: 'ADMIN' | 'TEACHER' | 'STUDENT' | 'PARENT'
 ): boolean {
   if (!user) return false;
-  if (portalRole === 'TEACHER') {
-    return ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER', 'ADMIN'].includes(user.role);
-  }
-  if (portalRole === 'ADMIN') {
+
+  if (targetPortal === 'ADMIN') {
     return user.role === 'ADMIN' || user.role === 'HEADTEACHER';
   }
-  return user.role === portalRole;
+
+  if (targetPortal === 'TEACHER') {
+    return ['TEACHER', 'ACADEMIC', 'DISCIPLINE', 'HEADTEACHER', 'ADMIN'].includes(user.role);
+  }
+
+  if (targetPortal === 'STUDENT') {
+    return ['STUDENT', 'CANDIDATE', 'ADMIN'].includes(user.role);
+  }
+
+  if (targetPortal === 'PARENT') {
+    return ['PARENT', 'ADMIN'].includes(user.role);
+  }
+
+  return false;
 }
 
 export function isAuthenticated(): boolean {

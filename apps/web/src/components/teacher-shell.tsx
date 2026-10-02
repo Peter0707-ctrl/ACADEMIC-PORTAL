@@ -1,40 +1,33 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   GraduationCap,
   BookOpen,
   Users,
-  CheckCircle2,
   Award,
   LogOut,
   ShieldCheck,
   FileSpreadsheet,
   AlertCircle,
-  Info,
   TrendingUp,
   UserCheck,
   Shield,
   FileText,
-  Building2,
   AlertTriangle,
   ChevronDown,
   ChevronRight,
   Home,
   Check,
   Globe,
-  UploadCloud,
   Settings,
-  Calendar,
-  Layers,
-  Clock,
-  Sparkles,
   ClipboardList,
   BarChart3,
   MessageSquare,
-  Bell,
+  Menu,
+  X,
   User,
 } from 'lucide-react';
 import {
@@ -66,6 +59,8 @@ export default function TeacherShell({
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [allAccounts, setAllAccounts] = useState<UserAccount[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSwitchDropdown, setShowSwitchDropdown] = useState(false);
 
   const triggerNotification = useCallback(
     (type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => {
@@ -91,7 +86,7 @@ export default function TeacherShell({
       triggerNotification(
         'error',
         'Unauthorized Access',
-        'Only teaching staff or leadership may access the Teacher Portal. Your current role does not have permission.'
+        'Only teaching staff or leadership may access the Teacher Portal.'
       );
       return;
     }
@@ -110,10 +105,11 @@ export default function TeacherShell({
     if (target) {
       setCurrentSession(target);
       setCurrentUser(target);
+      setShowSwitchDropdown(false);
       notifyUser(
         'info',
         'Akaunti ya Mwalimu Imebadilishwa',
-        `Sasa umeingia kama: ${target.fullName} (${target.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : target.role === 'ACADEMIC' ? 'Mwl. Taaluma' : 'Mwalimu'})`
+        `Sasa umeingia kama: ${target.fullName} (${target.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : target.role === 'ACADEMIC' ? 'Mwl. Taaluma' : target.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Mwalimu'})`
       );
       window.location.reload();
     }
@@ -150,7 +146,7 @@ export default function TeacherShell({
 
   // Determine user initials for avatar
   const getInitials = (name?: string) => {
-    if (!name) return 'MW';
+    if (!name) return 'ED';
     const parts = name.replace(/^(Mwl\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, '').trim().split(' ');
     if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     return parts[0].slice(0, 2).toUpperCase();
@@ -161,41 +157,57 @@ export default function TeacherShell({
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col lg:flex-row">
       {/* ===================================================================== */}
-      {/* LEFT SIDEBAR: COMPLETE PRIMARY SCHOOL TEACHER WORKSPACE */}
+      {/* 1. LEFT SIDEBAR: PURE LIGHT-GREEN THEME & COMPLETE TEACHER WORKSPACE */}
       {/* ===================================================================== */}
-      <aside className="w-full lg:w-72 xl:w-80 bg-white/95 backdrop-blur-md border-r border-emerald-200/90 shrink-0 flex flex-col justify-between shadow-xs lg:min-h-screen lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto z-30">
+      <aside
+        className={`w-full lg:w-72 xl:w-80 bg-white/95 backdrop-blur-md border-r border-emerald-200/90 shrink-0 flex flex-col justify-between shadow-xs lg:min-h-screen lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto z-30 transition-all ${
+          isMobileMenuOpen ? 'block' : 'hidden lg:flex'
+        }`}
+      >
         <div className="p-4 sm:p-5 space-y-4">
           {/* School Brand / Logo */}
-          <div className="flex items-center gap-3 pb-3 border-b border-emerald-100">
-            <Link
-              href="/"
-              className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
-              title="Rudi Ukurasa wa Kwanza wa Shule"
-            >
-              <GraduationCap className="w-5 h-5 text-emerald-300" />
-              <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Shule</span>
-            </Link>
-            <div>
-              <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
-                PRIMARY &amp; NURSERY
-              </h2>
-              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                Educational ERP Portal
-              </span>
+          <div className="flex items-center justify-between pb-3 border-b border-emerald-100">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
+                title="Rudi Ukurasa wa Kwanza wa Shule"
+              >
+                <GraduationCap className="w-5 h-5 text-emerald-300" />
+                <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Shule</span>
+              </Link>
+              <div>
+                <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
+                  PRIMARY &amp; NURSERY
+                </h2>
+                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                  Teacher Portal
+                </span>
+              </div>
             </div>
+
+            {/* Mobile Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* ================================================================= */}
-          {/* GROUP 1: TEACHER WORKSPACE (PRIMARY SCHOOL TEACHER DASHBOARD) */}
+          {/* GROUP 1: TEACHER WORKSPACE (EVERY TEACHER, HEADMASTER, ACADEMIC & DISCIPLINE HAS THIS!) */}
           {/* ================================================================= */}
           <div className="space-y-1">
             <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 px-2 block mb-1">
-              Teacher Workspace
+              Teacher Workspace (Ufundishaji)
             </span>
 
             {/* 1. Dashboard Overview */}
             <Link
               href="/teacher"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-bold text-xs ${
                 pathname === '/teacher'
                   ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
@@ -211,6 +223,7 @@ export default function TeacherShell({
             {/* 2. My Classes */}
             <Link
               href="/teacher/classes"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/classes'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -229,6 +242,7 @@ export default function TeacherShell({
             {/* 3. My Subjects */}
             <Link
               href="/teacher/subjects"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/subjects'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -244,6 +258,7 @@ export default function TeacherShell({
             {/* 4. Attendance */}
             <Link
               href="/teacher/attendance"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/attendance'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -262,6 +277,7 @@ export default function TeacherShell({
             {/* 5. Lesson Plans */}
             <Link
               href="/teacher/curriculum"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/curriculum'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -277,6 +293,7 @@ export default function TeacherShell({
             {/* 6. Assignments & Activities */}
             <Link
               href="/teacher/assignments"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/assignments'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -289,9 +306,10 @@ export default function TeacherShell({
               </div>
             </Link>
 
-            {/* 7. Assessment & Marks (Marks Entry) */}
+            {/* 7. Assessment & Marks */}
             <Link
               href="/teacher/marks"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/marks'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -310,6 +328,7 @@ export default function TeacherShell({
             {/* 8. Pupil Performance */}
             <Link
               href="/teacher/performance"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/performance'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -325,6 +344,7 @@ export default function TeacherShell({
             {/* 9. School Communication */}
             <Link
               href="/teacher/communication"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/communication'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -340,6 +360,7 @@ export default function TeacherShell({
             {/* 10. Profile & Timetable */}
             <Link
               href="/teacher/settings"
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full py-2 px-3 rounded-xl transition-all flex items-center justify-between text-left font-semibold text-xs ${
                 pathname === '/teacher/settings'
                   ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
@@ -355,94 +376,95 @@ export default function TeacherShell({
 
           {/* ================================================================= */}
           {/* GROUP 2: EXECUTIVE LEADERSHIP (HEADTEACHER, ACADEMIC, DISCIPLINE) */}
-          {/* (Preserved completely so no built feature is ever lost) */}
           {/* ================================================================= */}
           {(isHeadteacher || isAcademicMaster || isDisciplineMaster || isAdmin) && (
             <div className="space-y-1 pt-2 border-t border-emerald-100">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 px-2 block mb-1">
-                Executive Leadership
+                Executive Leadership (Uongozi)
               </span>
 
               {/* Results Approval & Seal */}
               <Link
                 href="/teacher/approvals"
-                className={`w-full py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
                   pathname === '/teacher/approvals'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
+                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <Award className="w-3.5 h-3.5 text-amber-600" />
+                <div className="flex items-center gap-2.5">
+                  <Award className="w-4 h-4 text-amber-600" />
                   <span>Results Approval &amp; Seal</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-900 font-bold">
-                  Head
+                  Official
                 </span>
               </Link>
 
               {/* School Broadsheet */}
               <Link
                 href="/teacher/broadsheet"
-                className={`w-full py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
                   pathname === '/teacher/broadsheet'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
+                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
+                <div className="flex items-center gap-2.5">
+                  <TrendingUp className="w-4 h-4 text-emerald-700" />
                   <span>School Broadsheet</span>
-                </div>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-900 font-bold">
-                  Report
-                </span>
-              </Link>
-
-              {/* Staff Directory */}
-              <Link
-                href="/teacher/staff"
-                className={`w-full py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/staff'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Staff Directory</span>
                 </div>
               </Link>
 
               {/* National Candidates (NECTA) */}
               <Link
                 href="/teacher/candidates"
-                className={`w-full py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
                   pathname === '/teacher/candidates'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
+                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-purple-600" />
-                  <span>National Candidates (NECTA)</span>
+                <div className="flex items-center gap-2.5">
+                  <GraduationCap className="w-4 h-4 text-purple-700" />
+                  <span>National Candidates</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-900 font-bold">
-                  Std 4 &amp; 7
+                  NECTA
                 </span>
+              </Link>
+
+              {/* Teaching Staff Directory */}
+              <Link
+                href="/teacher/staff"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                  pathname === '/teacher/staff'
+                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
+                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Users className="w-4 h-4 text-slate-700" />
+                  <span>Teaching Staff Directory</span>
+                </div>
               </Link>
 
               {/* Discipline & Truancy */}
               <Link
                 href="/teacher/discipline"
-                className={`w-full py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
                   pathname === '/teacher/discipline'
-                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
-                    : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+                    ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700 pl-2.5'
+                    : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/80'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                <div className="flex items-center gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-700" />
                   <span>Discipline &amp; Truancy</span>
                 </div>
               </Link>
@@ -450,123 +472,179 @@ export default function TeacherShell({
           )}
 
           {/* ================================================================= */}
-          {/* GROUP 3: SYSTEM ADMINISTRATION */}
+          {/* GROUP 3: ADMIN IT (STRICTLY ADMIN ONLY) */}
           {/* ================================================================= */}
           {isAdmin && (
             <div className="space-y-1 pt-2 border-t border-emerald-100">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 px-2 block mb-1">
-                Admin
+                Admin IT
               </span>
               <Link
                 href="/admin"
-                className="w-full py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between text-slate-600 hover:bg-emerald-50 hover:text-emerald-900"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-between text-slate-600 hover:bg-emerald-50 hover:text-emerald-900"
               >
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
-                  <span>User Management</span>
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-slate-700" />
+                  <span>Admin Panel</span>
                 </div>
               </Link>
             </div>
           )}
         </div>
 
-        {/* ================================================================= */}
         {/* SIDEBAR FOOTER: LANGUAGE PILL & LOGOUT */}
-        {/* ================================================================= */}
         <div className="p-4 border-t border-emerald-100 bg-emerald-50/50">
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900 text-white text-[10px] font-bold shadow-xs">
               <Globe className="w-3.5 h-3.5 text-emerald-300" />
-              <span>LANG: ENG</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-emerald-700 text-emerald-100 text-[9px]">EN</span>
+              <span>LUGHA: SWA</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-700 text-emerald-100 text-[9px]">TZ</span>
             </div>
 
             <button
               type="button"
               onClick={handleLogout}
               className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1.5 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50 cursor-pointer"
-              title="Logout from portal"
+              title="Ondoka kwenye mfumo"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
+              <span>Toka</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* ===================================================================== */}
-      {/* RIGHT MAIN WORKSPACE: TOP BAR + PAGE CONTENT */}
+      {/* 2. RIGHT MAIN WORKSPACE: TOP BAR + PAGE CONTENT */}
       {/* ===================================================================== */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar */}
-        <header className="bg-white/95 backdrop-blur-md border-b border-emerald-200/80 sticky top-0 z-20 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shadow-xs">
-          {/* Quick Breadcrumb / Term Status */}
+        <header className="bg-white/95 backdrop-blur-md border-b border-emerald-200/80 sticky top-0 z-20 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between shadow-xs">
+          {/* Mobile Menu Button & Breadcrumb */}
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+              title="Fungua Menyu"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
               <Link href="/teacher" className="hover:text-emerald-900 transition-colors">
-                Teacher Portal
+                Portal ya Walimu
               </Link>
               {pathname !== '/teacher' && (
                 <>
                   <ChevronRight className="w-3 h-3 text-slate-400" />
-                  <span className="text-slate-800 font-bold">{pageTitle || 'Workspace'}</span>
+                  <span className="text-slate-800 font-bold truncate max-w-[150px] sm:max-w-none">
+                    {pageTitle || 'Ukurasa'}
+                  </span>
                 </>
               )}
             </div>
+
             <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-900 text-[10px] font-bold border border-emerald-200">
               Muhula wa 1, 2026
             </span>
           </div>
 
-          {/* Right Controls: Multi-Teacher Switcher + User Profile */}
-          <div className="flex items-center gap-3">
-            {/* MULTI-TEACHER ACCOUNT SWITCHER */}
-            <div className="flex items-center gap-1.5 bg-emerald-50/80 border border-emerald-300 rounded-2xl px-2.5 py-1">
-              <User className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
-              <span className="text-[10px] font-bold text-slate-500 hidden sm:inline">Active Teacher:</span>
-              <select
-                value={currentUser?.identifier || ''}
-                onChange={(e) => handleSwitchTeacher(e.target.value)}
-                className="bg-transparent text-xs font-black text-emerald-950 focus:outline-none cursor-pointer"
-                title="Badili mwalimu ili kuona mfumo kwa kila mwalimu"
+          {/* Right Controls: Active Teacher Switcher Dropdown & Profile Chip */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Multi-Teacher Account Switcher Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSwitchDropdown(!showSwitchDropdown)}
+                className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                title="Badilisha Mwalimu (Switch Active Teacher Account)"
               >
-                {allAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.identifier}>
-                    {acc.fullName} ({acc.role === 'HEADTEACHER' ? 'Headmaster' : acc.role === 'ACADEMIC' ? 'Academic Master' : 'Teacher'})
-                  </option>
-                ))}
-              </select>
+                <User className="w-3.5 h-3.5 text-emerald-700" />
+                <span className="hidden sm:inline">Badili Mwalimu:</span>
+                <span className="font-extrabold max-w-[100px] truncate sm:max-w-none">
+                  {currentUser?.fullName?.split(' ')[1] || 'Mwalimu'}
+                </span>
+                <ChevronDown className="w-3 h-3 text-emerald-700" />
+              </button>
+
+              {showSwitchDropdown && (
+                <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white border border-emerald-200 shadow-2xl p-2 z-50 animate-scale-up space-y-1">
+                  <div className="px-3 py-2 border-b border-slate-100">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
+                      Chagua Akaunti ya Kuingia (Switch Account):
+                    </span>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto space-y-1">
+                    {allAccounts.map((account) => {
+                      const isActive = account.identifier === currentUser?.identifier;
+                      return (
+                        <button
+                          key={account.identifier}
+                          type="button"
+                          onClick={() => handleSwitchTeacher(account.identifier)}
+                          className={`w-full p-2.5 rounded-xl text-left text-xs transition-all flex items-center justify-between cursor-pointer ${
+                            isActive
+                              ? 'bg-emerald-800 text-white font-bold'
+                              : 'hover:bg-emerald-50 text-slate-700'
+                          }`}
+                        >
+                          <div>
+                            <span className="font-black block">{account.fullName}</span>
+                            <span
+                              className={`text-[10px] block ${
+                                isActive ? 'text-emerald-200' : 'text-slate-500'
+                              }`}
+                            >
+                              {account.role === 'HEADTEACHER'
+                                ? 'Mwalimu Mkuu'
+                                : account.role === 'ACADEMIC'
+                                ? 'Mwalimu wa Taaluma'
+                                : account.role === 'DISCIPLINE'
+                                ? 'Mwalimu wa Nidhamu'
+                                : 'Mwalimu wa Darasa'} • {account.identifier}
+                            </span>
+                          </div>
+                          {isActive && <Check className="w-4 h-4 text-amber-300" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Profile Avatar */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-emerald-100">
-              <div className="w-8 h-8 rounded-full bg-emerald-800 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+            {/* User Profile Chip */}
+            <Link
+              href="/teacher/settings"
+              className="flex items-center gap-2 pl-2 sm:border-l border-emerald-200 hover:opacity-85 transition-opacity group cursor-pointer"
+              title="Fungua Wasifu na Mipangilio"
+            >
+              <div className="w-9 h-9 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold text-xs ring-2 ring-emerald-500/20 shadow-xs group-hover:ring-emerald-500">
                 {userInitials}
               </div>
-              <div className="hidden sm:block text-left">
-                <span className="text-xs font-black text-slate-900 block leading-tight">
-                  {currentUser?.fullName?.split(' ')[0]} {currentUser?.fullName?.split(' ')[1]}
+              <div className="text-left hidden xl:block">
+                <span className="text-xs font-black text-slate-800 block leading-tight truncate max-w-[150px] group-hover:text-emerald-900">
+                  {currentUser?.fullName}
                 </span>
-                <span className="text-[10px] text-emerald-700 font-semibold block leading-tight">
+                <span className="text-[10px] text-emerald-800 font-semibold block truncate max-w-[150px]">
                   {currentUser?.role === 'HEADTEACHER'
-                    ? 'Headmaster & Teacher'
+                    ? 'Mwalimu Mkuu'
                     : currentUser?.role === 'ACADEMIC'
-                    ? 'Academic Master'
-                    : 'Class & Subject Teacher'}
+                    ? 'Mwl. Taaluma'
+                    : currentUser?.role === 'DISCIPLINE'
+                    ? 'Mwl. Nidhamu'
+                    : 'Class Teacher'}
                 </span>
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
-        {/* Page Content Body */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
-          {pageTitle && (
-            <div className="border-b border-emerald-100 pb-4">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{pageTitle}</h1>
-              {pageDescription && <p className="text-xs sm:text-sm text-slate-500 mt-1">{pageDescription}</p>}
-            </div>
-          )}
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

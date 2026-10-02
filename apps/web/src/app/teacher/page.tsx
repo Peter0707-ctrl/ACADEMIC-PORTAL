@@ -25,13 +25,6 @@ import {
   GraduationCap,
   User,
   Camera,
-  Bell,
-  ListTodo,
-  CheckSquare,
-  Square,
-  MessageSquare,
-  BarChart3,
-  ClipboardList,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import {
@@ -71,107 +64,11 @@ const ALL_PRIMARY_SUBJECTS = [
   'ICT / Computer Studies (Tehama)',
 ];
 
-interface TodayLesson {
-  period: number;
-  time: string;
-  subject: string;
-  className: string;
-  topic: string;
-  status: 'COMPLETED' | 'IN_PROGRESS' | 'UPCOMING';
-  hasLessonPlan: boolean;
-}
-
-interface PendingTask {
-  id: string;
-  title: string;
-  category: 'ATTENDANCE' | 'MARKS' | 'LESSON_PLAN' | 'ASSIGNMENT';
-  due: string;
-  done: boolean;
-  link: string;
-}
-
-const DEFAULT_TODAY_LESSONS: TodayLesson[] = [
-  {
-    period: 1,
-    time: '08:00 - 08:40',
-    subject: 'Mathematics (Hisabati)',
-    className: 'Standard 6 (Grade 6)',
-    topic: 'Sehemu na Desimali (Fractions & Decimals)',
-    status: 'COMPLETED',
-    hasLessonPlan: true,
-  },
-  {
-    period: 2,
-    time: '08:40 - 09:20',
-    subject: 'Science & Technology (Sayansi)',
-    className: 'Standard 6 (Grade 6)',
-    topic: 'Mfumo wa Upumuaji wa Binadamu',
-    status: 'IN_PROGRESS',
-    hasLessonPlan: true,
-  },
-  {
-    period: 4,
-    time: '10:20 - 11:00',
-    subject: 'Civic & Moral Education',
-    className: 'Standard 7 (Grade 7)',
-    topic: 'Haki na Wajibu wa Raia wa Tanzania',
-    status: 'UPCOMING',
-    hasLessonPlan: true,
-  },
-  {
-    period: 6,
-    time: '12:00 - 12:40',
-    subject: 'Mathematics (Hisabati)',
-    className: 'Standard 7 (Grade 7)',
-    topic: 'Maumbo ya Jiometria na Eneo',
-    status: 'UPCOMING',
-    hasLessonPlan: false,
-  },
-];
-
-const DEFAULT_PENDING_TASKS: PendingTask[] = [
-  {
-    id: 't-01',
-    title: 'Wasilisha Roll-Call ya Mahudhurio ya Leo (Standard 6)',
-    category: 'ATTENDANCE',
-    due: 'Kabla ya 09:00 Asubuhi',
-    done: true,
-    link: '/teacher/attendance',
-  },
-  {
-    id: 't-02',
-    title: 'Weka Alama za Majaribio ya Mwezi wa Machi (Continuous Assessment)',
-    category: 'MARKS',
-    due: 'Ijumaa, 27 Machi 2026',
-    done: false,
-    link: '/teacher/marks',
-  },
-  {
-    id: 't-03',
-    title: 'Sahihisha Kazi 3 za Mazoezi ya Sehemu (Decimals Homework)',
-    category: 'ASSIGNMENT',
-    due: 'Leo, 16:00 Jioni',
-    done: false,
-    link: '/teacher/assignments',
-  },
-  {
-    id: 't-04',
-    title: 'Andaa Andiko la Somo (Lesson Plan) la Jiometria — Std 7 Kipindi cha 6',
-    category: 'LESSON_PLAN',
-    due: 'Leo, 11:30 Asubuhi',
-    done: false,
-    link: '/teacher/curriculum',
-  },
-];
-
 export default function TeacherDashboardPage() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(INITIAL_BLUEPRINT_ACCOUNTS[0] || null);
   const [teachingClasses, setTeachingClasses] = useState<string[]>(
     INITIAL_BLUEPRINT_ACCOUNTS[0]?.assignedClasses || ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)']
   );
-
-  const [todayLessons, setTodayLessons] = useState<TodayLesson[]>(DEFAULT_TODAY_LESSONS);
-  const [pendingTasks, setPendingTasks] = useState<PendingTask[]>(DEFAULT_PENDING_TASKS);
 
   // Modal State for adding another class to teach
   const [showAddClassModal, setShowAddClassModal] = useState(false);
@@ -210,13 +107,6 @@ export default function TeacherDashboardPage() {
     } catch {}
   }, []);
 
-  // Toggle task done
-  const handleToggleTask = (taskId: string) => {
-    setPendingTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, done: !t.done } : t))
-    );
-  };
-
   // Handler: Add Another Class to Teach
   const handleAddClass = (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,6 +134,7 @@ export default function TeacherDashboardPage() {
     setTeachingClasses(updatedClasses);
     setCurrentSession(updatedUser);
 
+    // Save to stored accounts
     const allAccounts = getStoredAccounts();
     const updatedAccounts = allAccounts.map((a) => (a.id === updatedUser.id ? updatedUser : a));
     saveStoredAccounts(updatedAccounts);
@@ -309,6 +200,7 @@ export default function TeacherDashboardPage() {
         })
       );
 
+      // Save to Records Archive
       try {
         const existingRaw = localStorage.getItem(STORAGE_RECORDS_KEY);
         const list = existingRaw ? JSON.parse(existingRaw) : [];
@@ -335,15 +227,6 @@ export default function TeacherDashboardPage() {
     );
   };
 
-  // Dynamic pupil count
-  const totalPupilsTaught = teachingClasses.reduce((acc, c) => {
-    if (c.includes('7')) return acc + 15;
-    if (c.includes('6')) return acc + 35;
-    if (c.includes('5')) return acc + 32;
-    if (c.includes('4')) return acc + 40;
-    return acc + 30;
-  }, 0);
-
   const roleGreeting =
     currentUser?.role === 'HEADTEACHER'
       ? 'Welcome Head Teacher (Karibu Mwalimu Mkuu)'
@@ -363,16 +246,22 @@ export default function TeacherDashboardPage() {
       : "Dashibodi ya Mwalimu (Teacher's Dashboard)";
 
   const shellDesc =
-    "Primary School Teacher Portal: Madarasa uliyopangiwa (Standard 1–7), vipindi vya leo, majukumu yanayosubiri, matangazo ya shule na tathmini ya matokeo.";
+    currentUser?.role === 'HEADTEACHER'
+      ? "Ofisi ya Mkuu wa Shule: Usimamizi mkuu wa ufundishaji, idhini ya matokeo kwa muhuri rasmi, ufuatiliaji wa walimu na mahudhurio ya shule."
+      : "Usimamizi wa masomo na madarasa, uwekaji wa alama za mitihani, mahudhurio ya wanafunzi na mawasiliano ya kitaaluma.";
 
   return (
-    <TeacherShell pageTitle={shellTitle} pageDescription={shellDesc}>
+    <TeacherShell
+      pageTitle={shellTitle}
+      pageDescription={shellDesc}
+    >
       <div className="space-y-6 animate-fade-in">
         {/* ================================================================= */}
-        {/* 1. WELCOME BOX WITH PICTURE OF TEACHER / HEADTEACHER */}
+        {/* 1. WELCOME BOX WITH PICTURE OF HEADTEACHER / TEACHER */}
         {/* ================================================================= */}
         <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 rounded-3xl p-6 sm:p-7 text-white shadow-lg border border-emerald-700/50 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            {/* Box of Picture of Head Teacher / Teacher */}
             <Link
               href="/teacher/settings"
               title="Wasifu na Picha ya Mwalimu (Badili kwenye Mipangilio)"
@@ -392,6 +281,7 @@ export default function TeacherDashboardPage() {
               </span>
             </Link>
 
+            {/* Welcoming Message & Details */}
             <div className="space-y-1.5">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs font-black tracking-wide shadow-xs">
                 <span>{roleGreeting}</span>
@@ -411,8 +301,6 @@ export default function TeacherDashboardPage() {
                 <span>{currentUser?.email}</span>
                 <span>•</span>
                 <span>{currentUser?.phone}</span>
-                <span>•</span>
-                <span className="font-bold text-amber-300">{teachingClasses.join(', ')}</span>
               </p>
             </div>
           </div>
@@ -439,412 +327,261 @@ export default function TeacherDashboardPage() {
         </div>
 
         {/* ================================================================= */}
-        {/* 2. DASHBOARD OVERVIEW: THE 5 REQUIRED TEACHER CORE CARDS */}
-        {/*    (My Class/Classes, Number of Pupils, Today's Lessons, Pending Tasks, Notifications) */}
-        {/* ================================================================= */}
-        <div>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xs font-black text-slate-500 uppercase tracking-wider">
-              Dashboard Overview (Muhtasari wa Mwalimu):
-            </h2>
-            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              Primary School Dashboard
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 1. My Class / Classes */}
-            <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  My Classes (Madarasa Yangu)
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <GraduationCap className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900 block">{teachingClasses.length} Madarasa</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {teachingClasses.map((c) => (
-                    <span
-                      key={c}
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    >
-                      {c.split(' ')[0] + ' ' + c.split(' ')[1]}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <Link
-                href="/teacher/classes"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
-              >
-                <span>Tazama Orodha ya Madarasa</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-
-            {/* 2. Number of Pupils */}
-            <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Number of Pupils (Wanafunzi)
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-                  <Users className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900 block">{totalPupilsTaught} Wanafunzi</span>
-                <span className="text-[11px] font-semibold text-blue-700 block mt-0.5">
-                  Wameandikishwa katika madarasa yako yote
-                </span>
-              </div>
-              <Link
-                href="/teacher/attendance"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
-              >
-                <span>Chukua Mahudhurio Leo</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-
-            {/* 3. Today's Lessons Quick Count */}
-            <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Today&apos;s Lessons (Vipindi Leo)
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900 block">
-                  {todayLessons.length} Vipindi
-                </span>
-                <span className="text-[11px] font-semibold text-amber-700 block mt-0.5">
-                  {todayLessons.filter((l) => l.status === 'COMPLETED').length} Vimekamilika •{' '}
-                  {todayLessons.filter((l) => l.status === 'UPCOMING').length} Vimebaki
-                </span>
-              </div>
-              <Link
-                href="/teacher/curriculum"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
-              >
-                <span>Ratiba &amp; Lesson Plans</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-
-            {/* 4. Pending Tasks Summary */}
-            <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Pending Tasks (Majukumu)
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
-                  <ListTodo className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900 block">
-                  {pendingTasks.filter((t) => !t.done).length} Yanayosubiri
-                </span>
-                <span className="text-[11px] font-semibold text-purple-700 block mt-0.5">
-                  {pendingTasks.filter((t) => t.done).length} kati ya {pendingTasks.length} zimekamilika leo
-                </span>
-              </div>
-              <a
-                href="#pending-tasks-section"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
-              >
-                <span>Tazama Orodha ya Kazi</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* ================================================================= */}
-        {/* 3. TODAY'S LESSONS & PENDING TASKS DUAL INTERACTIVE WIDGETS */}
-        {/* ================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Today's Lessons Schedule */}
-          <div className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-emerald-700" />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                  Today&apos;s Lessons (Vipindi vya Leo)
-                </h3>
-              </div>
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                Ratiba ya Leo
-              </span>
-            </div>
-
-            <div className="space-y-2.5">
-              {todayLessons.map((lesson) => (
-                <div
-                  key={lesson.period}
-                  className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-                    lesson.status === 'IN_PROGRESS'
-                      ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-300'
-                      : lesson.status === 'COMPLETED'
-                      ? 'bg-slate-50/80 border-slate-200 opacity-80'
-                      : 'bg-white border-slate-200 hover:border-emerald-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-9 h-9 rounded-xl flex flex-col items-center justify-center text-[10px] font-black shrink-0 ${
-                        lesson.status === 'IN_PROGRESS'
-                          ? 'bg-amber-400 text-emerald-950'
-                          : lesson.status === 'COMPLETED'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      <span>P{lesson.period}</span>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-black text-slate-900">{lesson.subject}</h4>
-                        <span className="text-[10px] font-bold text-slate-500">• {lesson.className}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-600 truncate max-w-[220px] sm:max-w-xs">
-                        Mada: {lesson.topic}
-                      </p>
-                      <span className="text-[10px] font-mono text-slate-400">{lesson.time}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {lesson.hasLessonPlan ? (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        Lesson Plan Tayari
-                      </span>
-                    ) : (
-                      <Link
-                        href="/teacher/curriculum"
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200"
-                      >
-                        + Andaa Plan
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-xs text-slate-500">Kipindi kinachofuata: Kipindi cha 4 (Std 7)</span>
-              <Link
-                href="/teacher/curriculum"
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1"
-              >
-                <span>Fungua Maandalio ya Masomo (Lesson Plans)</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Pending Tasks & Action Checklist */}
-          <div id="pending-tasks-section" className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <ListTodo className="w-5 h-5 text-emerald-700" />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                  Pending Tasks (Majukumu Yanayosubiri)
-                </h3>
-              </div>
-              <span className="text-xs font-bold text-purple-800 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-                To-Do Checklist
-              </span>
-            </div>
-
-            <div className="space-y-2.5">
-              {pendingTasks.map((task) => (
-                <div
-                  key={task.id}
-                  onClick={() => handleToggleTask(task.id)}
-                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
-                    task.done
-                      ? 'bg-slate-50 border-slate-200 line-through text-slate-400'
-                      : 'bg-white border-slate-200 hover:border-emerald-300 text-slate-800'
-                  }`}
-                >
-                  <button type="button" className="mt-0.5 text-emerald-700 shrink-0">
-                    {task.done ? (
-                      <CheckSquare className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <Square className="w-4 h-4 text-slate-400" />
-                    )}
-                  </button>
-
-                  <div className="flex-1 min-w-0">
-                    <h4 className={`text-xs font-bold leading-snug ${task.done ? 'line-through text-slate-400' : 'text-slate-900'}`}>
-                      {task.title}
-                    </h4>
-                    <span className="text-[10px] text-slate-400 font-semibold block mt-0.5">
-                      Mwisho: {task.due}
-                    </span>
-                  </div>
-
-                  <Link
-                    href={task.link}
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-1 rounded-lg hover:bg-emerald-50 text-emerald-700 text-xs font-bold shrink-0"
-                    title="Fungua ukurasa wa kazi hii"
-                  >
-                    Fanya &rarr;
-                  </Link>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500">Majukumu yanakamilika kadiri unavyofanya kazi</span>
-              <button
-                type="button"
-                onClick={() => notifyUser('info', 'Majukumu', 'Unaweza kuongeza jukumu jipya kutoka ukurasa wa kalenda.')}
-                className="font-bold text-emerald-700 hover:text-emerald-900"
-              >
-                + Ongeza Jukumu Jipya
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ================================================================= */}
-        {/* 4. NOTIFICATIONS & SCHOOL ANNOUNCEMENTS WIDGET */}
+        {/* 2. CLASSES TAUGHT & ADD ANOTHER CLASS INTERACTIVE SECTION */}
         {/* ================================================================= */}
         <div className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-emerald-700" />
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                Notifications &amp; School Announcements (Matangazo ya Shule)
-              </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-emerald-700" />
+                <h2 className="text-base font-black text-slate-900">
+                  Madarasa Ninayofundisha (Classes I Teach)
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
+                  {teachingClasses.length} Madarasa
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Orodha ya madarasa unayofundisha muhula huu. Unaweza kuongeza darasa lingine wakati wowote ili kuweka alama na mahudhurio.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowAddClassModal(true)}
+              className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Ongeza Darasa Lingine (Add Class)</span>
+            </button>
+          </div>
+
+          {/* Cards for each class taught */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {teachingClasses.map((cls) => (
+              <div
+                key={cls}
+                className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/70 to-teal-50/40 border border-emerald-200/90 flex items-center justify-between gap-3 group hover:border-emerald-400 transition-all shadow-2xs"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-800 text-amber-300 flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                    <GraduationCap className="w-5 h-5 text-emerald-100" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black text-slate-900">{cls}</h3>
+                    <span className="text-[11px] text-emerald-800 font-semibold block">
+                      {cls.includes('6') ? '35 Wanafunzi' : cls.includes('7') ? '15 Wanafunzi' : 'Wanafunzi Wamesajiliwa'} • {currentUser?.subjects?.join(', ') || 'Uraia na Maadili'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Link
+                    href={`/teacher/marks?class=${encodeURIComponent(cls)}`}
+                    className="p-1.5 rounded-lg bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-colors"
+                    title="Jaza alama au sajili wanafunzi wa darasa hili"
+                  >
+                    Alama &rarr;
+                  </Link>
+                  {teachingClasses.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveClass(cls)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Ondoa darasa hili"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ================================================================= */}
+        {/* 3. EXECUTIVE KEY METRICS SUMMARY */}
+        {/* ================================================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Broadsheet Approval Status */}
+          <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Muhuri wa Matokeo
+              </span>
+              <div
+                className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                  hasApprovedTermResults ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                }`}
+              >
+                <Award className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <span className="text-lg font-black text-slate-900 block">
+                {hasApprovedTermResults ? 'YAMEIDHINISHWA' : 'YANASUBIRI IDHINI'}
+              </span>
+              <span
+                className={`text-[11px] font-semibold block mt-0.5 ${
+                  hasApprovedTermResults ? 'text-emerald-700' : 'text-amber-700'
+                }`}
+              >
+                {hasApprovedTermResults ? `Saini: ${approvalTimestamp}` : 'Muhula wa 1 Broadsheet ipo tayari'}
+              </span>
             </div>
             <Link
-              href="/teacher/communication"
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1"
+              href="/teacher/approvals"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
             >
-              <span>Tazama Yote</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>{hasApprovedTermResults ? 'Tazama Muhuri Rasmi' : 'Idhinisha Broadsheet'}</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 uppercase">
-                  Taaluma (Academic)
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">27 Machi</span>
+          {/* Card 2: Teaching Responsibilities */}
+          <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Ufundishaji Wangu
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                <BookOpen className="w-4 h-4" />
               </div>
-              <h4 className="text-xs font-black text-slate-900">Uwasilishaji wa Alama za Machi</h4>
-              <p className="text-[11px] text-slate-600 line-clamp-2">
-                Walimu wote mnatakiwa kuwasilisha alama za majaribio ya mwezi kabla ya Ijumaa saa 10:00 jioni.
-              </p>
             </div>
+            <div className="mt-3">
+              <span className="text-2xl font-black text-slate-900 block">{teachingClasses.length} Madarasa</span>
+              <span className="text-[11px] font-semibold text-slate-600 block mt-0.5">
+                {teachingClasses.join(', ')}
+              </span>
+            </div>
+            <Link
+              href="/teacher/marks"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
+            >
+              <span>Jaza Alama za Masomo</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
 
-            <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">
-                  Mkuu wa Shule
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">26 Machi</span>
+          {/* Card 3: NECTA Candidates */}
+          <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Watahiniwa wa Taifa
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+                <FileText className="w-4 h-4" />
               </div>
-              <h4 className="text-xs font-black text-slate-900">Kikao cha Wafanyakazi Wote</h4>
-              <p className="text-[11px] text-slate-600 line-clamp-2">
-                Kikao cha wafanyakazi wote kitafanyika Jumatatu saa 8:00 mchana ukumbini kuhusu mitihani ya Nusu Muhula.
-              </p>
             </div>
+            <div className="mt-3">
+              <span className="text-2xl font-black text-slate-900 block">190 Watahiniwa</span>
+              <span className="text-[11px] font-semibold text-purple-700 block mt-0.5">
+                86 PSLE (Std 7) • 104 SFNA (Std 4)
+              </span>
+            </div>
+            <Link
+              href="/teacher/candidates"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
+            >
+              <span>Fuatilia Watahiniwa</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
 
-            <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-200 text-blue-900 uppercase">
-                  Wizara (MoEST)
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">20 Machi</span>
+          {/* Card 4: Daily School Attendance */}
+          <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Mahudhurio ya Shule
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                <UserCheck className="w-4 h-4" />
               </div>
-              <h4 className="text-xs font-black text-slate-900">Mtaala Ulioboreshwa 2026</h4>
-              <p className="text-[11px] text-slate-600 line-clamp-2">
-                Muhtasari wa stadi za Sayansi na TEHAMA unapatikana kwa walimu wote wa madarasa ya msingi.
-              </p>
             </div>
+            <div className="mt-3">
+              <span className="text-2xl font-black text-slate-900 block">97.6% Leo</span>
+              <span className="text-[11px] font-semibold text-emerald-700 block mt-0.5">
+                Madarasa yote yameshatuma roll-call
+              </span>
+            </div>
+            <Link
+              href="/teacher/attendance"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 group"
+            >
+              <span>Tazama Roll-Call Zote</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
           </div>
         </div>
 
+
+
         {/* ================================================================= */}
-        {/* 5. PRIMARY SCHOOL TEACHER DASHBOARD: CORE WORKSPACE MODULES */}
+        {/* 5. EXECUTIVE DIRECT ACTION MODULES GRID */}
         {/* ================================================================= */}
         <div>
           <div className="flex items-center justify-between mb-3 px-1">
             <h2 className="text-xs font-black text-slate-500 uppercase tracking-wider">
-              Primary School Teacher Workspace Modules:
+              Njia za Haraka za Kazi (Quick Modules):
             </h2>
             <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              Moduli Kuu 10
+              Ofisi Kuu
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* 1. My Classes */}
-            <Link
-              href="/teacher/classes"
-              className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
-            >
-              <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Users className="w-5 h-5" />
+            {/* 1. Idhini ya Matokeo */}
+            {currentUser?.role === 'HEADTEACHER' && (
+              <Link
+                href="/teacher/approvals"
+                className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full">
+                    Mkuu Pekee
+                  </span>
                 </div>
-                <span className="text-[10px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  Std 1–7
-                </span>
-              </div>
-              <div className="mt-3">
-                <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  My Classes (Madarasa Yangu)
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Madarasa uliyopangiwa, orodha ya wanafunzi, wasifu wa mwanafunzi na wastani wa darasa.
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Madarasa</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
+                <div className="mt-3">
+                  <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
+                    Idhini ya Matokeo &amp; Muhuri
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                    Kagua broadsheet nzima ya shule, weka Muhuri Rasmi wa Kidigitali, panga tarehe ya matokeo, na tuma masijala.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
+                  <span>Fungua Idhini</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            )}
 
-            {/* 2. My Subjects */}
+            {/* 2. Kujaza Alama za Masomo Yangu */}
             <Link
-              href="/teacher/subjects"
+              href="/teacher/marks"
               className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div className="flex items-start justify-between">
                 <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <BookOpen className="w-5 h-5" />
+                  <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-bold bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded-full">
-                  Syllabus
+                  Madarasa {teachingClasses.length}
                 </span>
               </div>
               <div className="mt-3">
                 <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  My Subjects (Masomo Yangu)
+                  Kujaza Alama za Masomo Yangu
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Masomo uliyopangiwa kufundisha, wanafunzi wa kila somo na maendeleo ya mtaala (Syllabus progress).
+                  Ingiza alama za masomo yako kwa kutumia Excel au jedwali la moja kwa moja, kisha wasilisha kwa Taaluma.
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Masomo</span>
+                <span>Fungua Jedwali la Alama</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
@@ -859,181 +596,100 @@ export default function TeacherDashboardPage() {
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  Daily Roll-Call
+                  Kila Siku
                 </span>
               </div>
               <div className="mt-3">
                 <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  Attendance (Mahudhurio)
+                  Attendance
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Weka mahudhurio ya leo (Present, Absent, Late), kalenda ya siku zilizopita na muhtasari wa mahudhurio.
+                  Tazama na rekodi attendance ya kila siku kwa madarasa unayofundisha, na uwasilishe kwa Mkuu na Nidhamu.
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Mahudhurio</span>
+                <span>Fungua Attendance</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
 
-            {/* 4. Lesson Plans */}
+            {/* 4. Broadsheet ya Shule Nzima */}
             <Link
-              href="/teacher/curriculum"
-              className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
-            >
-              <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <ClipboardList className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-bold bg-purple-50 text-purple-900 border border-purple-200 px-2 py-0.5 rounded-full">
-                  MoEST Format
-                </span>
-              </div>
-              <div className="mt-3">
-                <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  Lesson Plans (Maandalio ya Somo)
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Andaa lesson plan kwa mfumo rasmi wa Wizara, pakua templates, na fuatilia mada zilizofundishwa.
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Lesson Plans</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* 5. Assignments / Class Activities */}
-            <Link
-              href="/teacher/assignments"
+              href="/teacher/broadsheet"
               className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div className="flex items-start justify-between">
                 <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <FileText className="w-5 h-5" />
+                  <TrendingUp className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-bold bg-teal-50 text-teal-900 border border-teal-200 px-2 py-0.5 rounded-full">
-                  Mazoezi
+                  NECTA / Broadsheet
                 </span>
               </div>
               <div className="mt-3">
                 <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  Assignments / Class Activities
+                  Broadsheet ya Shule Nzima
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Tunga mazoezi, tazama kazi zilizowasilishwa na wanafunzi, sahihisha na weka alama kwenye rekodi.
+                  Uchambuzi kamili wa masomo yote, wastani, madaraja (A-F), mgawanyo wa alama na ukaguzi wa mfumo.
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Mazoezi</span>
+                <span>Fungua Broadsheet</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
 
-            {/* 6. Assessment & Marks */}
+            {/* 5. Walimu Wangu (Staff Directory) */}
             <Link
-              href="/teacher/marks"
+              href="/teacher/staff"
               className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <FileSpreadsheet className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Users className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded-full">
-                  12 Months Calendar
+                <span className="text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200 px-2 py-0.5 rounded-full">
+                  Walimu Pekee
                 </span>
               </div>
               <div className="mt-3">
                 <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  Assessment &amp; Marks (Uwekaji Alama)
+                  Walimu Wangu (Teaching Staff)
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Weka alama za majaribio ya kila mwezi (Miezi 12), pakua/pakia Excel, hariri kabla ya kuwasilisha kwa Taaluma.
+                  Orodha ya walimu unaowasimamia shuleni bila kuchanganywa na watumiaji wengine.
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Jedwali la Alama</span>
+                <span>Tazama Orodha ya Walimu</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
 
-            {/* 7. Pupil Performance */}
-            <Link
-              href="/teacher/performance"
-              className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
-            >
-              <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <BarChart3 className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded-full">
-                  Ufaulu
-                </span>
-              </div>
-              <div className="mt-3">
-                <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  Pupil Performance (Tathmini ya Ufaulu)
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Ufaulu wa kila mwanafunzi, wastani wa masomo, na orodha ya wanaohitaji uangalizi maalum wa kitaaluma.
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Tathmini</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* 8. School Communication */}
-            <Link
-              href="/teacher/communication"
-              className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
-            >
-              <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <MessageSquare className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full">
-                  SMS &amp; Chat
-                </span>
-              </div>
-              <div className="mt-3">
-                <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  School Communication (Mawasiliano)
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Matangazo rasmi ya shule, jumbe za walimu na uongozi, na SMS zilizoidhinishwa kutumwa kwa wazazi.
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Mawasiliano</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* 9. Profile & Timetable */}
+            {/* 6. Mipangilio & Wasifu */}
             <Link
               href="/teacher/settings"
               className="p-5 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center group-hover:scale-105 transition-transform">
                   <Settings className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded-full">
                   Wasifu Wangu
                 </span>
               </div>
               <div className="mt-3">
                 <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-800">
-                  Profile &amp; Settings (Wasifu &amp; Ratiba)
+                  Mipangilio &amp; Wasifu
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  Wasifu wa mwalimu, madarasa na masomo uliyopangiwa, ratiba ya wiki, nenosiri na nambari ya simu.
+                  Hariri taarifa zako za kibinafsi, weka PIN ya siri ya kuidhinisha matokeo, na mipangilio ya taarifa za SMS.
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>Fungua Wasifu</span>
+                <span>Fungua Mipangilio</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
@@ -1041,90 +697,7 @@ export default function TeacherDashboardPage() {
         </div>
 
         {/* ================================================================= */}
-        {/* 6. EXECUTIVE LEADERSHIP TOOLS (PRESERVED INTACT FOR HEADMASTER & ACADEMIC) */}
-        {/* ================================================================= */}
-        {(currentUser?.role === 'HEADTEACHER' || currentUser?.role === 'ACADEMIC' || currentUser?.role === 'ADMIN') && (
-          <div className="bg-slate-50 rounded-3xl border border-slate-200 p-5 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-emerald-800" />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                  Zana za Uongozi wa Shule (Executive Leadership Tools)
-                </h3>
-              </div>
-              <span className="text-xs font-bold text-slate-600 bg-white px-2.5 py-0.5 rounded-full border border-slate-200">
-                Utawala &amp; Taaluma
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {currentUser?.role === 'HEADTEACHER' && (
-                <Link
-                  href="/teacher/approvals"
-                  className="p-4 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 transition-all flex items-center justify-between group shadow-2xs"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-black text-slate-900 group-hover:text-emerald-800">
-                        Idhini ya Matokeo na Muhuri
-                      </h4>
-                      <span className="text-[11px] text-slate-500 font-semibold block">
-                        {hasApprovedTermResults ? 'Imeidhinishwa (Muhuri Rasmi)' : 'Inasubiri Idhini ya Mkuu'}
-                      </span>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              )}
-
-              <Link
-                href="/teacher/broadsheet"
-                className="p-4 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 transition-all flex items-center justify-between group shadow-2xs"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold">
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-slate-900 group-hover:text-emerald-800">
-                      Broadsheet ya Shule Nzima
-                    </h4>
-                    <span className="text-[11px] text-slate-500 font-semibold block">
-                      Daraja A–F na Nafasi za Wanafunzi
-                    </span>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-
-              <Link
-                href="/teacher/candidates"
-                className="p-4 rounded-2xl bg-white border border-emerald-200 hover:border-emerald-400 transition-all flex items-center justify-between group shadow-2xs"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold">
-                    <GraduationCap className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-slate-900 group-hover:text-emerald-800">
-                      Watahiniwa wa Taifa (NECTA)
-                    </h4>
-                    <span className="text-[11px] text-slate-500 font-semibold block">
-                      190 Watahiniwa (PSLE &amp; SFNA)
-                    </span>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================= */}
-        {/* 7. ADD CLASS MODAL */}
+        {/* 6. ADD CLASS MODAL (UNIVERSALLY AVAILABLE TO ALL TEACHERS) */}
         {/* ================================================================= */}
         {showAddClassModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
