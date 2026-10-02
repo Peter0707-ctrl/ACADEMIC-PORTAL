@@ -174,6 +174,7 @@ export default function DisciplineAndAttendancePage() {
   // Daily Feeds State
   const [dailyFeeds, setDailyFeeds] = useState<ClassDailyAttendanceFeed[]>(INITIAL_DAILY_FEEDS);
   const [incidents, setIncidents] = useState<DisciplineIncident[]>(INITIAL_INCIDENTS);
+  const [activeNotice, setActiveNotice] = useState<string | null>(null);
 
   // New incident modal
   const [showNewIncidentModal, setShowNewIncidentModal] = useState(false);
@@ -297,6 +298,10 @@ export default function DisciplineAndAttendancePage() {
       'Taarifa ya Utoro Imethibitishwa na Kurekodiwa!',
       `Uhakiki wa mahudhurio ya ${confirmedClass} umekamilika. Taarifa imehifadhiwa rasmi kwenye Masijala ya Nyaraka za Shule (Records Archive) na kurekodiwa katika Daftari Kuu.`
     );
+
+    setActiveNotice(
+      `Mahudhurio ya ${confirmedClass} yamethibitishwa na kuhifadhiwa kwenye Masijala ya Shule (Ref: ${refNo}).`
+    );
   };
 
   // ACTION 2: SEND SMS SUMMONS TO ABSENT PUPIL'S PARENT
@@ -375,6 +380,22 @@ export default function DisciplineAndAttendancePage() {
       pageDescription="Ofisi ya Mwalimu Mkuu & Mwalimu wa Nidhamu: Mapokezi ya kila siku ya mahudhurio kutoka kwa walimu wa madarasa, uthibitisho wa utoro, kurekodi kwenye Masijala ya Shule, na mawasiliano ya dharura na wazazi."
     >
       <div className="space-y-6 animate-fade-in">
+        {/* Notice alert */}
+        {activeNotice && (
+          <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
+              <span className="font-bold">{activeNotice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveNotice(null)}
+              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
+            >
+              Funga
+            </button>
+          </div>
+        )}
 
         {/* ===================================================================== */}
         {/* 1. TOP SUMMARY METRICS (SCHOOL-WIDE LIVE ATTENDANCE & TRUANCY) */}

@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession } from '@/lib/auth-session';
-import { notifyUser } from '@/lib/notifications';
 
 interface SchoolDocument {
   id: string;
@@ -100,6 +99,7 @@ export default function SchoolSecretaryRecordsPage() {
   const [documents, setDocuments] = useState<SchoolDocument[]>(INITIAL_DOCUMENTS);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeNotice, setActiveNotice] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   // New Document Form
@@ -164,11 +164,7 @@ export default function SchoolSecretaryRecordsPage() {
     }
     setShowUploadModal(false);
     setNewTitle('');
-    notifyUser(
-      'success',
-      'Waraka Umehifadhiwa!',
-      `Waraka "${newDoc.title}" (${newDoc.version}) umehifadhiwa kikamilifu kwenye Masijala ya Shule.`
-    );
+    setActiveNotice(`Waraka "${newDoc.title}" (${newDoc.version}) umehifadhiwa kikamilifu kwenye Masijala ya Shule.`);
   };
 
   return (
@@ -177,6 +173,22 @@ export default function SchoolSecretaryRecordsPage() {
       pageDescription="Hifadhi, kategoria, toleo (versioning), utafutaji na uhifadhi wa kudumu wa nyaraka rasmi za shule, miongozo ya serikali na kumbukumbu."
     >
       <div className="space-y-6 animate-fade-in">
+        {/* Notice alert */}
+        {activeNotice && (
+          <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
+              <span className="font-bold">{activeNotice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveNotice(null)}
+              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
+            >
+              Funga
+            </button>
+          </div>
+        )}
 
         {/* Header Action Banner */}
         <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -315,7 +327,7 @@ export default function SchoolSecretaryRecordsPage() {
                     <td className="py-3.5 px-4 text-center">
                       <button
                         type="button"
-                        onClick={() => notifyUser('info', 'Kupakua Waraka', `Faili "${doc.fileName}" linapakuliwa kutoka Masijala ya Shule.`)}
+                        onClick={() => setActiveNotice(`Faili "${doc.fileName}" linapakuliwa kutoka Masijala...`)}
                         className="p-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 transition-colors inline-flex items-center gap-1 text-[11px] font-bold"
                         title="Pakua waraka huu"
                       >

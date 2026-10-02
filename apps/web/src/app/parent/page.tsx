@@ -217,6 +217,7 @@ export default function ParentGuardianPortal() {
   const [children, setChildren] = useState<ChildProfile[]>(CHILDREN_DATA);
   const [selectedChildId, setSelectedChildId] = useState<string>(CHILDREN_DATA[0].id);
   const [activeTab, setActiveTab] = useState<ParentTab>('DASHBOARD');
+  const [activeNotice, setActiveNotice] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Link Child State
@@ -276,6 +277,7 @@ export default function ParentGuardianPortal() {
       'Mtoto Ameunganishwa Kikamilifu!',
       `Mwanafunzi ${newChild.name} (${newChild.admNo}) ameunganishwa kwenye akaunti yako ya mzazi. Sasa unaweza kuangalia matokeo, ada na mahudhurio yake.`
     );
+    setActiveNotice(`Mwanafunzi ${newChild.name} (${newChild.admNo}) ameunganishwa kwenye akaunti yako!`);
   };
 
   // Leave Request Form State
@@ -316,21 +318,13 @@ export default function ParentGuardianPortal() {
       dateSubmitted: new Date().toISOString().split('T')[0],
     };
     setSubmittedRequests([newReq, ...submittedRequests]);
-    notifyUser(
-      'success',
-      'Ombi la Ruhusa Limetumwa!',
-      `Ombi la ruhusa ya ${selectedChild.name} limetumwa kwa Mwalimu Mkuu kwa uhakiki na idhini.`
-    );
+    setActiveNotice(`Ombi la ruhusa ya ${selectedChild.name} limetumwa kwa Mwalimu Mkuu kwa uhakiki.`);
     setLeaveNotes('');
   };
 
   const handleAppointmentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    notifyUser(
-      'success',
-      'Ombi la Miadi Limetumwa!',
-      `Ombi lako la miadi na ${appointmentTeacher} limetumwa kwa Katibu wa Shule.`
-    );
+    setActiveNotice(`Ombi la miadi na ${appointmentTeacher} limetumwa kwa Katibu wa Shule.`);
   };
 
   return (
@@ -676,6 +670,23 @@ export default function ParentGuardianPortal() {
           </div>
         </header>
 
+        {/* Notice alert */}
+        {activeNotice && (
+          <div className="mx-4 sm:mx-8 mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
+              <span className="font-bold">{activeNotice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveNotice(null)}
+              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
+            >
+              Funga
+            </button>
+          </div>
+        )}
+
         {/* Main Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
           {/* ================================================================= */}
@@ -849,13 +860,7 @@ export default function ParentGuardianPortal() {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      notifyUser(
-                        'success',
-                        'Upakuaji wa Ripoti ya Matokeo',
-                        `Ripoti ya maendeleo ya ${selectedChild.name} inapakuliwa ikiwa na muhuri wa kidigitali wa Mwalimu Mkuu.`
-                      )
-                    }
+                    onClick={() => setActiveNotice(`Ripoti ya ${selectedChild.name} inapakuliwa ikiwa na muhuri wa Mwalimu Mkuu...`)}
                     className="px-4 py-2 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 self-start sm:self-auto transition-all"
                   >
                     <Download className="w-4 h-4" />
@@ -975,13 +980,7 @@ export default function ParentGuardianPortal() {
                       </span>
                       <button
                         type="button"
-                        onClick={() =>
-                          notifyUser(
-                            'success',
-                            'Namba ya Malipo Imenakiliwa!',
-                            `Namba ya udhibiti ya GePG/Malipo "${selectedChild.controlNumber}" imenakiliwa tayari kwa kulipia.`
-                          )
-                        }
+                        onClick={() => setActiveNotice(`Namba ya malipo "${selectedChild.controlNumber}" imenakiliwa kwenye clipboard!`)}
                         className="px-3 py-1.5 rounded-xl bg-white text-emerald-900 text-xs font-bold shadow-xs hover:bg-emerald-50 transition-colors"
                       >
                         Nakili
@@ -1056,13 +1055,7 @@ export default function ParentGuardianPortal() {
                           <td className="py-3 px-4 text-center">
                             <button
                               type="button"
-                              onClick={() =>
-                                notifyUser(
-                                  'success',
-                                  'Upakuaji wa Risiti',
-                                  `Risiti ya malipo "${rec.receiptNo}" inapakuliwa kwa muundo rasmi wa PDF.`
-                                )
-                              }
+                              onClick={() => setActiveNotice(`Risiti "${rec.receiptNo}" inapakuliwa kwa muundo wa PDF...`)}
                               className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[11px] inline-flex items-center gap-1"
                             >
                               <Download className="w-3 h-3" />
@@ -1219,13 +1212,7 @@ export default function ParentGuardianPortal() {
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        notifyUser(
-                          'success',
-                          'Upakuaji wa Cheti',
-                          'Cheti cha uthibitisho wa usajili kinapakuliwa rasmi kwa muundo wa PDF...'
-                        )
-                      }
+                      onClick={() => setActiveNotice('Cheti cha usajili kinapakuliwa...')}
                       className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs"
                     >
                       Pakua
@@ -1239,13 +1226,7 @@ export default function ParentGuardianPortal() {
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        notifyUser(
-                          'success',
-                          'Upakuaji wa Kifurushi cha Likizo',
-                          'Kifurushi cha mazoezi ya likizo ya muhula kinapakuliwa kikamilifu...'
-                        )
-                      }
+                      onClick={() => setActiveNotice('Kifurushi cha likizo kinapakuliwa...')}
                       className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs"
                     >
                       Pakua

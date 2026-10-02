@@ -16,24 +16,68 @@ import {
   Check,
   ShieldCheck,
   Info,
+  GraduationCap,
+  BookOpen,
+  Users,
+  ChevronDown,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
 import { INITIAL_PUPILS, StudentMark, calculateGrade, getRemarksForGrade } from '@/lib/teacher-data';
 
+interface ClassUploadStatus {
+  isUploaded: boolean;
+  fileName?: string;
+  uploadedAt?: string;
+}
+
+const ALL_SCHOOL_CLASSES = [
+  'Standard 7 (Grade 7)',
+  'Standard 6 (Grade 6)',
+  'Standard 5 (Grade 5)',
+  'Standard 4 (Grade 4)',
+  'Standard 3 (Grade 3)',
+  'Standard 2 (Grade 2)',
+  'Standard 1 (Grade 1)',
+  'Nursery (Awali)',
+];
+
 export default function SubjectMarksPage() {
   const currentUser = getCurrentSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 1. Teacher's Assigned Classes and Subjects
+  const teacherClasses = useMemo(() => {
+    if (currentUser?.assignedClasses && currentUser.assignedClasses.length > 0) {
+      return currentUser.assignedClasses;
+    }
+    if (currentUser?.assignedClass && currentUser.assignedClass !== 'Whole School') {
+      return [currentUser.assignedClass];
+    }
+    return ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'];
+  }, [currentUser]);
+
+  const teacherSubjects = useMemo(() => {
+    if (currentUser?.subjects && currentUser.subjects.length > 0) {
+      return currentUser.subjects;
+    }
+    return [
+      'Civic & Moral Education (Uraia na Maadili)',
+      'Social Studies (Maarifa ya Jamii)',
+      'Mathematics (Hisabati)',
+      'English Language',
+      'Kiswahili',
+      'Science & Technology (Sayansi)',
+    ];
+  }, [currentUser]);
 
   const [selectedClass, setSelectedClass] = useState<string>('Standard 6 (Grade 6)');
   const [selectedSubject, setSelectedSubject] = useState<string>('Civic & Moral Education (Uraia na Maadili)');
   const [searchPupil, setSearchPupil] = useState('');
 
-  // EXCEL UPLOAD STATE: Marks ONLY appear after teacher uploads Excel
-  const [isExcelUploaded, setIsExcelUploaded] = useState<boolean>(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
-  const [uploadedAt, setUploadedAt] = useState<string | null>(null);
+  // Per-Class, Per-Subject Excel Upload Tracker
+  const [classUploads, setClassUploads] = useState<Record<string, ClassUploadStatus>>({});
 
   // Single Student Adjustment Modal State
   const [editingStudent, setEditingStudent] = useState<{
@@ -51,26 +95,29 @@ export default function SubjectMarksPage() {
   // Set of students whose marks were adjusted individually
   const [adjustedStudentIds, setAdjustedStudentIds] = useState<Record<string, string>>({});
 
-  // Pupils master data
+  // Master pupils dictionary across all classes
   const [pupilsData, setPupilsData] = useState<Record<string, StudentMark[]>>(INITIAL_PUPILS);
 
-  // Sync with current teacher's assignments
+  // Initialize selected class & subject from teacher profile
   useEffect(() => {
-    const session = getCurrentSession();
-    if (session?.assignedClasses && session.assignedClasses.length > 0) {
-      setSelectedClass(session.assignedClasses[0]);
-    } else if (session?.assignedClass && session.assignedClass !== 'Whole School') {
-      setSelectedClass(session.assignedClass);
+    if (teacherClasses.length > 0) {
+      setSelectedClass(teacherClasses[0]);
     }
+    if (teacherSubjects.length > 0) {
+      setSelectedSubject(teacherSubjects[0]);
+    }
+  }, [teacherClasses, teacherSubjects]);
 
-    if (session?.subjects && session.subjects.length > 0) {
-      setSelectedSubject(session.subjects[0]);
-    }
-  }, []);
+  // Current active key for uploads
+  const currentKey = `${selectedClass}_${selectedSubject}`;
+  const currentUpload = classUploads[currentKey] || { isUploaded: false };
+  const isExcelUploaded = Boolean(currentUpload.isUploaded);
+  const uploadedFileName = currentUpload.fileName || null;
+  const uploadedAt = currentUpload.uploadedAt || null;
 
   // Compute ranks and live list of pupils for selected class
   const classPupils = useMemo(() => {
-    const list = pupilsData[selectedClass] || pupilsData['Standard 6 (Grade 6)'] || [];
+    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
 
     // Sort descending by final mark to calculate rank only if Excel has been uploaded
     const sorted = isExcelUploaded
@@ -91,9 +138,9 @@ export default function SubjectMarksPage() {
     );
   }, [pupilsData, selectedClass, searchPupil, isExcelUploaded]);
 
-  // 1. Download Excel / CSV Template for Selected Class (All 35+ Students Pre-Filled)
+  // 1. Download Excel / CSV Template for Selected Class (All Students Pre-Filled)
   const handleDownloadTemplate = () => {
-    const list = pupilsData[selectedClass] || pupilsData['Standard 6 (Grade 6)'] || [];
+    const list = pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
     const headers =
       'Namba_Ya_Usajili,Jina_La_Mwanafunzi,Jinsia,Monthly_Test_1,Monthly_Test_2,Wastani_Monthly,Mid_Term,Terminal_Exam,Wastani_Muhula,Daraja\n';
     const rows = list
@@ -119,12 +166,12 @@ export default function SubjectMarksPage() {
 
     notifyUser(
       'success',
-      'Kigezo Kimepakuliwa!',
-      `Kigezo cha Excel cha ${selectedClass} chenye majina yote 35 kimepakuliwa kikamilifu.`
+      'Kigezo Kimepakuliwa Kikamilifu!',
+      `Kigezo cha Excel cha ${selectedClass} chenye wanafunzi wote ${list.length} kimepakuliwa tayari kwa kujaza alama za somo la ${selectedSubject}.`
     );
   };
 
-  // 2. Parse Uploaded Excel / CSV File and Auto-fill all 35 rows
+  // 2. Parse Uploaded Excel / CSV File and Auto-fill all rows for the Selected Class
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -136,7 +183,9 @@ export default function SubjectMarksPage() {
         const lines = text.split(/\r\n|\n/).filter((l) => l.trim() !== '');
 
         if (lines.length > 1) {
-          const updatedList = [...(pupilsData[selectedClass] || pupilsData['Standard 6 (Grade 6)'] || [])];
+          const updatedList = [
+            ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
+          ];
           let imported = 0;
 
           for (let i = 1; i < lines.length; i++) {
@@ -171,15 +220,21 @@ export default function SubjectMarksPage() {
           }
 
           setPupilsData((prev) => ({ ...prev, [selectedClass]: updatedList }));
-          setIsExcelUploaded(true);
-          setUploadedFileName(file.name);
-          setUploadedAt(new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }));
+          setClassUploads((prev) => ({
+            ...prev,
+            [currentKey]: {
+              isUploaded: true,
+              fileName: file.name,
+              uploadedAt: new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }),
+            },
+          }));
+
           notifyUser(
             'success',
             'Faili la Excel Limepakiwa Kikamilifu!',
-            `Faili "${file.name}" limepakiwa kikamilifu! Wanafunzi wote ${
+            `Faili "${file.name}" limepakiwa kikamilifu kwa ${selectedClass}! Wanafunzi wote ${
               imported || updatedList.length
-            } wameingizwa na maksi zao zimekokotolewa.`
+            } wameingizwa na alama zao za somo la ${selectedSubject} zimekokotolewa.`
           );
         } else {
           simulateInstantAutoFill();
@@ -191,9 +246,11 @@ export default function SubjectMarksPage() {
     reader.readAsText(file);
   };
 
-  // 3. Instant 1-Click Excel Simulation for Fast Testing
+  // 3. Instant 1-Click Excel Simulation for Fast Testing (Strictly for Selected Class)
   const simulateInstantAutoFill = () => {
-    const list = [...(pupilsData[selectedClass] || pupilsData['Standard 6 (Grade 6)'] || [])];
+    const list = [
+      ...(pupilsData[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
+    ];
     const autoFilled = list.map((p, index) => {
       const t1 = Math.min(100, Math.max(62, 75 + ((index * 7) % 24)));
       const t2 = Math.min(100, Math.max(65, 78 + ((index * 5) % 21)));
@@ -217,26 +274,40 @@ export default function SubjectMarksPage() {
     });
 
     setPupilsData((prev) => ({ ...prev, [selectedClass]: autoFilled }));
-    setIsExcelUploaded(true);
-    setUploadedFileName(`matokeo_kamili_${selectedClass.toLowerCase().replace(/\s+/g, '_')}_2026.xlsx`);
-    setUploadedAt(new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }));
+    const generatedFileName = `matokeo_${selectedClass.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${selectedSubject
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '_')}.xlsx`;
+
+    setClassUploads((prev) => ({
+      ...prev,
+      [currentKey]: {
+        isUploaded: true,
+        fileName: generatedFileName,
+        uploadedAt: new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }),
+      },
+    }));
+
     notifyUser(
       'success',
-      'Faili la Excel Limepakiwa!',
-      `Faili la Excel limepakiwa kikamilifu! Wanafunzi wote 35 wa ${selectedClass} wameingizwa na maksi zao zimehesabiwa kiotomatiki.`
+      'Faili la Excel Limepakiwa Kikamilifu!',
+      `Faili la mfano "${generatedFileName}" limepakiwa kikamilifu! Wanafunzi wote ${autoFilled.length} wa ${selectedClass} wameingizwa na alama za somo la ${selectedSubject} zimekokotolewa.`
     );
   };
 
-  // 4. Reset / Clear uploaded Excel to test pre-upload state again
+  // 4. Reset / Clear uploaded Excel to test pre-upload state again for this class
   const handleClearExcelResults = () => {
-    setIsExcelUploaded(false);
-    setUploadedFileName(null);
-    setUploadedAt(null);
+    setClassUploads((prev) => ({
+      ...prev,
+      [currentKey]: {
+        isUploaded: false,
+      },
+    }));
     setAdjustedStudentIds({});
+
     notifyUser(
       'info',
-      'Matokeo Yamefutwa',
-      'Matokeo yamefutwa. Jedwali sasa lipo wazi likisubiri kupakiwa kwa faili la Excel.'
+      'Matokeo Yamewekwa Upya',
+      `Matokeo ya ${selectedClass} kwa somo la ${selectedSubject} yamefutwa. Jedwali sasa liko wazi likisubiri kupakiwa upya kwa faili la Excel.`
     );
   };
 
@@ -245,8 +316,8 @@ export default function SubjectMarksPage() {
     if (!isExcelUploaded) {
       notifyUser(
         'warning',
-        'Pakia Kwanza Faili la Excel',
-        'Tafadhali pakia faili la Excel la darasa zima kwanza kabla ya kurekebisha alama za mwanafunzi mmoja mmoja.'
+        'Pakia Kwanza Excel ya Darasa',
+        `Tafadhali pakia faili la Excel la wanafunzi wote wa ${selectedClass} kwanza kabla ya kurekebisha mwanafunzi mmoja mmoja.`
       );
       return;
     }
@@ -280,7 +351,9 @@ export default function SubjectMarksPage() {
     const remarks = getRemarksForGrade(grade);
 
     setPupilsData((prev) => {
-      const classList = [...(prev[selectedClass] || prev['Standard 6 (Grade 6)'] || [])];
+      const classList = [
+        ...(prev[selectedClass] || INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []),
+      ];
       const idx = classList.findIndex((p) => p.id === editingStudent.id);
       if (idx !== -1) {
         classList[idx] = {
@@ -305,9 +378,10 @@ export default function SubjectMarksPage() {
 
     notifyUser(
       'success',
-      'Marekebisho Yamehifadhiwa',
-      `Alama za mwanafunzi ${editingStudent.name} (${editingStudent.admNo}) zimerekebishwa kikamilifu! Wastani mpya: ${finalMark}% (${grade}).`
+      'Alama Zimebadilishwa Kikamilifu!',
+      `Alama za mwanafunzi ${editingStudent.name} (${editingStudent.admNo}) wa ${selectedClass} zimerekebishwa kikamilifu! Wastani mpya: ${finalMark}% (${grade}).`
     );
+
     setEditingStudent(null);
   };
 
@@ -317,7 +391,7 @@ export default function SubjectMarksPage() {
       notifyUser(
         'error',
         'Maksi Hazijapakiwa Bado!',
-        'Tafadhali pakia kwanza faili la Excel lenye alama za wanafunzi kabla ya kuwasilisha kwa Mwalimu wa Taaluma.'
+        `Tafadhali pakia kwanza faili la Excel lenye alama za wanafunzi wa ${selectedClass} kabla ya kuwasilisha kwa Mwalimu wa Taaluma.`
       );
       return;
     }
@@ -363,7 +437,7 @@ export default function SubjectMarksPage() {
     );
   };
 
-  // Live Statistics
+  // Live Statistics for selected class
   const totalStudents = classPupils.length;
   const gradeACount = isExcelUploaded ? classPupils.filter((p) => p.grade === 'A').length : 0;
   const gradeBCount = isExcelUploaded ? classPupils.filter((p) => p.grade === 'B').length : 0;
@@ -382,7 +456,7 @@ export default function SubjectMarksPage() {
       pageDescription="Uingizaji rasmi wa matokeo ya wanafunzi unafanywa kwa kupakia faili la Excel (.xlsx / .csv). Masahihisho ya baadaye yanafanyika kwa mwanafunzi mmoja mmoja."
     >
       <div className="space-y-6 animate-fade-in">
-        {/* Hidden file input */}
+        {/* Hidden file input for Excel upload */}
         <input
           type="file"
           ref={fileInputRef}
@@ -390,6 +464,139 @@ export default function SubjectMarksPage() {
           accept=".xlsx,.xls,.csv"
           className="hidden"
         />
+
+        {/* ===================================================================== */}
+        {/* 0. TEACHER'S ASSIGNED CLASSES & SUBJECT SELECTION BAR */}
+        {/* ===================================================================== */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-emerald-100">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-950/20">
+                <GraduationCap className="w-6 h-6 text-emerald-300" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-black text-slate-900">
+                    Madarasa Ninayofundisha (My Teaching Classes)
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-black border border-emerald-300">
+                    {teacherClasses.length} Madarasa
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Bofya darasa unalotaka kuona wanafunzi wake na kupakia faili la Excel la somo husika.
+                </p>
+              </div>
+            </div>
+
+            {/* Subject Selector Dropdown */}
+            <div className="flex items-center gap-2.5 shrink-0 bg-emerald-50/70 p-2 rounded-2xl border border-emerald-200">
+              <BookOpen className="w-4 h-4 text-emerald-800 shrink-0" />
+              <label htmlFor="subject-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
+                Somo Langu:
+              </label>
+              <select
+                id="subject-select"
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="text-xs font-bold py-1.5 px-3 rounded-xl bg-white border border-emerald-300 text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 max-w-[280px] truncate shadow-2xs"
+              >
+                {teacherSubjects.map((sub) => (
+                  <option key={sub} value={sub}>
+                    {sub}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Interactive Class Selector Tabs */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-950">
+                Chagua Darasa Uone Wanafunzi Wake:
+              </span>
+
+              {/* Quick Dropdown for All Other Primary Classes */}
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-slate-500 text-[11px] font-semibold hidden sm:inline">Madarasa Mengine:</span>
+                <select
+                  value={teacherClasses.includes(selectedClass) ? '' : selectedClass}
+                  onChange={(e) => {
+                    if (e.target.value) setSelectedClass(e.target.value);
+                  }}
+                  className="text-xs font-bold py-1 px-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 hover:bg-slate-100"
+                >
+                  <option value="">-- Madarasa Mengine ya Shule --</option>
+                  {ALL_SCHOOL_CLASSES.filter((c) => !teacherClasses.includes(c)).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Grid of Teacher Classes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {teacherClasses.map((cls) => {
+                const isSelected = selectedClass === cls;
+                const clsKey = `${cls}_${selectedSubject}`;
+                const clsStatus = classUploads[clsKey];
+                const isClsUploaded = Boolean(clsStatus?.isUploaded);
+                const pupilsCount = (pupilsData[cls] || INITIAL_PUPILS[cls] || []).length || 35;
+
+                return (
+                  <button
+                    key={cls}
+                    type="button"
+                    onClick={() => setSelectedClass(cls)}
+                    className={`p-4 rounded-2xl text-left transition-all border flex flex-col justify-between gap-3 ${
+                      isSelected
+                        ? 'bg-gradient-to-br from-emerald-800 via-emerald-900 to-emerald-950 text-white border-emerald-950 shadow-md shadow-emerald-950/25 ring-2 ring-emerald-500/40'
+                        : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-emerald-200/90 hover:border-emerald-400 shadow-2xs'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-0.5">
+                        <span className={`text-xs font-black block leading-snug ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                          {cls}
+                        </span>
+                        <span className={`text-[10px] font-semibold block ${isSelected ? 'text-emerald-200' : 'text-slate-500'}`}>
+                          {selectedSubject.split('(')[0]}
+                        </span>
+                      </div>
+                      {isSelected ? (
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 mt-0.5 shadow-sm" />
+                      ) : (
+                        <Users className="w-4 h-4 text-slate-400 shrink-0" />
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-emerald-100/20 text-[10px]">
+                      <span className={`font-bold ${isSelected ? 'text-emerald-200' : 'text-slate-600'}`}>
+                        {pupilsCount} Wanafunzi
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full font-black text-[9px] border ${
+                          isClsUploaded
+                            ? isSelected
+                              ? 'bg-emerald-500/30 text-emerald-100 border-emerald-400/40'
+                              : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            : isSelected
+                            ? 'bg-amber-400/20 text-amber-200 border-amber-400/30'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}
+                      >
+                        {isClsUploaded ? '✓ Excel Imepakiwa' : '⏳ Inasubiri Excel'}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
         {/* ===================================================================== */}
         {/* EXCEL UPLOAD STATUS & ACTION HERO BANNER */}
@@ -415,8 +622,8 @@ export default function SubjectMarksPage() {
                   <FileSpreadsheet className="w-3.5 h-3.5" />
                   <span>
                     {isExcelUploaded
-                      ? 'Faili la Excel Limepakiwa'
-                      : 'Maksi Hazijawekwa • Inasubiri Kupakiwa kwa Excel'}
+                      ? `Excel ya ${selectedClass} Imepakiwa`
+                      : `Maksi Hazijawekwa • Inasubiri Excel ya ${selectedClass}`}
                   </span>
                 </span>
 
@@ -433,8 +640,8 @@ export default function SubjectMarksPage() {
 
               <p className="text-xs text-slate-600 leading-relaxed">
                 {isExcelUploaded
-                  ? 'Alama za wanafunzi wote 35 zimeingizwa kutoka kwenye faili la Excel. Jedwali limefungwa kuzuia uingizaji wa makosa, lakini unaweza kurekebisha mwanafunzi mmoja mmoja kupitia kitufe cha "Rekebisha".'
-                  : 'Kulingana na miongozo ya shule, huwezi kujaza alama moja kwa moja kwenye jedwali kwa mkono. Pakia faili la Excel (.xlsx au .csv) lililojazwa au jaribu mfumo kwa kitufe cha kupakia hapa chini.'}
+                  ? `Alama za wanafunzi wote ${classPupils.length} wa ${selectedClass} zimeingizwa kutoka kwenye faili la Excel la somo la ${selectedSubject}. Jedwali limefungwa kuzuia uingizaji wa makosa, lakini unaweza kurekebisha mwanafunzi mmoja mmoja kupitia kitufe cha "Rekebisha".`
+                  : `Kulingana na miongozo ya shule, huwezi kujaza alama moja kwa moja kwenye jedwali kwa mkono. Pakia faili la Excel (.xlsx au .csv) lililojazwa kwa darasa la ${selectedClass} au jaribu mfumo kwa kitufe cha kupakia hapa chini.`}
               </p>
             </div>
 
@@ -448,14 +655,14 @@ export default function SubjectMarksPage() {
                     className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-emerald-950/20 transition-all"
                   >
                     <UploadCloud className="w-4 h-4 text-emerald-200" />
-                    <span>Pakia Excel (.xlsx / .csv)</span>
+                    <span>Pakia Excel ({selectedClass})</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={simulateInstantAutoFill}
                     className="px-4 py-2.5 rounded-xl bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-2 shadow-xs transition-all"
-                    title="Bofya kupakia faili la mfano la Excel lenye alama za wanafunzi wote 35 mara moja"
+                    title={`Bofya kupakia faili la mfano la Excel lenye alama za wanafunzi wote wa ${selectedClass} mara moja`}
                   >
                     <Sparkles className="w-4 h-4 text-amber-500" />
                     <span>Pakia Excel ya Majaribio (1-Click)</span>
@@ -488,7 +695,7 @@ export default function SubjectMarksPage() {
                     title="Futa matokeo ili kurudia jaribio la kupakia"
                   >
                     <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
-                    <span>Futa Matokeo (Weka Upya)</span>
+                    <span>Futa Matokeo ({selectedClass})</span>
                   </button>
 
                   <button
@@ -507,7 +714,7 @@ export default function SubjectMarksPage() {
                     title="Tuma broadsheet ya somo hili kwa Mwalimu wa Taaluma ili aiunganishe na masomo mengine"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                    <span>Wasilisha Broadsheet ya Somo kwa Mwl. Taaluma</span>
+                    <span>Wasilisha Broadsheet ya {selectedClass}</span>
                   </button>
                 </>
               )}
@@ -605,20 +812,20 @@ export default function SubjectMarksPage() {
               type="text"
               value={searchPupil}
               onChange={(e) => setSearchPupil(e.target.value)}
-              placeholder="Tafuta mwanafunzi kwa jina au namba..."
+              placeholder={`Tafuta mwanafunzi wa ${selectedClass}...`}
               className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-emerald-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600"
             />
           </div>
 
-          <div className="text-xs text-slate-600 flex items-center gap-2 self-end sm:self-auto">
-            <span>Darasa: <strong className="text-emerald-900">{selectedClass}</strong></span>
+          <div className="text-xs text-slate-600 flex items-center gap-2 self-end sm:self-auto font-semibold">
+            <span>Darasa Linaloonekana: <strong className="text-emerald-900">{selectedClass}</strong></span>
             <span>•</span>
             <span>Somo: <strong className="text-emerald-900">{selectedSubject}</strong></span>
           </div>
         </div>
 
         {/* ===================================================================== */}
-        {/* EXCEL SPREADSHEET TABLE: ALL 35 STUDENTS (READ-ONLY WITH SINGLE EDIT) */}
+        {/* EXCEL SPREADSHEET TABLE: STUDENTS OF SELECTED CLASS */}
         {/* ===================================================================== */}
         <div className="bg-white/95 rounded-3xl border border-emerald-200/90 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -694,102 +901,84 @@ export default function SubjectMarksPage() {
                         {pupil.gender}
                       </td>
 
-                      {/* Monthly Test 1: Read-only badge */}
-                      <td className="py-2 px-2 text-center border-r border-slate-100 bg-emerald-50/20 font-mono">
+                      {/* Monthly Test 1 */}
+                      <td className="py-2.5 px-2 text-center font-mono font-semibold border-r border-slate-100">
                         {isExcelUploaded ? (
-                          <span className="inline-block px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 font-bold text-slate-900">
-                            {pupil.monthlyTest1}
-                          </span>
+                          pupil.monthlyTest1
                         ) : (
-                          <span className="text-slate-300 font-bold">—</span>
+                          <span className="text-slate-300 font-normal">—</span>
                         )}
                       </td>
 
-                      {/* Monthly Test 2: Read-only badge */}
-                      <td className="py-2 px-2 text-center border-r border-slate-100 bg-emerald-50/20 font-mono">
+                      {/* Monthly Test 2 */}
+                      <td className="py-2.5 px-2 text-center font-mono font-semibold border-r border-slate-100">
                         {isExcelUploaded ? (
-                          <span className="inline-block px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 font-bold text-slate-900">
-                            {pupil.monthlyTest2}
-                          </span>
+                          pupil.monthlyTest2
                         ) : (
-                          <span className="text-slate-300 font-bold">—</span>
+                          <span className="text-slate-300 font-normal">—</span>
                         )}
                       </td>
 
-                      {/* Monthly Average (Auto-Calculated) */}
-                      <td className="py-2.5 px-2 text-center font-black text-emerald-900 bg-emerald-100/40 border-r border-slate-100">
-                        {isExcelUploaded ? `${pupil.monthlyAvg}%` : <span className="text-slate-300 font-bold">—</span>}
-                      </td>
-
-                      {/* Midterm Exam: Read-only badge */}
-                      <td className="py-2 px-2 text-center border-r border-slate-100 bg-blue-50/20 font-mono">
+                      {/* Monthly Average */}
+                      <td className="py-2.5 px-2 text-center font-mono font-bold text-emerald-950 bg-emerald-50/40 border-r border-slate-100">
                         {isExcelUploaded ? (
-                          <span className="inline-block px-2 py-1 rounded-lg bg-blue-50 border border-blue-200 font-bold text-slate-900">
-                            {pupil.midtermExam}
-                          </span>
+                          pupil.monthlyAvg
                         ) : (
-                          <span className="text-slate-300 font-bold">—</span>
+                          <span className="text-slate-300 font-normal">—</span>
                         )}
                       </td>
 
-                      {/* Terminal Exam: Read-only badge */}
-                      <td className="py-2 px-2 text-center border-r border-slate-100 bg-indigo-50/20 font-mono">
+                      {/* Midterm Exam */}
+                      <td className="py-2.5 px-2 text-center font-mono font-semibold text-blue-900 border-r border-slate-100">
                         {isExcelUploaded ? (
-                          <span className="inline-block px-2 py-1 rounded-lg bg-indigo-50 border border-indigo-200 font-bold text-slate-900">
-                            {pupil.terminalExam}
-                          </span>
+                          pupil.midtermExam
                         ) : (
-                          <span className="text-slate-300 font-bold">—</span>
+                          <span className="text-slate-300 font-normal">—</span>
                         )}
                       </td>
 
-                      {/* Final Average % (Auto-Calculated) */}
-                      <td className="py-2.5 px-2 text-center font-black text-sm text-slate-900 bg-amber-50/50 border-r border-slate-100">
-                        {isExcelUploaded ? `${pupil.mark}%` : <span className="text-slate-300 font-bold">—</span>}
+                      {/* Terminal Exam */}
+                      <td className="py-2.5 px-2 text-center font-mono font-semibold text-indigo-900 border-r border-slate-100">
+                        {isExcelUploaded ? (
+                          pupil.terminalExam
+                        ) : (
+                          <span className="text-slate-300 font-normal">—</span>
+                        )}
                       </td>
 
-                      {/* Grade (A, B, C, D, F) */}
-                      <td className="py-2 px-1 text-center border-r border-slate-100">
+                      {/* Final Mark (%) */}
+                      <td className="py-2.5 px-2 text-center font-mono font-black text-slate-900 bg-amber-50/50 border-r border-slate-100 text-sm">
+                        {isExcelUploaded ? (
+                          `${pupil.mark}%`
+                        ) : (
+                          <span className="text-slate-300 font-normal text-xs">—</span>
+                        )}
+                      </td>
+
+                      {/* Grade Badge */}
+                      <td className="py-2.5 px-2 text-center border-r border-slate-100">
                         {isExcelUploaded ? (
                           <span
-                            className={`inline-block px-2 py-0.5 rounded-md font-black text-xs ${
+                            className={`px-2 py-0.5 rounded-full font-black text-[10px] ${
                               pupil.grade === 'A'
-                                ? 'bg-emerald-100 text-emerald-950 border border-emerald-300'
+                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                                 : pupil.grade === 'B'
-                                ? 'bg-blue-100 text-blue-950 border border-blue-300'
+                                ? 'bg-blue-100 text-blue-900 border border-blue-300'
                                 : pupil.grade === 'C'
-                                ? 'bg-amber-100 text-amber-950 border border-amber-300'
-                                : 'bg-rose-100 text-rose-950 border border-rose-300'
+                                ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                : 'bg-rose-100 text-rose-900 border border-rose-300'
                             }`}
                           >
                             {pupil.grade}
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-bold">—</span>
+                          <span className="text-slate-300">—</span>
                         )}
                       </td>
 
-                      {/* Rank Position */}
-                      <td className="py-2.5 px-2 text-center font-black text-xs text-slate-700 border-r border-slate-100">
-                        {isExcelUploaded && pupil.rank ? (
-                          pupil.rank === 1 ? (
-                            <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-black text-[10px]">
-                              1st
-                            </span>
-                          ) : pupil.rank === 2 ? (
-                            <span className="px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-black text-[10px]">
-                              2nd
-                            </span>
-                          ) : pupil.rank === 3 ? (
-                            <span className="px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-800 font-black text-[10px]">
-                              3rd
-                            </span>
-                          ) : (
-                            `${pupil.rank}`
-                          )
-                        ) : (
-                          <span className="text-slate-300 font-bold">—</span>
-                        )}
+                      {/* Rank */}
+                      <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-600 border-r border-slate-100">
+                        {isExcelUploaded && pupil.rank ? `#${pupil.rank}` : '—'}
                       </td>
 
                       {/* Remarks */}
@@ -876,7 +1065,7 @@ export default function SubjectMarksPage() {
                       Rekebisha Alama za Mwanafunzi
                     </h3>
                     <p className="text-[11px] text-slate-500 font-mono">
-                      {editingStudent.name} • {editingStudent.admNo}
+                      {editingStudent.name} • {editingStudent.admNo} ({selectedClass})
                     </p>
                   </div>
                 </div>

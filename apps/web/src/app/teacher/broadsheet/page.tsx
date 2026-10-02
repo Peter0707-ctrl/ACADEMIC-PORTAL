@@ -271,6 +271,7 @@ export default function AcademicBroadsheetHubPage() {
   const [selectedClass, setSelectedClass] = useState<string>('Standard 7 (Grade 7)');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDivision, setFilterDivision] = useState<string>('ALL');
+  const [activeNotice, setActiveNotice] = useState<string | null>(null);
 
   // Per-Class State Tracker: Merged State, AI Audit State, Headmaster Sent State
   const [classState, setClassState] = useState<
@@ -493,6 +494,10 @@ export default function AcademicBroadsheetHubPage() {
       'Broadsheets Zimeunganishwa Kikamilifu!',
       `Masomo yote 6 ya ${selectedClass} yameunganishwa kwenye Broadsheet Kuu. Jumla (alama 600), wastani na nafasi (#1 hadi #35) zimekokotolewa kiotomatiki.`
     );
+
+    setActiveNotice(
+      `Masomo yote 6 ya ${selectedClass} yameunganishwa! Wanafunzi wote 35 wanaonekana kwenye Jedwali Kuu.`
+    );
   };
 
   // 2. AI Error & Anomaly Check Action
@@ -590,6 +595,10 @@ export default function AcademicBroadsheetHubPage() {
       'Broadsheet Imewasilishwa kwa Mwalimu Mkuu!',
       `Broadsheet ya ${selectedClass} iliyohakikiwa na AI imetumwa rasmi Ofisi ya Mkuu wa Shule. Mwalimu Mkuu anaweza sasa kuipitia, kuweka Muhuri Rasmi, na kupanga tarehe ya kutangaza matokeo.`
     );
+
+    setActiveNotice(
+      `Broadsheet ya ${selectedClass} imewasilishwa kwa Mwalimu Mkuu (${timestamp}). Ipo tayari kuidhinishwa na kuwekwa muhuri.`
+    );
   };
 
   // 4. Download Merged Broadsheet as CSV / Excel
@@ -640,6 +649,22 @@ export default function AcademicBroadsheetHubPage() {
       requiredRole="ACADEMIC"
     >
       <div className="space-y-6 animate-fade-in">
+        {/* Notice alert */}
+        {activeNotice && (
+          <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
+              <span className="font-bold">{activeNotice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveNotice(null)}
+              className="text-xs font-bold text-emerald-900 hover:underline shrink-0"
+            >
+              Funga
+            </button>
+          </div>
+        )}
 
         {/* ===================================================================== */}
         {/* 1. CLASS SELECTOR TABS (Standard 7, Standard 6, Standard 5, Standard 4) */}
