@@ -24,6 +24,11 @@ import {
   Sparkles,
   Camera,
   Check,
+  Calendar,
+  Clock,
+  BookOpen,
+  GraduationCap,
+  Printer,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import {
@@ -34,7 +39,7 @@ import {
 } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
 
-type SettingsTab = 'PROFILE' | 'SECURITY' | 'NOTIFICATIONS' | 'PREFERENCES';
+type SettingsTab = 'PROFILE' | 'TIMETABLE' | 'SECURITY' | 'NOTIFICATIONS' | 'PREFERENCES';
 
 export default function TeacherSettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('PROFILE');
@@ -286,6 +291,19 @@ export default function TeacherSettingsPage() {
 
           <button
             type="button"
+            onClick={() => setActiveTab('TIMETABLE')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'TIMETABLE'
+                ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
+                : 'bg-white hover:bg-emerald-50 text-slate-700 border border-emerald-200'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Madarasa, Masomo &amp; Ratiba (Timetable)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('SECURITY')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'SECURITY'
@@ -439,6 +457,146 @@ export default function TeacherSettingsPage() {
               </div>
             </div>
           </form>
+        )}
+
+        {/* ===================================================================== */}
+        {/* TAB: TIMETABLE, ASSIGNED CLASSES & SUBJECTS */}
+        {/* ===================================================================== */}
+        {activeTab === 'TIMETABLE' && (
+          <div className="space-y-6">
+            {/* 1. Assigned Classes & Subjects Overview */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-emerald-200/90 shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-100">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">
+                    Madarasa &amp; Masomo Niliyopangiwa (Teaching Assignment)
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Mgawanyo rasmi wa majukumu ya ufundishaji kwa muhula huu (Standard 1–7).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Chapisha Ratiba (Print)</span>
+                </button>
+              </div>
+
+              {/* Grid of Assigned Classes & Subjects */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Classes Card */}
+                <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-emerald-800" />
+                    <h4 className="text-xs font-black text-slate-900 uppercase">
+                      Madarasa Niliyopangiwa (Assigned Classes):
+                    </h4>
+                  </div>
+                  <div className="space-y-2">
+                    {(currentUser?.assignedClasses || ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)']).map((cls) => (
+                      <div
+                        key={cls}
+                        className="p-2.5 rounded-xl bg-white border border-emerald-200 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2 font-bold text-slate-900">
+                          <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                          <span>{cls}</span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          {cls.includes('6') ? '35 Wanafunzi' : cls.includes('7') ? '15 Wanafunzi' : 'Wanafunzi Wamesajiliwa'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Subjects Card */}
+                <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-blue-800" />
+                    <h4 className="text-xs font-black text-slate-900 uppercase">
+                      Masomo Ninayofundisha (Assigned Subjects):
+                    </h4>
+                  </div>
+                  <div className="space-y-2">
+                    {(currentUser?.subjects || ['Mathematics (Hisabati)', 'Science & Technology', 'Civic & Moral Education']).map((subj) => (
+                      <div
+                        key={subj}
+                        className="p-2.5 rounded-xl bg-white border border-blue-200 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2 font-bold text-slate-900">
+                          <span className="w-2 h-2 rounded-full bg-blue-600" />
+                          <span>{subj}</span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
+                          Vipindi 5–6 / Wiki
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Weekly Timetable Matrix */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-emerald-200/90 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-emerald-800" />
+                  <h3 className="text-sm font-black text-slate-900">
+                    Ratiba ya Kila Wiki ya Ufundishaji (Weekly Timetable)
+                  </h3>
+                </div>
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  Masaa ya Masomo: 08:00 - 13:50
+                </span>
+              </div>
+
+              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="w-full text-center border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                      <th className="py-3 px-2 text-left">Siku</th>
+                      <th className="py-3 px-2">P1 (08:00)</th>
+                      <th className="py-3 px-2">P2 (08:40)</th>
+                      <th className="py-3 px-2 bg-amber-50/50">Break</th>
+                      <th className="py-3 px-2">P3 (09:50)</th>
+                      <th className="py-3 px-2">P4 (10:30)</th>
+                      <th className="py-3 px-2">P5 (11:10)</th>
+                      <th className="py-3 px-2 bg-amber-50/50">Lunch</th>
+                      <th className="py-3 px-2">P6 (12:30)</th>
+                      <th className="py-3 px-2">P7 (13:10)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                    {[
+                      { day: 'Jumatatu', p1: 'Std 6: Hisabati', p2: 'Std 6: Hisabati', p3: 'Std 7: Science', p4: 'Std 7: Science', p5: 'Std 5: Uraia', p6: 'Free / Prep', p7: 'Remedial' },
+                      { day: 'Jumanne', p1: 'Std 7: Hisabati', p2: 'Std 7: Hisabati', p3: 'Std 6: Science', p4: 'Std 6: Science', p5: 'Std 6: Mazoezi', p6: 'Staff Meeting', p7: 'Sports' },
+                      { day: 'Jumatano', p1: 'Std 6: Hisabati', p2: 'Std 6: Hisabati', p3: 'Std 7: Uraia', p4: 'Std 7: Uraia', p5: 'Free / Prep', p6: 'Std 7: Revision', p7: 'Clubs' },
+                      { day: 'Alhamisi', p1: 'Std 7: Hisabati', p2: 'Std 7: Science', p3: 'Std 6: Hisabati', p4: 'Std 6: Science', p5: 'Std 5: Uraia', p6: 'Marking', p7: 'Remedial' },
+                      { day: 'Ijumaa', p1: 'Std 6: Monthly Test', p2: 'Std 6: Test Review', p3: 'Std 7: Monthly Test', p4: 'Std 7: Review', p5: 'Dini / Morals', p6: 'Cleaning', p7: 'Dismissal' },
+                    ].map((row) => (
+                      <tr key={row.day} className="hover:bg-emerald-50/30">
+                        <td className="py-3 px-2 font-bold text-left text-slate-900 bg-slate-50/50">{row.day}</td>
+                        <td className="py-3 px-2 font-semibold text-emerald-900 bg-emerald-50/20">{row.p1}</td>
+                        <td className="py-3 px-2 font-semibold text-emerald-900 bg-emerald-50/20">{row.p2}</td>
+                        <td className="py-3 px-2 bg-amber-50/40 text-[10px] text-amber-800 font-bold">Chai</td>
+                        <td className="py-3 px-2 font-semibold text-blue-900 bg-blue-50/20">{row.p3}</td>
+                        <td className="py-3 px-2 font-semibold text-blue-900 bg-blue-50/20">{row.p4}</td>
+                        <td className="py-3 px-2 font-semibold text-slate-700">{row.p5}</td>
+                        <td className="py-3 px-2 bg-amber-50/40 text-[10px] text-amber-800 font-bold">Chakula</td>
+                        <td className="py-3 px-2 font-semibold text-slate-700">{row.p6}</td>
+                        <td className="py-3 px-2 font-semibold text-slate-700">{row.p7}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* ===================================================================== */}
