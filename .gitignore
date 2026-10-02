@@ -58,5 +58,3 @@ env/
 uploads/
 temp/
 scratch/
-*.tsbuildinfo
-**/*.tsbuildinfo
