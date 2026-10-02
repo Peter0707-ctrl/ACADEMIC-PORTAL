@@ -413,14 +413,34 @@ export default function AcademicBroadsheetHubPage() {
             )
           : 84.5;
 
+      let teacherName = sub.defaultTeacher;
+      let subTime = `08:${20 + idx * 5} Asubuhi`;
+      let subAvg = avg;
+
+      try {
+        const stored = typeof window !== 'undefined' ? localStorage.getItem('academic_subject_submissions_v1') : null;
+        if (stored) {
+          const subs = JSON.parse(stored);
+          const found = Object.values(subs).find((entry: any) =>
+            entry.className === selectedClass &&
+            (entry.subjectName?.toLowerCase().includes(sub.name.toLowerCase().split(' ')[0]) || entry.subjectName === sub.name)
+          ) as any;
+          if (found) {
+            teacherName = `${found.teacherName} (Wigo: ${found.scopeTitle || 'Januari'})`;
+            subAvg = Number(found.averageMark) || avg;
+            subTime = `${found.submittedAt} (Imewasilishwa)`;
+          }
+        }
+      } catch {}
+
       return {
         id: `sub-${sub.code}-${selectedClass}`,
         name: sub.name,
         code: sub.code,
-        teacher: sub.defaultTeacher,
+        teacher: teacherName,
         studentsCount: 35,
-        average: avg,
-        submittedAt: `08:${20 + idx * 5} Asubuhi`,
+        average: subAvg,
+        submittedAt: subTime,
         isSubmitted: true,
       };
     });
