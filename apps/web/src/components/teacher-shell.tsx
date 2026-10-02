@@ -26,6 +26,7 @@ import {
   Check,
   Globe,
   UploadCloud,
+  Settings,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -385,6 +386,27 @@ export default function TeacherShell({
               </Link>
             </div>
           )}
+          {/* ================================================================= */}
+          {/* GROUP: MIPANGILIO & WASIFU (SETTINGS & PROFILE) */}
+          {/* ================================================================= */}
+          <div className="space-y-1 pt-2 border-t border-emerald-100">
+            <Link
+              href="/teacher/settings"
+              className={`w-full p-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                pathname === '/teacher/settings'
+                  ? 'bg-emerald-100/80 text-emerald-950 font-bold border-l-2 border-emerald-700'
+                  : 'text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-900'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Settings className="w-3.5 h-3.5 text-slate-700" />
+                <span>Mipangilio &amp; Wasifu</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">
+                Wasifu
+              </span>
+            </Link>
+          </div>
         </div>
 
         {/* ================================================================= */}
@@ -444,19 +466,23 @@ export default function TeacherShell({
             </div>
 
             {/* User Profile Chip (Avatar + Full Name + Role) */}
-            <div className="flex items-center gap-2.5 pl-2 sm:border-l border-emerald-200">
-              <div className="w-9 h-9 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold text-xs ring-2 ring-emerald-500/20 shadow-xs">
+            <Link
+              href="/teacher/settings"
+              className="flex items-center gap-2.5 pl-2 sm:border-l border-emerald-200 hover:opacity-85 transition-opacity group cursor-pointer"
+              title="Fungua Mipangilio na Wasifu Wako"
+            >
+              <div className="w-9 h-9 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold text-xs ring-2 ring-emerald-500/20 shadow-xs group-hover:ring-emerald-500">
                 {userInitials}
               </div>
               <div className="text-left hidden md:block">
-                <span className="text-xs font-black text-slate-800 block leading-tight truncate max-w-[170px]">
+                <span className="text-xs font-black text-slate-800 block leading-tight truncate max-w-[170px] group-hover:text-emerald-900">
                   {currentUser?.fullName}
                 </span>
                 <span className="text-[10px] text-emerald-800 font-semibold block truncate max-w-[170px]">
                   {currentUser?.identifier} • {currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.role === 'ACADEMIC' ? 'Mwl. Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
                 </span>
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
