@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   GraduationCap,
   Shield,
@@ -31,178 +32,22 @@ import {
   X,
   Check,
   AlertTriangle,
-  Flame,
   Info,
+  LogOut,
 } from 'lucide-react';
-
-// =============================================================================
-// TYPES & DATA STRUCTURES
-// =============================================================================
-export type ExecutiveRole = 'ADMIN' | 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE';
-
-export interface UserAccount {
-  id: string;
-  fullName: string;
-  role: 'ADMIN' | 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'TEACHER' | 'STUDENT' | 'CANDIDATE';
-  identifier: string; // Staff ID or Admission / Candidate No
-  email?: string;
-  phone?: string;
-  assignedClass?: string;
-  subjects?: string[];
-  candidateType?: 'PSLE' | 'SFNA'; // Standard 7 or Standard 4
-  examIndexNo?: string;
-  status: 'ACTIVE' | 'SUSPENDED';
-  joinedDate: string;
-}
+import {
+  UserAccount,
+  getStoredAccounts,
+  setStoredAccounts,
+  getCurrentSession,
+  clearCurrentSession,
+} from '@/lib/auth-session';
 
 interface CenteredNotification {
   type: 'info' | 'success' | 'warning' | 'error';
   title: string;
   message: string;
 }
-
-// =============================================================================
-// PRE-LOADED / HARDCODED BLUEPRINT ACCOUNTS (For Immediate Feature Exploration)
-// =============================================================================
-const INITIAL_ACCOUNTS: UserAccount[] = [
-  // School Admin (Uongozi wa Juu)
-  {
-    id: 'USR-001',
-    fullName: 'Peter Msira',
-    role: 'ADMIN',
-    identifier: 'ADM-2026-001',
-    email: 'admin@primaryschool.ac.tz',
-    phone: '+255 779 304 500',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-10',
-  },
-  // Mwalimu Mkuu (Headteacher)
-  {
-    id: 'USR-002',
-    fullName: 'Mwl. Augustine Mrosso',
-    role: 'HEADTEACHER',
-    identifier: 'HT-2026-001',
-    email: 'headteacher@primaryschool.ac.tz',
-    phone: '+255 754 112 233',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-15',
-  },
-  // Mwalimu wa Taaluma (Academic Teacher)
-  {
-    id: 'USR-003',
-    fullName: 'Mwl. Beatrice Kimaro',
-    role: 'ACADEMIC',
-    identifier: 'ACAD-2026-001',
-    email: 'academic@primaryschool.ac.tz',
-    phone: '+255 765 223 344',
-    assignedClass: 'Standard 7 & Standard 4',
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology'],
-    status: 'ACTIVE',
-    joinedDate: '2026-01-20',
-  },
-  // Mwalimu wa Nidhamu (Discipline Teacher)
-  {
-    id: 'USR-004',
-    fullName: 'Mwl. Godfrey Makere',
-    role: 'DISCIPLINE',
-    identifier: 'DISC-2026-001',
-    email: 'discipline@primaryschool.ac.tz',
-    phone: '+255 784 334 455',
-    assignedClass: 'Whole School',
-    subjects: ['Civic & Moral Education (Uraia na Maadili)'],
-    status: 'ACTIVE',
-    joinedDate: '2026-02-01',
-  },
-  // Class Teachers
-  {
-    id: 'USR-005',
-    fullName: 'Mwl. Sarah Mollel',
-    role: 'TEACHER',
-    identifier: 'TCH-2026-012',
-    email: 'sarah.mollel@primaryschool.ac.tz',
-    phone: '+255 712 445 566',
-    assignedClass: 'Standard 5 (Grade 5)',
-    subjects: ['English Language', 'Kiswahili'],
-    status: 'ACTIVE',
-    joinedDate: '2026-02-15',
-  },
-  {
-    id: 'USR-006',
-    fullName: 'Mwl. Emmanuel Swai',
-    role: 'TEACHER',
-    identifier: 'TCH-2026-015',
-    email: 'emmanuel.swai@primaryschool.ac.tz',
-    phone: '+255 767 556 677',
-    assignedClass: 'Standard 4 (Grade 4)',
-    subjects: ['Social Studies (Maarifa ya Jamii)', 'Vocational Skills'],
-    status: 'ACTIVE',
-    joinedDate: '2026-02-20',
-  },
-  // Candidates (Standard 7 PSLE & Standard 4 SFNA)
-  {
-    id: 'USR-007',
-    fullName: 'Kelvin Shirima',
-    role: 'CANDIDATE',
-    identifier: 'PSLE-2026-0428',
-    assignedClass: 'Standard 7 (Grade 7)',
-    candidateType: 'PSLE',
-    examIndexNo: 'PSLE/2026/0428',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-08',
-  },
-  {
-    id: 'USR-008',
-    fullName: 'Neema Massawe',
-    role: 'CANDIDATE',
-    identifier: 'PSLE-2026-0429',
-    assignedClass: 'Standard 7 (Grade 7)',
-    candidateType: 'PSLE',
-    examIndexNo: 'PSLE/2026/0429',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-08',
-  },
-  {
-    id: 'USR-009',
-    fullName: 'Juma Bakari',
-    role: 'CANDIDATE',
-    identifier: 'SFNA-2026-0112',
-    assignedClass: 'Standard 4 (Grade 4)',
-    candidateType: 'SFNA',
-    examIndexNo: 'SFNA/2026/0112',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-10',
-  },
-  {
-    id: 'USR-010',
-    fullName: 'Fatma Hassan',
-    role: 'CANDIDATE',
-    identifier: 'SFNA-2026-0113',
-    assignedClass: 'Standard 4 (Grade 4)',
-    candidateType: 'SFNA',
-    examIndexNo: 'SFNA/2026/0113',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-10',
-  },
-  // Regular Pupils
-  {
-    id: 'USR-011',
-    fullName: 'Baraka David',
-    role: 'STUDENT',
-    identifier: 'PUP-2026-085',
-    assignedClass: 'Standard 5 (Grade 5)',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-12',
-  },
-  {
-    id: 'USR-012',
-    fullName: 'Amina Rashid',
-    role: 'STUDENT',
-    identifier: 'PUP-2026-092',
-    assignedClass: 'Standard 3 (Grade 3)',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-14',
-  },
-];
 
 const PRIMARY_CLASSES = [
   'Nursery & Day Care',
@@ -228,12 +73,15 @@ const PRIMARY_SUBJECTS = [
   'ICT / Computer Studies (Tehama)',
 ];
 
-export default function ExecutiveManagementPortal() {
-  // Active Executive View tab: Admin, Headteacher, Academic Teacher, Discipline Teacher
-  const [activeExecutiveRole, setActiveExecutiveRole] = useState<ExecutiveRole>('ADMIN');
+export default function SystemAdminPortal() {
+  const router = useRouter();
+
+  // Authentication & Session
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   // Accounts state
-  const [accounts, setAccounts] = useState<UserAccount[]>(INITIAL_ACCOUNTS);
+  const [accounts, setAccounts] = useState<UserAccount[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('ALL');
 
@@ -263,6 +111,90 @@ export default function ExecutiveManagementPortal() {
     setNotification(null);
   }, []);
 
+  // 1. Strict Security Guard: ONLY role === 'ADMIN' enters this page!
+  useEffect(() => {
+    const session = getCurrentSession();
+    if (!session || session.role !== 'ADMIN') {
+      setIsAuthorized(false);
+      triggerNotification(
+        'error',
+        'Ufikiaji Umezuiwa (Access Restricted)',
+        'Eneo hili la Usimamizi Mkuu wa Mfumo ni la Admin pekee. Mwalimu Mkuu anasimamia walimu wake pekee kupitia Portal ya Mwalimu.'
+      );
+      return;
+    }
+
+    setIsAuthorized(true);
+    setCurrentUser(session);
+    setAccounts(getStoredAccounts());
+  }, [triggerNotification]);
+
+  // Toggle Subject in Add Modal
+  const toggleModalSubject = (sub: string) => {
+    setNewSelectedSubjects((prev) =>
+      prev.includes(sub)
+        ? prev.length > 1
+          ? prev.filter((s) => s !== sub)
+          : prev
+        : [...prev, sub]
+    );
+  };
+
+  // Add Account Handler
+  const handleAddAccount = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!newFullName.trim() || !newIdentifier.trim()) {
+      triggerNotification('warning', 'Taarifa Hazijakamilika', 'Tafadhali weka jina kamili na namba ya kitambulisho au usajili.');
+      return;
+    }
+
+    const newAcc: UserAccount = {
+      id: `USR-${Date.now().toString().slice(-4)}`,
+      fullName: newFullName.trim(),
+      role: newRole,
+      identifier: newIdentifier.trim(),
+      email: newEmail.trim() || undefined,
+      phone: newPhone.trim() || undefined,
+      assignedClass: ['STUDENT', 'CANDIDATE', 'TEACHER', 'ACADEMIC'].includes(newRole) ? newAssignedClass : undefined,
+      subjects: ['TEACHER', 'ACADEMIC', 'DISCIPLINE', 'HEADTEACHER'].includes(newRole) ? newSelectedSubjects : undefined,
+      candidateType: newRole === 'CANDIDATE' ? newCandidateType : undefined,
+      examIndexNo: newRole === 'CANDIDATE' ? (newExamIndexNo.trim() || newIdentifier.trim()) : undefined,
+      status: 'ACTIVE',
+      joinedDate: new Date().toISOString().split('T')[0],
+    };
+
+    const updated = [newAcc, ...accounts];
+    setAccounts(updated);
+    setStoredAccounts(updated);
+    setShowAddModal(false);
+
+    // Reset Form
+    setNewFullName('');
+    setNewIdentifier('');
+    setNewEmail('');
+    setNewPhone('');
+    setNewExamIndexNo('');
+
+    triggerNotification('success', 'Akaunti Imesajiliwa', `Mtumiaji ${newAcc.fullName} amesajiliwa kikamilifu kama ${newAcc.role.replace('_', ' ')}.`);
+  };
+
+  // Delete Account Handler
+  const confirmDeleteAccount = () => {
+    if (!accountToDelete) return;
+    const updated = accounts.filter((a) => a.id !== accountToDelete.id);
+    setAccounts(updated);
+    setStoredAccounts(updated);
+    const deletedName = accountToDelete.fullName;
+    setAccountToDelete(null);
+    triggerNotification('info', 'Akaunti Imefutwa', `${deletedName} ameondolewa moja kwa moja kwenye mfumo wa shule.`);
+  };
+
+  const handleLogout = () => {
+    clearCurrentSession();
+    router.push('/');
+  };
+
   // Filtered Accounts
   const filteredAccounts = useMemo(() => {
     return accounts.filter((acc) => {
@@ -291,79 +223,41 @@ export default function ExecutiveManagementPortal() {
 
   // Statistics
   const stats = useMemo(() => {
-    const totalStaff = accounts.filter((a) => ['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER'].includes(a.role)).length;
+    const totalStaff = accounts.filter((a) => ['TEACHER', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(a.role)).length;
     const totalLeadership = accounts.filter((a) => ['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(a.role)).length;
     const totalCandidates = accounts.filter((a) => a.role === 'CANDIDATE').length;
     const totalRegularPupils = accounts.filter((a) => a.role === 'STUDENT').length;
     return { totalStaff, totalLeadership, totalCandidates, totalRegularPupils };
   }, [accounts]);
 
-  // Toggle Subject in Add Modal
-  const toggleModalSubject = (sub: string) => {
-    setNewSelectedSubjects((prev) =>
-      prev.includes(sub)
-        ? prev.length > 1
-          ? prev.filter((s) => s !== sub)
-          : prev
-        : [...prev, sub]
+  // If unauthorized, block view with centered small blue modal
+  if (isAuthorized === false) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+        {notification && (
+          <div className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-6 shadow-2xl text-center space-y-4">
+            <AlertCircle className="w-8 h-8 text-rose-400 mx-auto" />
+            <h3 className="text-base font-bold">{notification.title}</h3>
+            <p className="text-xs text-blue-100/90 leading-relaxed">{notification.message}</p>
+            <Link
+              href="/teacher"
+              className="block w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-xs transition-colors"
+            >
+              Rudi kwenye Portal ya Walimu
+            </Link>
+          </div>
+        )}
+      </div>
     );
-  };
-
-  // Add Account Handler
-  const handleAddAccount = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newFullName.trim() || !newIdentifier.trim()) {
-      triggerNotification('warning', 'Missing Details', 'Please provide a full name and unique staff or admission number.');
-      return;
-    }
-
-    const newAcc: UserAccount = {
-      id: `USR-${Date.now().toString().slice(-4)}`,
-      fullName: newFullName.trim(),
-      role: newRole,
-      identifier: newIdentifier.trim(),
-      email: newEmail.trim() || undefined,
-      phone: newPhone.trim() || undefined,
-      assignedClass: ['STUDENT', 'CANDIDATE', 'TEACHER', 'ACADEMIC'].includes(newRole) ? newAssignedClass : undefined,
-      subjects: ['TEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(newRole) ? newSelectedSubjects : undefined,
-      candidateType: newRole === 'CANDIDATE' ? newCandidateType : undefined,
-      examIndexNo: newRole === 'CANDIDATE' ? (newExamIndexNo.trim() || newIdentifier.trim()) : undefined,
-      status: 'ACTIVE',
-      joinedDate: new Date().toISOString().split('T')[0],
-    };
-
-    setAccounts((prev) => [newAcc, ...prev]);
-    setShowAddModal(false);
-
-    // Reset Form
-    setNewFullName('');
-    setNewIdentifier('');
-    setNewEmail('');
-    setNewPhone('');
-    setNewExamIndexNo('');
-
-    triggerNotification('success', 'Account Added', `Successfully provisioned ${newAcc.fullName} as ${newAcc.role.replace('_', ' ')}.`);
-  };
-
-  // Delete Account Handler
-  const confirmDeleteAccount = () => {
-    if (!accountToDelete) return;
-    setAccounts((prev) => prev.filter((a) => a.id !== accountToDelete.id));
-    const deletedName = accountToDelete.fullName;
-    setAccountToDelete(null);
-    triggerNotification('info', 'Account Removed', `${deletedName} has been permanently deleted from the school system.`);
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col">
-      {/* ===================================================================== */}
-      {/* 1. CENTERED SMALL BLUE NOTIFICATION MODAL */}
-      {/* ===================================================================== */}
+      {/* 1. Centered Small Blue Notification Modal */}
       {notification && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
           <div
-            className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-5 shadow-2xl border border-blue-500/30 transform transition-all animate-scale-in text-center space-y-3"
+            className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-5 shadow-2xl border border-blue-500/30 text-center space-y-3 animate-scale-in"
             role="alert"
           >
             <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mx-auto text-blue-300">
@@ -372,12 +266,10 @@ export default function ExecutiveManagementPortal() {
               {notification.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
               {notification.type === 'info' && <Info className="w-5 h-5 text-blue-300" />}
             </div>
-
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white tracking-wide">{notification.title}</h3>
+              <h3 className="text-sm font-bold tracking-wide">{notification.title}</h3>
               <p className="text-xs text-blue-100/90 leading-relaxed px-2">{notification.message}</p>
             </div>
-
             <button
               type="button"
               onClick={dismissNotification}
@@ -389,9 +281,7 @@ export default function ExecutiveManagementPortal() {
         </div>
       )}
 
-      {/* ===================================================================== */}
-      {/* 2. DELETE CONFIRMATION MODAL (Small Blue Form at Center) */}
-      {/* ===================================================================== */}
+      {/* 2. Delete Confirmation Modal (Small Blue Form at Center) */}
       {accountToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
           <div className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-5 shadow-2xl border border-rose-500/30 text-center space-y-3 animate-scale-in">
@@ -399,9 +289,9 @@ export default function ExecutiveManagementPortal() {
               <Trash2 className="w-5 h-5" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white">Delete User Account?</h3>
+              <h3 className="text-sm font-bold text-white">Thibitisha Kufuta Akaunti?</h3>
               <p className="text-xs text-blue-100/90 leading-relaxed">
-                Are you sure you want to permanently remove <span className="font-bold text-rose-300">{accountToDelete.fullName}</span> ({accountToDelete.role}) from the school database?
+                Je, una uhakika unataka kumfuta kabisa <span className="font-bold text-rose-300">{accountToDelete.fullName}</span> ({accountToDelete.role}) kutoka kwenye mfumo wa shule?
               </p>
             </div>
             <div className="flex gap-2 pt-1">
@@ -410,23 +300,21 @@ export default function ExecutiveManagementPortal() {
                 onClick={() => setAccountToDelete(null)}
                 className="flex-1 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold transition-all"
               >
-                Cancel
+                Ghairi (Cancel)
               </button>
               <button
                 type="button"
                 onClick={confirmDeleteAccount}
                 className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all shadow-md shadow-rose-900/40"
               >
-                Confirm Delete
+                Thibitisha Kufuta
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ===================================================================== */}
-      {/* 3. ADD ACCOUNT MODAL */}
-      {/* ===================================================================== */}
+      {/* 3. Add Account Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
           <div className="w-full max-w-lg bg-white rounded-3xl border border-emerald-100 shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -436,8 +324,8 @@ export default function ExecutiveManagementPortal() {
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800">Add School Account</h3>
-                  <p className="text-[11px] text-slate-500">Auto-provision teachers, headteachers, students, or candidates</p>
+                  <h3 className="text-sm font-bold text-slate-800">Sajili Mtumiaji Mpya (Add Account)</h3>
+                  <p className="text-[11px] text-slate-500">Admin husajili walimu, wakuu wa shule, wanafunzi, au watahiniwa</p>
                 </div>
               </div>
               <button
@@ -451,30 +339,30 @@ export default function ExecutiveManagementPortal() {
 
             <form onSubmit={handleAddAccount} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Select Role</label>
+                <label className="block font-semibold text-slate-700 mb-1">Chagua Jukumu (Role)</label>
                 <select
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value as UserAccount['role'])}
                   className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="TEACHER">Class / Subject Teacher</option>
-                  <option value="HEADTEACHER">Mwalimu Mkuu (Headteacher)</option>
+                  <option value="TEACHER">Mwalimu wa Darasa (Class Teacher)</option>
+                  <option value="HEADTEACHER">Mwalimu Mkuu (Headteacher / Principal)</option>
                   <option value="ACADEMIC">Mwalimu wa Taaluma (Academic Teacher)</option>
                   <option value="DISCIPLINE">Mwalimu wa Nidhamu (Discipline Teacher)</option>
-                  <option value="CANDIDATE">National Exam Candidate (PSLE / SFNA)</option>
-                  <option value="STUDENT">Regular Primary Pupil</option>
-                  <option value="ADMIN">School System Admin</option>
+                  <option value="CANDIDATE">Mtahiniwa wa Taifa (PSLE / SFNA Candidate)</option>
+                  <option value="STUDENT">Mwanafunzi wa Kawaida (Regular Pupil)</option>
+                  <option value="ADMIN">Msimamizi wa Mfumo (School System Admin)</option>
                 </select>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Full Name</label>
+                <label className="block font-semibold text-slate-700 mb-1">Jina Kamili</label>
                 <input
                   type="text"
                   required
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder={['STUDENT', 'CANDIDATE'].includes(newRole) ? 'e.g. Kelvin Shirima' : 'e.g. Mwl. Augustine Mrosso'}
+                  placeholder={['STUDENT', 'CANDIDATE'].includes(newRole) ? 'k.m. Kelvin Shirima' : 'k.m. Mwl. Augustine Mrosso'}
                   className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -482,80 +370,72 @@ export default function ExecutiveManagementPortal() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
-                    {['STUDENT', 'CANDIDATE'].includes(newRole) ? 'Admission / Reg No' : 'Staff ID / TSC No'}
+                    {['STUDENT', 'CANDIDATE'].includes(newRole) ? 'Namba ya Usajili (Adm No)' : 'Staff ID / TSC No'}
                   </label>
                   <input
                     type="text"
                     required
                     value={newIdentifier}
                     onChange={(e) => setNewIdentifier(e.target.value)}
-                    placeholder={['STUDENT', 'CANDIDATE'].includes(newRole) ? 'e.g. PUP-2026-099' : 'e.g. TCH-2026-045'}
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-mono uppercase text-slate-800 focus:outline-none focus:border-emerald-500"
+                    placeholder={['STUDENT', 'CANDIDATE'].includes(newRole) ? 'PUP-2026-095' : 'TCH-2026-020'}
+                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Mobile Phone</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Namba ya Simu</label>
                   <input
                     type="tel"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                    placeholder="e.g. +255 779 304 500"
+                    placeholder="+255 7..."
                     className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
 
-              {!['STUDENT', 'CANDIDATE'].includes(newRole) && (
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Official Email Address</label>
-                  <input
-                    type="email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="e.g. teacher@primaryschool.ac.tz"
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Barua Pepe (Email)</label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="mfano@primaryschool.ac.tz"
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
 
-              {/* CANDIDATE SPECIFIC FIELDS */}
+              {/* CANDIDATE SPECIFIC */}
               {newRole === 'CANDIDATE' && (
-                <div className="p-3 bg-amber-50/80 rounded-2xl border border-amber-200/80 space-y-2.5">
-                  <div className="flex items-center gap-1.5 text-amber-800 font-bold">
-                    <Award className="w-4 h-4 text-amber-600" />
-                    <span>Candidate Examination Designation</span>
+                <div className="grid grid-cols-2 gap-3 bg-purple-50/50 p-3 rounded-2xl border border-purple-100">
+                  <div>
+                    <label className="block font-semibold text-purple-900 mb-1">Aina ya Mtihani</label>
+                    <select
+                      value={newCandidateType}
+                      onChange={(e) => setNewCandidateType(e.target.value as 'PSLE' | 'SFNA')}
+                      className="w-full rounded-xl bg-white border border-purple-200 px-3 py-2 text-xs text-slate-800"
+                    >
+                      <option value="PSLE">PSLE (Standard 7)</option>
+                      <option value="SFNA">SFNA (Standard 4)</option>
+                    </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">Exam Type</label>
-                      <select
-                        value={newCandidateType}
-                        onChange={(e) => setNewCandidateType(e.target.value as 'PSLE' | 'SFNA')}
-                        className="w-full rounded-xl bg-white border border-amber-200 px-2.5 py-1.5 text-xs text-slate-800"
-                      >
-                        <option value="PSLE">PSLE (Standard 7 National Exam)</option>
-                        <option value="SFNA">SFNA (Standard 4 National Assessment)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">Exam Index Number</label>
-                      <input
-                        type="text"
-                        value={newExamIndexNo}
-                        onChange={(e) => setNewExamIndexNo(e.target.value)}
-                        placeholder="e.g. PSLE/2026/0430"
-                        className="w-full rounded-xl bg-white border border-amber-200 px-2.5 py-1.5 text-xs font-mono uppercase text-slate-800"
-                      />
-                    </div>
+                  <div>
+                    <label className="block font-semibold text-purple-900 mb-1">Index Number (NECTA)</label>
+                    <input
+                      type="text"
+                      value={newExamIndexNo}
+                      onChange={(e) => setNewExamIndexNo(e.target.value)}
+                      placeholder="PSLE-2026-0435"
+                      className="w-full rounded-xl bg-white border border-purple-200 px-3 py-2 text-xs text-slate-800"
+                    />
                   </div>
                 </div>
               )}
 
-              {/* CLASS SELECTION FOR TEACHERS & STUDENTS */}
+              {/* CLASS ASSIGNMENT */}
               {['STUDENT', 'CANDIDATE', 'TEACHER', 'ACADEMIC'].includes(newRole) && (
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Assigned Class / Grade</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Darasa Analohusika</label>
                   <select
                     value={newAssignedClass}
                     onChange={(e) => setNewAssignedClass(e.target.value)}
@@ -571,12 +451,12 @@ export default function ExecutiveManagementPortal() {
               )}
 
               {/* SUBJECT SELECTION FOR TEACHERS */}
-              {['TEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(newRole) && (
+              {['TEACHER', 'ACADEMIC', 'DISCIPLINE', 'HEADTEACHER'].includes(newRole) && (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="block font-semibold text-slate-700">Teaching Subjects</label>
+                    <label className="block font-semibold text-slate-700">Masomo ya Kufundisha</label>
                     <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                      {newSelectedSubjects.length} selected
+                      {newSelectedSubjects.length} yamechaguliwa
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1 p-2.5 rounded-xl bg-slate-50 border border-slate-200 max-h-32 overflow-y-auto">
@@ -608,14 +488,14 @@ export default function ExecutiveManagementPortal() {
                   onClick={() => setShowAddModal(false)}
                   className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all"
                 >
-                  Cancel
+                  Ghairi
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold transition-all shadow-md shadow-emerald-700/20 flex items-center justify-center gap-1.5"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Create Account</span>
+                  <span>Sajili Akaunti</span>
                 </button>
               </div>
             </form>
@@ -623,13 +503,10 @@ export default function ExecutiveManagementPortal() {
         </div>
       )}
 
-      {/* ===================================================================== */}
-      {/* 4. TOP EXECUTIVE NAVIGATION & ROLE SWITCHER */}
-      {/* ===================================================================== */}
+      {/* Top Header */}
       <header className="bg-white/90 backdrop-blur-md border-b border-emerald-200/80 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            {/* School Crest & Identity */}
             <div className="flex items-center gap-3">
               <Link
                 href="/"
@@ -643,112 +520,61 @@ export default function ExecutiveManagementPortal() {
                 <div className="flex items-center gap-2">
                   <span className="text-base font-black text-slate-800 tracking-tight">PRIMARY &amp; NURSERY SCHOOL</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-200">
-                    Executive Portal
+                    School System Admin Portal
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 font-medium">
-                  Official Commercial Education Management Blueprint • Dar es Salaam
+                  Usimamizi Mkuu wa Akaunti za Watumiaji Wote (Users Provisioning &amp; Deletion)
                 </p>
               </div>
             </div>
 
-            {/* Back to Home & Portal Switcher Notice */}
-            <div className="flex items-center gap-2.5 self-end md:self-auto">
+            <div className="flex items-center gap-3 self-end md:self-auto">
+              <div className="text-right hidden sm:block">
+                <span className="text-xs font-bold text-slate-800 block">{currentUser?.fullName}</span>
+                <span className="text-[10px] font-mono text-emerald-700 font-semibold">{currentUser?.identifier} (SYSTEM ADMIN)</span>
+              </div>
+
               <Link
-                href="/"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all border border-slate-200"
+                href="/teacher"
+                className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200/80 transition-all flex items-center gap-1"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Return to Login</span>
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Portal ya Mwalimu</span>
               </Link>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold transition-all border border-slate-200 hover:border-rose-200"
+                title="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Logout</span>
+              </button>
             </div>
-          </div>
-
-          {/* EXECUTIVE ROLE SWITCHER TABS (Instantly view features of each leadership position) */}
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
-            <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider shrink-0 mr-1">
-              Active Executive View:
-            </span>
-
-            {/* School Admin */}
-            <button
-              type="button"
-              onClick={() => setActiveExecutiveRole('ADMIN')}
-              className={`px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
-                activeExecutiveRole === 'ADMIN'
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-emerald-50 text-emerald-900 border border-emerald-200/80 hover:bg-emerald-100'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>School Admin (Uongozi wa Juu)</span>
-            </button>
-
-            {/* Mwalimu Mkuu */}
-            <button
-              type="button"
-              onClick={() => setActiveExecutiveRole('HEADTEACHER')}
-              className={`px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
-                activeExecutiveRole === 'HEADTEACHER'
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-emerald-50 text-emerald-900 border border-emerald-200/80 hover:bg-emerald-100'
-              }`}
-            >
-              <Award className="w-3.5 h-3.5" />
-              <span>Mwalimu Mkuu (Headteacher)</span>
-            </button>
-
-            {/* Mwalimu wa Taaluma */}
-            <button
-              type="button"
-              onClick={() => setActiveExecutiveRole('ACADEMIC')}
-              className={`px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
-                activeExecutiveRole === 'ACADEMIC'
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-emerald-50 text-emerald-900 border border-emerald-200/80 hover:bg-emerald-100'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Mwalimu wa Taaluma (Academic)</span>
-            </button>
-
-            {/* Mwalimu wa Nidhamu */}
-            <button
-              type="button"
-              onClick={() => setActiveExecutiveRole('DISCIPLINE')}
-              className={`px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0 ${
-                activeExecutiveRole === 'DISCIPLINE'
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-emerald-50 text-emerald-900 border border-emerald-200/80 hover:bg-emerald-100'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>Mwalimu wa Nidhamu (Discipline)</span>
-            </button>
           </div>
         </div>
       </header>
 
-      {/* ===================================================================== */}
-      {/* 5. MAIN EXECUTIVE CONTENT */}
-      {/* ===================================================================== */}
+      {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6">
 
-        {/* TOP METRIC CARDS */}
+        {/* Top Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="bg-white/90 p-4 rounded-2xl border border-emerald-100 shadow-xs space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Teaching Staff</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Walimu Shuleni</span>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-black text-slate-800">{stats.totalStaff}</span>
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
                 <Users className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-[10px] text-emerald-700 font-semibold">{stats.totalLeadership} in Executive Leadership</span>
+            <span className="text-[10px] text-emerald-700 font-semibold">Chini ya Mwalimu Mkuu</span>
           </div>
 
           <div className="bg-white/90 p-4 rounded-2xl border border-emerald-100 shadow-xs space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Exam Candidates</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Watahiniwa wa Taifa</span>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-black text-amber-700">{stats.totalCandidates}</span>
               <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
@@ -759,247 +585,42 @@ export default function ExecutiveManagementPortal() {
           </div>
 
           <div className="bg-white/90 p-4 rounded-2xl border border-emerald-100 shadow-xs space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Primary Enrolment</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Wanafunzi wa Kawaida</span>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-black text-slate-800">{stats.totalRegularPupils + stats.totalCandidates}</span>
+              <span className="text-2xl font-black text-slate-800">{stats.totalRegularPupils}</span>
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
                 <GraduationCap className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-[10px] text-emerald-700 font-semibold">Nursery to Standard 7</span>
+            <span className="text-[10px] text-emerald-700 font-semibold">Nursery hadi Standard 6</span>
           </div>
 
           <div className="bg-white/90 p-4 rounded-2xl border border-emerald-100 shadow-xs space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">System Security</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Jumla ya Akaunti</span>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-emerald-700">100% Secure</span>
+              <span className="text-2xl font-black text-slate-800">{accounts.length}</span>
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
                 <ShieldCheck className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-[10px] text-slate-500 font-medium">Role-Based Access Control</span>
+            <span className="text-[10px] text-slate-500 font-medium">Zinasimamiwa na Admin</span>
           </div>
         </div>
 
-        {/* =================================================================== */}
-        {/* ROLE SPECIFIC DASHBOARD VIEW */}
-        {/* =================================================================== */}
-
-        {/* 1. MWALIMU MKUU (HEADTEACHER) VIEW */}
-        {activeExecutiveRole === 'HEADTEACHER' && (
-          <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 mb-1.5">
-                  <Award className="w-3.5 h-3.5" />
-                  <span>Mwalimu Mkuu (Headteacher / Principal) Office</span>
-                </div>
-                <h2 className="text-xl font-black text-slate-800">Executive School Governance &amp; Approvals</h2>
-                <p className="text-xs text-slate-600">
-                  Oversee school academic standing, approve end-of-term broadsheets, and authorize official school circulars.
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => triggerNotification('success', 'Official Endorsement', 'End-of-term results for Standards 1-7 have been approved and signed with the Headteacher Official Stamp.')}
-                  className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Approve &amp; Sign Term Results</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-xs font-bold text-slate-700">Teacher Performance &amp; Syllabus Log</span>
-                <p className="text-[11px] text-slate-500">
-                  All 6 assigned primary teachers have submitted weekly lesson plans and scheme of work logs.
-                </p>
-                <div className="pt-2">
-                  <span className="text-xs font-bold text-emerald-700">98% Syllabus Coverage On Schedule</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-xs font-bold text-slate-700">Candidate Preparation Status</span>
-                <p className="text-[11px] text-slate-500">
-                  Standard 7 PSLE Mock Examination series 1 completed. School average: 218.4 / 250 (Grade A).
-                </p>
-                <div className="pt-2">
-                  <span className="text-xs font-bold text-amber-700">All 4 Candidates Verified in NECTA Portal</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-xs font-bold text-slate-700">Child Safeguarding &amp; Welfare</span>
-                <p className="text-[11px] text-slate-500">
-                  Daily safety audit completed. Zero major disciplinary issues reported by Mwalimu wa Nidhamu today.
-                </p>
-                <div className="pt-2">
-                  <span className="text-xs font-bold text-emerald-700">Campus Status: Fully Safe &amp; Orderly</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 2. MWALIMU WA TAALUMA (ACADEMIC TEACHER) VIEW */}
-        {activeExecutiveRole === 'ACADEMIC' && (
-          <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 mb-1.5">
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>Ofisi ya Mwalimu wa Taaluma (Academic Master)</span>
-                </div>
-                <h2 className="text-xl font-black text-slate-800">Academic Curricula, Examinations &amp; Candidate Tracking</h2>
-                <p className="text-xs text-slate-600">
-                  Manage examinations, timetable schedules, continuous assessments (CA), and national exam candidate indexing.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => triggerNotification('info', 'Broadsheet Generated', 'Standard Competition Ranking (1, 2, 2, 4) computed for Standard 7 mock examination. Class average: 88.5%')}
-                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm"
-              >
-                <FileText className="w-4 h-4" />
-                <span>Generate Academic Broadsheet</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* National Examination Candidates (PSLE & SFNA) */}
-              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-amber-700" />
-                    <span className="text-xs font-bold text-slate-800">National Exam Candidates Roster</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-full">
-                    {stats.totalCandidates} Candidates Registered
-                  </span>
-                </div>
-
-                <div className="divide-y divide-amber-100 text-xs">
-                  {accounts
-                    .filter((a) => a.role === 'CANDIDATE')
-                    .map((c) => (
-                      <div key={c.id} className="py-2 flex items-center justify-between">
-                        <div>
-                          <span className="font-bold text-slate-800 block">{c.fullName}</span>
-                          <span className="text-[11px] text-slate-500 font-mono">{c.examIndexNo} • {c.assignedClass}</span>
-                        </div>
-                        <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-bold text-[10px] border border-amber-300">
-                          {c.candidateType} Candidate
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Examination Schedule Matrix */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-emerald-700" />
-                    <span className="text-xs font-bold text-slate-800">Primary Examination Schedules</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                    Term 1 Assessments
-                  </span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-800 block">Mid-Term Assessment 2026</span>
-                      <span className="text-[10px] text-slate-500">Standards 1 to 7 • All 9 Subjects</span>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
-                      Marks Entry Open
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-800 block">Standard 7 PSLE Pre-National Mock</span>
-                      <span className="text-[10px] text-slate-500">Grading standard: NECTA Grade A to F</span>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">
-                      Broadsheet Computed
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 3. MWALIMU WA NIDHAMU (DISCIPLINE TEACHER) VIEW */}
-        {activeExecutiveRole === 'DISCIPLINE' && (
-          <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 mb-1.5">
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>Ofisi ya Mwalimu wa Nidhamu (Discipline Master)</span>
-                </div>
-                <h2 className="text-xl font-black text-slate-800">Pupil Conduct, Attendance Register &amp; Welfare</h2>
-                <p className="text-xs text-slate-600">
-                  Track student attendance, school uniform standards, morning roll-call compliance, and parental guidance notices.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => triggerNotification('info', 'Discipline Record', 'Morning roll-call: 99.2% attendance. 3 late arrivals recorded and issued light campus gardening guidance.')}
-                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Record Morning Attendance Log</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-                <span className="font-bold text-slate-700 block">Daily Roll-Call Compliance</span>
-                <span className="text-2xl font-black text-emerald-700 block">99.2%</span>
-                <p className="text-[11px] text-slate-500">Only 2 pupils absent with authorized medical permission.</p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-                <span className="font-bold text-slate-700 block">Uniform &amp; Cleanliness Rating</span>
-                <span className="text-2xl font-black text-emerald-700 block">Grade A</span>
-                <p className="text-[11px] text-slate-500">Morning assembly inspection passed across all standards.</p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-                <span className="font-bold text-slate-700 block">Parent Summons &amp; Guidance</span>
-                <span className="text-2xl font-black text-slate-800 block">0 Pending</span>
-                <p className="text-[11px] text-slate-500">All student guidance matters resolved constructively.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =================================================================== */}
-        {/* 6. COMPLETE AUTOMATED ACCOUNT MANAGEMENT TABLE (ADMIN PRIVILEGE) */}
-        {/* =================================================================== */}
+        {/* COMPLETE AUTOMATED ACCOUNT MANAGEMENT TABLE (ADMIN PRIVILEGE ONLY) */}
         <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-5">
-          {/* Header Controls */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-black text-slate-800">
-                  School Staff, Teachers &amp; Pupil Directory
+                  Daftari Kuu la Watumiaji Wote wa Shule
                 </h3>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
-                  {filteredAccounts.length} Total
+                  {filteredAccounts.length} Zimepatikana
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                School Admin has complete authority to automatically add, manage, and delete accounts for headteachers, teachers, pupils, and candidates.
+              <p className="text-xs text-slate-500 mt-0.5">
+                Admin pekee ndiye anayeweza kuona kila mtumiaji, kutafuta, kusajili, na kumfuta moja kwa moja.
               </p>
             </div>
 
@@ -1011,7 +632,7 @@ export default function ExecutiveManagementPortal() {
                 className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-700/20 transition-all flex items-center gap-1.5"
               >
                 <UserPlus className="w-4 h-4" />
-                <span>Add Account Automatically</span>
+                <span>Ongeza Mtumiaji Mpya (+ Add)</span>
               </button>
             </div>
           </div>
@@ -1024,18 +645,18 @@ export default function ExecutiveManagementPortal() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, ID number, class..."
+                placeholder="Tafuta mtumiaji kwa jina, kitambulisho, darasa, email..."
                 className="w-full rounded-xl bg-slate-50 border border-slate-200 pl-9 pr-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
               />
             </div>
 
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
               {[
-                { id: 'ALL', label: 'All Accounts' },
-                { id: 'LEADERSHIP', label: 'Leadership' },
-                { id: 'TEACHERS', label: 'Teachers' },
-                { id: 'CANDIDATES', label: 'Candidates (Std 4 & 7)' },
-                { id: 'STUDENTS', label: 'Regular Pupils' },
+                { id: 'ALL', label: 'Watumiaji Wote' },
+                { id: 'TEACHERS', label: 'Walimu Pekee' },
+                { id: 'CANDIDATES', label: 'Watahiniwa (PSLE & SFNA)' },
+                { id: 'STUDENTS', label: 'Wanafunzi wa Kawaida' },
+                { id: 'LEADERSHIP', label: 'Uongozi wa Shule' },
               ].map((f) => (
                 <button
                   key={f.id}
@@ -1058,25 +679,26 @@ export default function ExecutiveManagementPortal() {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-4">Account Holder &amp; ID</th>
-                  <th className="py-3 px-4">Role / Title</th>
-                  <th className="py-3 px-4">Class / Assignment</th>
-                  <th className="py-3 px-4">Subjects / Details</th>
-                  <th className="py-3 px-4">Contacts</th>
-                  <th className="py-3 px-4 text-right">Admin Actions</th>
+                  <th className="py-3 px-4">Mtumiaji &amp; Kitambulisho</th>
+                  <th className="py-3 px-4">Jukumu (Role)</th>
+                  <th className="py-3 px-4">Darasa / Mgawo</th>
+                  <th className="py-3 px-4">Masomo / Maelezo</th>
+                  <th className="py-3 px-4">Mawasiliano</th>
+                  <th className="py-3 px-4 text-right">Vitendo vya Admin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
                 {filteredAccounts.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
-                      No accounts found matching your search.
+                      Hakuna akaunti iliyopatikana kulingana na utafutaji wako.
                     </td>
                   </tr>
                 ) : (
                   filteredAccounts.map((acc) => {
                     const isExecutive = ['ADMIN', 'HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(acc.role);
                     const isCandidate = acc.role === 'CANDIDATE';
+                    const isTeacher = acc.role === 'TEACHER';
 
                     return (
                       <tr key={acc.id} className="hover:bg-slate-50/80 transition-colors">
@@ -1101,80 +723,71 @@ export default function ExecutiveManagementPortal() {
                           </div>
                         </td>
 
-                        {/* Role */}
+                        {/* Role Badge */}
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                               acc.role === 'ADMIN'
-                                ? 'bg-purple-50 text-purple-800 border-purple-200'
+                                ? 'bg-slate-900 text-white'
                                 : acc.role === 'HEADTEACHER'
-                                ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                                ? 'bg-amber-100 text-amber-900 border border-amber-300'
                                 : acc.role === 'ACADEMIC'
-                                ? 'bg-blue-50 text-blue-800 border-blue-200'
+                                ? 'bg-blue-100 text-blue-900 border border-blue-300'
                                 : acc.role === 'DISCIPLINE'
-                                ? 'bg-amber-50 text-amber-800 border-amber-200'
-                                : acc.role === 'CANDIDATE'
-                                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                                 : acc.role === 'TEACHER'
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                : 'bg-slate-100 text-slate-700 border-slate-200'
+                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                : acc.role === 'CANDIDATE'
+                                ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                                : 'bg-slate-100 text-slate-700 border border-slate-200'
                             }`}
                           >
-                            {acc.role === 'ADMIN' && 'School Admin'}
-                            {acc.role === 'HEADTEACHER' && 'Mwalimu Mkuu'}
-                            {acc.role === 'ACADEMIC' && 'Mwl. wa Taaluma'}
-                            {acc.role === 'DISCIPLINE' && 'Mwl. wa Nidhamu'}
-                            {acc.role === 'TEACHER' && 'Class Teacher'}
-                            {acc.role === 'CANDIDATE' && `${acc.candidateType} Candidate`}
-                            {acc.role === 'STUDENT' && 'Regular Pupil'}
+                            {acc.role.replace('_', ' ')}
                           </span>
                         </td>
 
                         {/* Class */}
                         <td className="py-3 px-4 text-slate-600 font-medium">
-                          {acc.assignedClass || 'Whole School'}
+                          {acc.assignedClass || (acc.assignedClasses && acc.assignedClasses.join(', ')) || 'Shule Nzima'}
                         </td>
 
                         {/* Subjects / Candidate Info */}
-                        <td className="py-3 px-4">
-                          {isCandidate ? (
-                            <span className="font-mono text-[11px] text-amber-800 font-semibold">
-                              Index: {acc.examIndexNo}
+                        <td className="py-3 px-4 text-slate-500 text-[11px]">
+                          {acc.subjects && acc.subjects.length > 0 ? (
+                            <span className="truncate max-w-[200px] block" title={acc.subjects.join(', ')}>
+                              {acc.subjects.join(', ')}
                             </span>
-                          ) : acc.subjects && acc.subjects.length > 0 ? (
-                            <div className="flex flex-wrap gap-1 max-w-xs">
-                              {acc.subjects.map((s, idx) => (
-                                <span
-                                  key={idx}
-                                  className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold"
-                                >
-                                  {s}
-                                </span>
-                              ))}
-                            </div>
+                          ) : acc.candidateType ? (
+                            <span className="text-purple-700 font-bold">
+                              {acc.candidateType} • Index: {acc.examIndexNo || acc.identifier}
+                            </span>
                           ) : (
-                            <span className="text-slate-400 text-[11px]">School Executive</span>
+                            <span>Usajili wa Kawaida</span>
                           )}
                         </td>
 
                         {/* Contacts */}
-                        <td className="py-3 px-4 text-[11px] text-slate-600">
-                          {acc.email && <div className="truncate max-w-[140px]">{acc.email}</div>}
-                          {acc.phone && <div className="text-slate-500 font-mono">{acc.phone}</div>}
-                          {!acc.email && !acc.phone && <span className="text-slate-400">Institutional</span>}
+                        <td className="py-3 px-4 text-[11px] text-slate-500">
+                          {acc.phone && <div className="font-mono">{acc.phone}</div>}
+                          {acc.email && <div className="text-slate-400 truncate max-w-[150px]">{acc.email}</div>}
+                          {!acc.phone && !acc.email && <span className="text-slate-300">—</span>}
                         </td>
 
-                        {/* Admin Action: Delete */}
+                        {/* Admin Delete Action */}
                         <td className="py-3 px-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setAccountToDelete(acc)}
-                            className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors inline-flex items-center gap-1 text-[11px] font-bold"
-                            title="Delete this account"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Delete</span>
-                          </button>
+                          {acc.role !== 'ADMIN' ? (
+                            <button
+                              type="button"
+                              onClick={() => setAccountToDelete(acc)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors inline-flex items-center gap-1 text-[11px] font-semibold"
+                              title={`Delete ${acc.fullName}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Delete</span>
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-slate-300 font-semibold uppercase pr-2">Protected</span>
+                          )}
                         </td>
                       </tr>
                     );
@@ -1185,13 +798,6 @@ export default function ExecutiveManagementPortal() {
           </div>
         </div>
       </main>
-
-      {/* ===================================================================== */}
-      {/* 7. FOOTER */}
-      {/* ===================================================================== */}
-      <footer className="border-t border-emerald-200/80 bg-white/80 py-4 text-center text-xs text-slate-500 mt-auto">
-        <p>© {new Date().getFullYear()} PRIMARY &amp; NURSERY SCHOOL • Executive Administrative Blueprint</p>
-      </footer>
     </div>
   );
 }

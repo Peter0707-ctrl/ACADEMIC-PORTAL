@@ -41,19 +41,24 @@ export default function TeachingStaffPage() {
 
   return (
     <TeacherShell
-      pageTitle="Orodha ya Walimu & Idara (Teaching Staff Directory)"
-      pageDescription="Orodha kamili ya walimu wote wa shule ya msingi, masomo na madarasa wanayofundisha, na mawasiliano yao ya kikazi."
+      pageTitle="Walimu Wangu & Idara (Teaching Staff Directory)"
+      pageDescription="Ofisi ya Mwalimu Mkuu: Orodha ya walimu unaowasimamia shuleni (Mwalimu wa Taaluma, Nidhamu, na Walimu wa Madarasa). Usimamizi na ufutaji wa akaunti zote za mfumo hufanywa na Admin pekee."
     >
       <div className="space-y-6 animate-fade-in">
         {/* Header and Filter */}
         <div className="bg-white/95 rounded-3xl border border-emerald-200/80 p-6 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-black text-slate-800">
-                Wafanyakazi wa Taaluma na Uongozi ({filteredTeachers.length} Walimu)
-              </h3>
-              <p className="text-xs text-slate-500">
-                Walimu wote wamesajiliwa kwenye mfumo na wana ratiba za ufundishaji zilizoidhinishwa.
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-black text-slate-800">
+                  Walimu Chini ya Mwalimu Mkuu ({filteredTeachers.length} Walimu)
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
+                  Walimu Pekee (Teachers Only)
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Mwalimu Mkuu anaangalia ratiba za walimu wake, masomo yao, na madarasa wanayofundisha bila kuchanganywa na watumiaji wengine.
               </p>
             </div>
 

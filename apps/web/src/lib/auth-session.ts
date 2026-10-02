@@ -240,6 +240,8 @@ export function saveStoredAccounts(accounts: UserAccount[]): void {
   }
 }
 
+export const setStoredAccounts = saveStoredAccounts;
+
 // Get Current Logged-in Session
 export function getCurrentSession(): UserAccount | null {
   if (typeof window === 'undefined') return null;
