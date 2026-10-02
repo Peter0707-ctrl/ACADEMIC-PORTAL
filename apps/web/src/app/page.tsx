@@ -393,7 +393,10 @@ export default function PrimaryPortalHomePage() {
   };
 
   // Instant Test Login Handler (Headteacher & Leaders enter as Teacher Leaders)
-  const handleInstantTestLogin = (role: 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'ADMIN' | 'TEACHER' | 'CANDIDATE', teacherId?: string) => {
+  const handleInstantTestLogin = (
+    role: 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'ADMIN' | 'TEACHER' | 'CANDIDATE' | 'PARENT',
+    teacherId?: string
+  ) => {
     const accounts = getStoredAccounts();
     const target = teacherId
       ? accounts.find((a) => a.id === teacherId)
@@ -408,6 +411,8 @@ export default function PrimaryPortalHomePage() {
         router.push('/teacher');
       } else if (['STUDENT', 'CANDIDATE'].includes(target.role)) {
         router.push('/student');
+      } else if (target.role === 'PARENT') {
+        router.push('/parent');
       }
     }
   };
@@ -846,14 +851,14 @@ export default function PrimaryPortalHomePage() {
                   <span>Mwalimu Mkuu</span>
                 </button>
 
-                {/* School Admin -> /admin */}
+                {/* Mzazi / Mlezi -> /parent */}
                 <button
                   type="button"
-                  onClick={() => handleInstantTestLogin('ADMIN')}
-                  className="p-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
+                  onClick={() => handleInstantTestLogin('PARENT')}
+                  className="p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-950 hover:bg-purple-100 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>School Admin (IT)</span>
+                  <Heart className="w-3.5 h-3.5 text-purple-700" />
+                  <span>Mzazi / Mlezi</span>
                 </button>
 
                 {/* Mwl wa Taaluma -> /teacher */}
@@ -886,14 +891,14 @@ export default function PrimaryPortalHomePage() {
                   <span>Mwalimu wa Darasa</span>
                 </button>
 
-                {/* Mtahiniwa NECTA -> /student */}
+                {/* Mwanafunzi -> /student */}
                 <button
                   type="button"
                   onClick={() => handleInstantTestLogin('CANDIDATE')}
                   className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-800 hover:border-emerald-300 font-bold text-center transition-all shadow-2xs flex items-center justify-center gap-1.5"
                 >
-                  <GraduationCap className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Mtahiniwa (PSLE)</span>
+                  <GraduationCap className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Mwanafunzi (Student)</span>
                 </button>
               </div>
             </div>
