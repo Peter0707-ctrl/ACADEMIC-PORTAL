@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   FolderArchive,
@@ -119,6 +119,28 @@ export default function SchoolSecretaryRecordsPage() {
     });
   }, [documents, selectedCategory, searchQuery]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem('school_records_documents_v1');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge with initial documents
+          const merged = [...parsed];
+          INITIAL_DOCUMENTS.forEach((init) => {
+            if (!merged.some((m) => m.id === init.id)) {
+              merged.push(init);
+            }
+          });
+          setDocuments(merged);
+        }
+      } else {
+        localStorage.setItem('school_records_documents_v1', JSON.stringify(INITIAL_DOCUMENTS));
+      }
+    } catch {}
+  }, []);
+
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
@@ -135,7 +157,11 @@ export default function SchoolSecretaryRecordsPage() {
       accessLevel: newAccess,
     };
 
-    setDocuments([newDoc, ...documents]);
+    const updated = [newDoc, ...documents];
+    setDocuments(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('school_records_documents_v1', JSON.stringify(updated));
+    }
     setShowUploadModal(false);
     setNewTitle('');
     setActiveNotice(`Waraka "${newDoc.title}" (${newDoc.version}) umehifadhiwa kikamilifu kwenye Masijala ya Shule.`);
@@ -248,7 +274,14 @@ export default function SchoolSecretaryRecordsPage() {
                           <FileText className="w-4 h-4" />
                         </div>
                         <div>
-                          <span className="font-bold text-slate-900 block leading-tight">{doc.title}</span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-slate-900 leading-tight">{doc.title}</span>
+                            {(doc.id.includes('sealed') || doc.title.includes('Muhuri')) && (
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-800 text-amber-200 text-[9px] font-black border border-emerald-700">
+                                ★ Muhuri Rasmi wa Mkuu wa Shule
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] text-slate-500 font-mono">{doc.fileName}</span>
                         </div>
                       </div>

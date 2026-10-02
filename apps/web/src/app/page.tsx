@@ -578,56 +578,59 @@ export default function PrimaryPortalHomePage() {
           onClick={dismissNotification}
         >
           <div
-            className="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] border border-blue-400/35 rounded-2xl p-5 shadow-2xl text-white relative animate-scale-in"
+            className={`w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center space-y-4 relative animate-scale-in border-2 ${
+              notification.type === 'error'
+                ? 'bg-rose-50 border-rose-300 text-rose-950 shadow-rose-950/10'
+                : 'bg-sky-50 border-sky-300 text-sky-950 shadow-sky-950/10'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={dismissNotification}
-              className="absolute top-3.5 right-3.5 text-blue-300 hover:text-white transition-colors p-1 rounded-lg hover:bg-blue-900/50"
+              className="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg"
               aria-label="Close notification"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className="flex items-start gap-3">
-              <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
-                  notification.type === 'error'
-                    ? 'bg-rose-950/80 border-rose-400/40 text-rose-300'
-                    : notification.type === 'success'
-                    ? 'bg-emerald-950/80 border-emerald-400/40 text-emerald-300'
-                    : notification.type === 'warning'
-                    ? 'bg-amber-950/80 border-amber-400/40 text-amber-300'
-                    : 'bg-blue-900/80 border-blue-400/40 text-blue-300'
-                }`}
-              >
-                {notification.type === 'error' ? (
-                  <AlertCircle className="w-5 h-5" />
-                ) : notification.type === 'success' ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  <Info className="w-5 h-5" />
-                )}
-              </div>
-              <div className="pr-4">
-                <h4 className="text-sm font-bold text-white tracking-tight leading-snug">
-                  {notification.title}
-                </h4>
-                <p className="text-xs text-blue-100/80 mt-1 leading-relaxed">
-                  {notification.message}
-                </p>
-              </div>
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto border ${
+                notification.type === 'error'
+                  ? 'bg-rose-100 border-rose-300 text-rose-600'
+                  : 'bg-sky-100 border-sky-300 text-sky-700'
+              }`}
+            >
+              {notification.type === 'error' ? (
+                <AlertCircle className="w-6 h-6" />
+              ) : (
+                <CheckCircle2 className="w-6 h-6" />
+              )}
             </div>
 
-            <div className="mt-4 pt-3 border-t border-blue-900/60 flex justify-end">
-              <button
-                type="button"
-                onClick={dismissNotification}
-                className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-sm"
+            <div className="space-y-1.5">
+              <h3 className="text-base font-black tracking-tight">
+                {notification.title}
+              </h3>
+              <p
+                className={`text-xs leading-relaxed px-2 font-medium ${
+                  notification.type === 'error' ? 'text-rose-800' : 'text-sky-800'
+                }`}
               >
-                Understood
-              </button>
+                {notification.message}
+              </p>
             </div>
+
+            <button
+              type="button"
+              onClick={dismissNotification}
+              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white transition-all shadow-md ${
+                notification.type === 'error'
+                  ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-900/20'
+                  : 'bg-sky-700 hover:bg-sky-800 shadow-sky-900/20'
+              }`}
+            >
+              Nimeelewa (Sawa)
+            </button>
           </div>
         </div>
       )}

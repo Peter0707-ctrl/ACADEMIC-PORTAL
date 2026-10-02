@@ -71,6 +71,24 @@ export default function TeacherShell({
     setNotification(null);
   }, []);
 
+  useEffect(() => {
+    const handleCustomNotify = (e: Event) => {
+      const customEvent = e as CustomEvent<{
+        type: 'info' | 'success' | 'warning' | 'error';
+        title: string;
+        message: string;
+      }>;
+      if (customEvent.detail) {
+        triggerNotification(customEvent.detail.type, customEvent.detail.title, customEvent.detail.message);
+      }
+    };
+
+    window.addEventListener('academic_portal_notify', handleCustomNotify);
+    return () => {
+      window.removeEventListener('academic_portal_notify', handleCustomNotify);
+    };
+  }, [triggerNotification]);
+
   // 1. Session & Access Verification
   useEffect(() => {
     const accounts = getStoredAccounts();
@@ -94,12 +112,33 @@ export default function TeacherShell({
     }
 
     // Role-specific check if page requires specific leadership role
-    if (requiredRole && session.role !== requiredRole && session.leadershipRole !== requiredRole && session.role !== 'ADMIN') {
+    const isExecutive =
+      ['HEADTEACHER', 'SECOND_MASTER'].includes(session.role) ||
+      ['HEADTEACHER', 'SECOND_MASTER'].includes(session.leadershipRole || '');
+
+    if (requiredRole && requiredRole === 'HEADTEACHER' && !isExecutive && session.role !== 'ADMIN') {
       setIsAuthorized(false);
       triggerNotification(
         'error',
         'Eneo Lililozuiliwa',
-        `Sehemu hii imehifadhiwa mahsusi kwa ${requiredRole === 'HEADTEACHER' ? 'Mwalimu Mkuu' : requiredRole === 'ACADEMIC' ? 'Mwalimu wa Taaluma' : 'Mwalimu wa Nidhamu'}. Utaelekezwa kwenye Dashibodi Kuu.`
+        `Sehemu hii imehifadhiwa mahsusi kwa Uongozi wa Shule (Mwalimu Mkuu & Makamu Mkuu wa Shule). Utaelekezwa kwenye Dashibodi Kuu.`
+      );
+      setTimeout(() => {
+        router.push('/teacher');
+      }, 2500);
+      return;
+    } else if (
+      requiredRole &&
+      requiredRole !== 'HEADTEACHER' &&
+      session.role !== requiredRole &&
+      session.leadershipRole !== requiredRole &&
+      session.role !== 'ADMIN'
+    ) {
+      setIsAuthorized(false);
+      triggerNotification(
+        'error',
+        'Eneo Lililozuiliwa',
+        `Sehemu hii imehifadhiwa mahsusi kwa ${requiredRole === 'ACADEMIC' ? 'Mwalimu wa Taaluma' : 'Mwalimu wa Nidhamu'}. Utaelekezwa kwenye Dashibodi Kuu.`
       );
       setTimeout(() => {
         router.push('/teacher');
@@ -111,35 +150,14 @@ export default function TeacherShell({
     setCurrentUser(session);
   }, [requiredRole, router, triggerNotification]);
 
-  // Switch Teacher Identity
-  const handleSwitchTeacher = (teacher: UserAccount) => {
-    setCurrentSession(teacher);
-    setCurrentUser(teacher);
-
-    // If on a page requiring specific role that the new teacher doesn't have, redirect to /teacher
-    if (requiredRole && teacher.role !== requiredRole && teacher.leadershipRole !== requiredRole && teacher.role !== 'ADMIN') {
-      router.push('/teacher');
-    } else {
-      router.refresh();
-    }
-
-    triggerNotification(
-      'success',
-      'Akaunti ya Mwalimu Imebadilishwa',
-      `Sasa unafanya kazi kama ${teacher.fullName} (${teacher.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : teacher.role === 'ACADEMIC' ? 'Taaluma' : teacher.role === 'DISCIPLINE' ? 'Nidhamu' : 'Class Teacher'}).`
-    );
-  };
-
   const handleLogout = () => {
     clearCurrentSession();
-    router.push('/');
+    router.push('/login');
   };
 
-  const teachersList = useMemo(() => {
-    return allAccounts.filter((a) => ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER'].includes(a.role));
-  }, [allAccounts]);
-
   const isHeadteacher = currentUser?.role === 'HEADTEACHER' || currentUser?.leadershipRole === 'HEADTEACHER';
+  const isSecondMaster = currentUser?.role === 'SECOND_MASTER' || currentUser?.leadershipRole === 'SECOND_MASTER';
+  const isExecutiveLeader = isHeadteacher || isSecondMaster;
   const isAcademicMaster = currentUser?.role === 'ACADEMIC' || currentUser?.leadershipRole === 'ACADEMIC';
   const isDisciplineMaster = currentUser?.role === 'DISCIPLINE' || currentUser?.leadershipRole === 'DISCIPLINE';
   const isAdmin = currentUser?.role === 'ADMIN';
@@ -181,30 +199,55 @@ export default function TeacherShell({
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col lg:flex-row">
       {/* ===================================================================== */}
-      {/* 1. CENTERED SMALL BLUE NOTIFICATION MODAL */}
+      {/* 1. CENTERED NOTIFICATION MODAL (LIGHT BLUE FOR PASS, LIGHT RED FOR ERROR) */}
       {/* ===================================================================== */}
       {notification && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs animate-fade-in">
           <div
-            className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-5 shadow-2xl border border-blue-500/30 text-center space-y-3 animate-scale-in"
+            className={`w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-scale-in border-2 ${
+              notification.type === 'error'
+                ? 'bg-rose-50 border-rose-300 text-rose-950 shadow-rose-950/10'
+                : 'bg-sky-50 border-sky-300 text-sky-950 shadow-sky-950/10'
+            }`}
             role="alert"
           >
-            <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mx-auto text-blue-300">
-              {notification.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400" />}
-              {notification.type === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-              {notification.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-              {notification.type === 'info' && <Info className="w-5 h-5 text-blue-300" />}
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto border ${
+                notification.type === 'error'
+                  ? 'bg-rose-100 border-rose-300 text-rose-600'
+                  : 'bg-sky-100 border-sky-300 text-sky-700'
+              }`}
+            >
+              {notification.type === 'error' ? (
+                <AlertCircle className="w-6 h-6" />
+              ) : (
+                <CheckCircle2 className="w-6 h-6" />
+              )}
             </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-bold tracking-wide">{notification.title}</h3>
-              <p className="text-xs text-blue-100/90 leading-relaxed px-2">{notification.message}</p>
+
+            <div className="space-y-1.5">
+              <h3 className="text-base font-black tracking-tight">
+                {notification.title}
+              </h3>
+              <p
+                className={`text-xs leading-relaxed px-2 font-medium ${
+                  notification.type === 'error' ? 'text-rose-800' : 'text-sky-800'
+                }`}
+              >
+                {notification.message}
+              </p>
             </div>
+
             <button
               type="button"
               onClick={dismissNotification}
-              className="w-full py-2 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-md shadow-blue-900/40"
+              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white transition-all shadow-md ${
+                notification.type === 'error'
+                  ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-900/20'
+                  : 'bg-sky-700 hover:bg-sky-800 shadow-sky-900/20'
+              }`}
             >
-              Nimeelewa
+              Nimeelewa (Sawa)
             </button>
           </div>
         </div>
@@ -425,38 +468,10 @@ export default function TeacherShell({
         </div>
 
         {/* ================================================================= */}
-        {/* SIDEBAR FOOTER: ROLE SWITCHER & LANGUAGE PILL */}
+        {/* SIDEBAR FOOTER: LANGUAGE PILL & LOGOUT */}
         {/* ================================================================= */}
-        <div className="p-4 border-t border-emerald-100 bg-emerald-50/50 space-y-3">
-          {/* Fast 1-Click Role Switcher for School Staff */}
-          <div>
-            <span className="text-[10px] font-black text-emerald-900 uppercase tracking-wider block mb-1.5">
-              Badili Akaunti (Kujaribu):
-            </span>
-            <div className="grid grid-cols-2 gap-1.5">
-              {teachersList.map((t) => {
-                const isCurrent = currentUser?.id === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => handleSwitchTeacher(t)}
-                    className={`py-1 px-2 rounded-lg text-[10px] font-bold truncate text-left transition-all ${
-                      isCurrent
-                        ? 'bg-emerald-800 text-white shadow-xs'
-                        : 'bg-white hover:bg-emerald-100 text-slate-700 border border-emerald-200'
-                    }`}
-                    title={`${t.fullName} (${t.role})`}
-                  >
-                    {t.role === 'HEADTEACHER' ? 'Mkuu wa Shule' : t.role === 'ACADEMIC' ? 'Mwl. Taaluma' : t.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Language Pill & Logout */}
-          <div className="pt-1 flex items-center justify-between">
+        <div className="p-4 border-t border-emerald-100 bg-emerald-50/50">
+          <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900 text-white text-[10px] font-bold shadow-xs">
               <Globe className="w-3.5 h-3.5 text-emerald-300" />
               <span>LUGHA: SWA</span>
@@ -518,7 +533,16 @@ export default function TeacherShell({
                   {currentUser?.fullName}
                 </span>
                 <span className="text-[10px] text-emerald-800 font-semibold block truncate max-w-[170px]">
-                  {currentUser?.identifier} • {currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : currentUser?.role === 'ACADEMIC' ? 'Mwl. Taaluma' : currentUser?.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
+                  {currentUser?.identifier} •{' '}
+                  {currentUser?.role === 'HEADTEACHER'
+                    ? 'Mwalimu Mkuu'
+                    : currentUser?.role === 'SECOND_MASTER'
+                    ? 'Makamu Mkuu'
+                    : currentUser?.role === 'ACADEMIC'
+                    ? 'Mwl. Taaluma'
+                    : currentUser?.role === 'DISCIPLINE'
+                    ? 'Mwl. Nidhamu'
+                    : 'Class Teacher'}
                 </span>
               </div>
             </div>
