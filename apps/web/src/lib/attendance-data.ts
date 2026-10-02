@@ -21,7 +21,7 @@ export interface PupilDailyAttendance {
   name: string;
   gender: 'M' | 'F';
   parentPhone: string;
-  status: 'PRESENT' | 'ABSENT' | 'PERMISSION' | 'LATE';
+  status: 'PRESENT' | 'ABSENT' | 'PERMISSION';
   absentReason?: string;
   daysAbsentCount: number;
 }
@@ -38,7 +38,6 @@ export interface ClassDailyAttendanceRecord {
   totalStudents: number;
   presentCount: number;
   absentCount: number;
-  lateCount?: number;
   permissionCount: number;
   attendanceRate: number;
   status: 'PENDING_CONFIRMATION' | 'CONFIRMED_AND_RECORDED';
