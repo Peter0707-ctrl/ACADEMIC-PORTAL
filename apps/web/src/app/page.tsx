@@ -212,9 +212,9 @@ export default function PrimaryPortalHomePage() {
     location: 'Dar es Salaam, Tanzania',
   });
 
-  // 1. Splash Screen State (Disabled for instant serious academic access)
-  const [showSplash, setShowSplash] = useState(false);
-  const [progress, setProgress] = useState(100);
+  // 1. Splash Screen State: 5-second logo screen with pupils/students background
+  const [showSplash, setShowSplash] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   // 2. Active Mode: 'login' | 'register'
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -513,55 +513,79 @@ export default function PrimaryPortalHomePage() {
     <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 flex flex-col font-sans selection:bg-emerald-600 selection:text-white relative overflow-x-hidden">
 
       {/* ===================================================================== */}
-      {/* 1. 5-SECOND SPLASH SCREEN WITH CLEAN SCHOOL LOGO BLUEPRINT */}
+      {/* 1. 5-SECOND SPLASH SCREEN WITH PUPILS/STUDENTS BACKGROUND & SCHOOL LOGO */}
       {/* ===================================================================== */}
       {showSplash && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#F3FAF5] via-[#EAF5EE] to-[#DDF0E3] p-6 transition-all duration-700">
-          <div className="absolute w-80 h-80 rounded-full bg-emerald-200/40 blur-3xl pointer-events-none animate-pulse-soft" />
-          <div className="absolute w-72 h-72 rounded-full bg-teal-100/50 blur-2xl pointer-events-none -bottom-10 -right-10" />
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 transition-all duration-700 overflow-hidden">
+          {/* Pupils / Students Background Image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 animate-pulse-soft transition-transform duration-1000"
+            style={{
+              backgroundImage: "url('/images/students-campus.jpg')",
+            }}
+          />
 
-          <div className="relative z-10 flex flex-col items-center max-w-md text-center animate-fade-in">
-            {/* School Emblem Placeholder */}
-            <div className="w-24 h-24 rounded-3xl bg-white border border-emerald-200 shadow-xl shadow-emerald-900/10 flex flex-col items-center justify-center text-emerald-800 mb-6 relative group">
-              <GraduationCap className="w-11 h-11 text-emerald-700" />
-              <span className="text-[8px] font-bold text-emerald-800/80 uppercase tracking-widest mt-1">
-                School Logo
-              </span>
+          {/* Deep Emerald & Midnight Glass Overlay for High Contrast & Professional School Ambience */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-emerald-950/80 to-slate-950/90 backdrop-blur-[2px]" />
+
+          {/* Glowing Radial Glow */}
+          <div className="absolute w-[500px] h-[500px] rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col items-center max-w-lg text-center animate-fade-in text-white px-4">
+            {/* School Emblem / Official Logo */}
+            <div className="relative mb-6 group">
+              <div className="absolute -inset-1.5 bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-400 rounded-3xl blur-sm opacity-70 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-slate-900/90 border-2 border-amber-400/80 shadow-2xl shadow-emerald-950/60 flex flex-col items-center justify-center text-white backdrop-blur-md p-2">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center shadow-inner border border-emerald-400/30 mb-1">
+                  <GraduationCap className="w-8 h-8 sm:w-9 sm:h-9 text-amber-300 drop-shadow" />
+                </div>
+                <span className="text-[8px] sm:text-[9px] font-black text-amber-300 uppercase tracking-widest leading-none">
+                  School Logo
+                </span>
+                <span className="text-[7px] text-emerald-200/90 font-bold uppercase tracking-wider mt-0.5">
+                  Official Emblem
+                </span>
+              </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200/80 text-emerald-900 text-xs font-semibold mb-3 tracking-wide">
-              <School className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Primary &amp; Nursery School Web Blueprint</span>
+            {/* School Level Tag */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-200 text-xs font-bold mb-3 tracking-wide shadow-md">
+              <School className="w-3.5 h-3.5 text-amber-400" />
+              <span>Primary &amp; Nursery School ERP Portal</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-800 tracking-tight leading-snug">
+            {/* School Name */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-snug drop-shadow-md">
               {school.name}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-2 font-normal italic max-w-sm">
+            <p className="text-xs sm:text-sm text-emerald-100/90 mt-2 font-medium italic max-w-sm drop-shadow">
               &quot;{school.motto}&quot;
             </p>
 
             {/* 5-Second Progress Indicator */}
             <div className="w-full max-w-xs mt-8 space-y-2">
-              <div className="w-full h-2 rounded-full bg-emerald-200/60 overflow-hidden p-0.5 border border-emerald-300/40">
+              <div className="w-full h-2.5 rounded-full bg-white/10 backdrop-blur-md overflow-hidden p-0.5 border border-emerald-400/40 shadow-inner">
                 <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-100 ease-out"
+                  className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-400 rounded-full transition-all duration-100 ease-out shadow-sm"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
-                <span>Loading School Portal...</span>
-                <span>{Math.round((5000 - (progress / 100) * 5000) / 1000)}s</span>
+              <div className="flex items-center justify-between text-[11px] text-emerald-200 font-semibold px-1">
+                <span>Inafungua Ukurasa wa Kuingia (Login)...</span>
+                <span className="font-mono text-amber-300 font-bold">
+                  {Math.max(1, Math.round((5000 - (progress / 100) * 5000) / 1000))}s
+                </span>
               </div>
             </div>
 
+            {/* Skip Button */}
             <button
               onClick={skipSplash}
               type="button"
-              className="mt-6 inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-900 font-semibold px-4 py-2 rounded-xl bg-white/70 hover:bg-white border border-emerald-200 transition-all shadow-xs"
+              className="mt-6 inline-flex items-center gap-2 text-xs text-white hover:text-amber-300 font-bold px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all shadow-md group"
             >
               <span>{AUTH_CONFIG.splash.skipButton}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
