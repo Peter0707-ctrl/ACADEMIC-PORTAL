@@ -37,6 +37,7 @@ import {
   QrCode,
 } from 'lucide-react';
 import { getCurrentSession, clearCurrentSession } from '@/lib/auth-session';
+import { notifyUser } from '@/lib/notifications';
 
 interface ChildProfile {
   id: string;
@@ -211,10 +212,70 @@ type ParentTab =
   | 'REQUESTS';
 
 export default function ParentGuardianPortal() {
-  const [children] = useState<ChildProfile[]>(CHILDREN_DATA);
+  const [children, setChildren] = useState<ChildProfile[]>(CHILDREN_DATA);
   const [selectedChildId, setSelectedChildId] = useState<string>(CHILDREN_DATA[0].id);
   const [activeTab, setActiveTab] = useState<ParentTab>('DASHBOARD');
   const [activeNotice, setActiveNotice] = useState<string | null>(null);
+
+  // Link Child State
+  const [showLinkChildModal, setShowLinkChildModal] = useState(false);
+  const [linkAdmNo, setLinkAdmNo] = useState('');
+  const [linkSecurityPin, setLinkSecurityPin] = useState('');
+
+  // Handle Linking a New Child
+  const handleLinkNewChild = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkAdmNo.trim()) return;
+
+    const newChild: ChildProfile = {
+      id: `child-${Date.now()}`,
+      name: linkAdmNo.toUpperCase().includes('061') ? 'Rashid Hamisi' : 'Faraja Nelson (Candidate)',
+      admNo: linkAdmNo.trim().toUpperCase(),
+      class: 'Standard 4 (Grade 4)',
+      stream: 'Stream A',
+      homeroomTeacher: 'Mwl. Rehema Mushi',
+      gender: 'M',
+      dob: '14 Julai 2015',
+      photoInitial: 'FN',
+      termAverage: 84.2,
+      rank: 'Nafasi ya 4 / 35',
+      attendanceRate: 98.0,
+      feePaid: 450000,
+      feeTotal: 500000,
+      controlNumber: '991234567895',
+      conduct: 'Nidhamu Nzuri Sana',
+      subjects: [
+        { name: 'Mathematics (Hisabati)', code: 'MATH-01', teacher: 'Mwl. Beatrice Kimaro', monthly1: 82, monthly2: 86, midterm: 84, terminal: 88, average: 85, grade: 'A', remarks: 'Bora Sana' },
+        { name: 'English Language', code: 'ENG-03', teacher: 'Mwl. Grace Shayo', monthly1: 80, monthly2: 85, midterm: 83, terminal: 87, average: 84, grade: 'A', remarks: 'Bora Sana' },
+        { name: 'Kiswahili', code: 'KISW-04', teacher: 'Mwl. Juma Athumani', monthly1: 88, monthly2: 90, midterm: 89, terminal: 92, average: 90, grade: 'A', remarks: 'Bora Sana' },
+        { name: 'Science & Technology', code: 'SCI-02', teacher: 'Mwl. Emmanuel Lyimo', monthly1: 84, monthly2: 87, midterm: 85, terminal: 88, average: 86, grade: 'A', remarks: 'Bora Sana' },
+        { name: 'Social Studies', code: 'SOC-06', teacher: 'Mwl. Rehema Mushi', monthly1: 81, monthly2: 84, midterm: 82, terminal: 86, average: 83, grade: 'A', remarks: 'Bora Sana' },
+        { name: 'Civic & Moral Education', code: 'CIV-05', teacher: 'Mwl. Frank Msaki', monthly1: 85, monthly2: 88, midterm: 86, terminal: 90, average: 87, grade: 'A', remarks: 'Bora Sana' },
+      ],
+      attendanceHistory: [
+        { month: 'Januari 2026', present: 22, absent: 0, permission: 0, rate: '100%' },
+        { month: 'Februari 2026', present: 21, absent: 0, permission: 0, rate: '95.5%' },
+        { month: 'Machi 2026', present: 22, absent: 0, permission: 0, rate: '100%' },
+      ],
+      feeHistory: [
+        { receiptNo: 'RCP-2026-1188', date: '2026-01-12', description: 'Ada ya Muhula wa Kwanza', amount: 450000, method: 'GePG NMB Bank', status: 'CONFIRMED' },
+      ],
+      disciplineRecords: [],
+    };
+
+    setChildren((prev) => [...prev, newChild]);
+    setSelectedChildId(newChild.id);
+    setShowLinkChildModal(false);
+    setLinkAdmNo('');
+    setLinkSecurityPin('');
+
+    notifyUser(
+      'success',
+      'Mtoto Ameunganishwa Kikamilifu!',
+      `Mwanafunzi ${newChild.name} (${newChild.admNo}) ameunganishwa kwenye akaunti yako ya mzazi. Sasa unaweza kuangalia matokeo, ada na mahudhurio yake.`
+    );
+    setActiveNotice(`Mwanafunzi ${newChild.name} (${newChild.admNo}) ameunganishwa kwenye akaunti yako!`);
+  };
 
   // Leave Request Form State
   const [leaveReason, setLeaveReason] = useState('Matibabu (Hospitali)');
@@ -331,6 +392,16 @@ export default function ParentGuardianPortal() {
                 );
               })}
             </div>
+
+            {/* Link another child button */}
+            <button
+              type="button"
+              onClick={() => setShowLinkChildModal(true)}
+              className="w-full mt-2 py-1.5 px-3 rounded-xl bg-white hover:bg-emerald-100 text-emerald-900 border border-dashed border-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+            >
+              <Plus className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Unganisha Mtoto Mwingine</span>
+            </button>
           </div>
 
           {/* ================================================================= */}
@@ -1255,6 +1326,89 @@ export default function ParentGuardianPortal() {
           )}
         </main>
       </div>
+
+      {/* ===================================================================== */}
+      {/* MODAL: UNGANISHA MTOTO MWINGINE (LINK STUDENT ACCOUNT) */}
+      {/* ===================================================================== */}
+      {showLinkChildModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full border border-emerald-200 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-emerald-700" />
+                <h3 className="text-base font-black text-slate-900">Unganisha Mtoto Mwingine</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLinkChildModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Kama una mtoto mwingine anayesoma shuleni hapa, weka Namba yake ya Usajili (Admission Number) na PIN ya siri iliyopo kwenye barua ya kujiunga au risiti ya ada ili kumuunganisha kwenye akaunti yako.
+            </p>
+
+            <form onSubmit={handleLinkNewChild} className="space-y-3.5 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  Namba ya Usajili ya Mtoto (Admission / Reg No.)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={linkAdmNo}
+                  onChange={(e) => setLinkAdmNo(e.target.value)}
+                  placeholder="Mfn. PUP-2026-061 au SFNA-2026-0112"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold uppercase"
+                />
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  Jaribu kuweka: <code className="text-emerald-700 font-bold">PUP-2026-061</code>
+                </span>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  PIN ya Siri ya Mzazi / Namba ya Simu Iliyosajiliwa
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={linkSecurityPin}
+                  onChange={(e) => setLinkSecurityPin(e.target.value)}
+                  placeholder="Weka PIN (Mfn. 8492 au namba ya simu)"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                />
+              </div>
+
+              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                <span>
+                  Ukishaunganisha, utaweza kuangalia matokeo, ada, na mahudhurio ya watoto wako wote kwa kubadili jina tu kwenye kona ya juu kushoto.
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLinkChildModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
+                >
+                  Ghairi
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20"
+                >
+                  Thibitisha &amp; Unganisha
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

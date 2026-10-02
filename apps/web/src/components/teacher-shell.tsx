@@ -150,7 +150,7 @@ export default function TeacherShell({
 
   const handleLogout = () => {
     clearCurrentSession();
-    router.push('/login');
+    router.push('/');
   };
 
   const teachersList = useMemo(() => {
@@ -468,10 +468,38 @@ export default function TeacherShell({
         </div>
 
         {/* ================================================================= */}
-        {/* SIDEBAR FOOTER: LANGUAGE PILL & LOGOUT */}
+        {/* SIDEBAR FOOTER: ROLE SWITCHER & LANGUAGE PILL */}
         {/* ================================================================= */}
-        <div className="p-4 border-t border-emerald-100 bg-emerald-50/50">
-          <div className="flex items-center justify-between">
+        <div className="p-4 border-t border-emerald-100 bg-emerald-50/50 space-y-3">
+          {/* Fast 1-Click Role Switcher for School Staff */}
+          <div>
+            <span className="text-[10px] font-black text-emerald-900 uppercase tracking-wider block mb-1.5">
+              Badili Akaunti (Kujaribu):
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {teachersList.map((t) => {
+                const isCurrent = currentUser?.id === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => handleSwitchTeacher(t)}
+                    className={`py-1 px-2 rounded-lg text-[10px] font-bold truncate text-left transition-all ${
+                      isCurrent
+                        ? 'bg-emerald-800 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-100 text-slate-700 border border-emerald-200'
+                    }`}
+                    title={`${t.fullName} (${t.role})`}
+                  >
+                    {t.role === 'HEADTEACHER' ? 'Mkuu wa Shule' : t.role === 'ACADEMIC' ? 'Mwl. Taaluma' : t.role === 'DISCIPLINE' ? 'Mwl. Nidhamu' : 'Class Teacher'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Language Pill & Logout */}
+          <div className="pt-1 flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900 text-white text-[10px] font-bold shadow-xs">
               <Globe className="w-3.5 h-3.5 text-emerald-300" />
               <span>LUGHA: SWA</span>
@@ -481,8 +509,8 @@ export default function TeacherShell({
             <button
               type="button"
               onClick={handleLogout}
-              className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1.5 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50"
-              title="Ondoka kwenye mfumo na kurudi ukurasa wa Login"
+              className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1 transition-colors"
+              title="Ondoka kwenye mfumo"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Toka</span>
