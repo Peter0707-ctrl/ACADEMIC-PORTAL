@@ -140,12 +140,12 @@ export default function TeacherDashboardPage() {
     const currentHour = new Date().getHours();
     const greeting =
       currentHour >= 5 && currentHour < 12
-        ? 'Habari za Asubuhi! Karibu kwenye Portal ya Walimu.'
+        ? 'HABARI ZA ASUBUHI! KARIBU KWENYE PORTAL YA WALIMU'
         : currentHour >= 12 && currentHour < 16
-        ? 'Habari za Mchana! Karibu kwenye Portal ya Walimu.'
+        ? 'HABARI ZA MCHANA! KARIBU KWENYE PORTAL YA WALIMU'
         : currentHour >= 16 && currentHour < 20
-        ? 'Habari za Jioni! Karibu kwenye Portal ya Walimu.'
-        : 'Habari za Usiku! Karibu kwenye Portal ya Walimu.';
+        ? 'HABARI ZA JIONI! KARIBU KWENYE PORTAL YA WALIMU'
+        : 'HABARI ZA USIKU! KARIBU KWENYE PORTAL YA WALIMU';
 
     let i = 0;
     setTypedGreeting('');
@@ -189,29 +189,36 @@ export default function TeacherDashboardPage() {
       pageDescription={shellDesc}
     >
       <div className="space-y-8 animate-fade-in max-w-4xl mx-auto py-4 sm:py-6">
-        {/* 1. HERO KIMSTARI: Typewriter Salutation, Inline Avatar + Name, na Cheo */}
-        <div className="flex flex-col items-center justify-center text-center space-y-2">
-          {/* Juu: Salutation inayochange kutokana na mda na inajitype */}
-          <div className="min-h-[26px] text-xs sm:text-sm font-semibold text-emerald-800 tracking-wide flex items-center justify-center">
+        {/* 1. HERO KIMSTARI: Typewriter Salutation Kubwa, Picha Kubwa + Jina Kubwa, na Cheo */}
+        <div className="flex flex-col items-center justify-center text-center space-y-3">
+          {/* Juu: Salutation maneno makubwa in Capital Letters */}
+          <div className="min-h-[30px] text-sm sm:text-base md:text-lg font-black tracking-wider text-emerald-800 uppercase flex items-center justify-center">
             <span>{typedGreeting}</span>
-            <span className="inline-block w-1.5 h-3.5 ml-1 bg-emerald-600 animate-pulse" />
+            <span className="inline-block w-2 h-4 sm:h-5 ml-1.5 bg-emerald-600 animate-pulse" />
           </div>
 
-          {/* Chini yake: Picha + Jina lake kimstari */}
-          <div className="flex items-center justify-center gap-2.5 pt-0.5">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold shadow-xs">
-              <User className="w-5 h-5 text-emerald-200" />
+          {/* Chini yake: Picha kubwa bila frame + Jina lake kubwa kimstari */}
+          <div className="flex items-center justify-center gap-3 sm:gap-4 pt-1">
+            {/* Picha kubwa (NO frame, NO border) */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-950/15">
+              <User className="w-9 h-9 sm:w-11 sm:h-11 text-emerald-200" />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+
+            {/* Jina lake kubwa */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
               {currentUser?.fullName || 'Mwl. Augustine Mrosso'}
             </h1>
           </div>
 
-          {/* Chini yake: Cheo kimstari */}
-          <div className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
-            <span className="font-bold text-emerald-800 uppercase tracking-wider">{roleTitleSwahili}</span>
+          {/* Chini yake: Cheo chake in Capital Letters */}
+          <div className="flex items-center justify-center gap-2 pt-0.5">
+            <span className="px-3.5 py-1 rounded-full bg-emerald-100/90 text-emerald-900 font-black text-xs sm:text-sm uppercase tracking-widest border border-emerald-300/60 shadow-2xs">
+              {roleTitleSwahili}
+            </span>
             <span className="text-slate-300">•</span>
-            <span className="font-mono text-slate-600">{currentUser?.identifier || 'HT-2026-001'}</span>
+            <span className="font-mono font-bold text-slate-600 text-xs sm:text-sm tracking-wider">
+              {currentUser?.identifier || 'HT-2026-001'}
+            </span>
           </div>
         </div>
 
