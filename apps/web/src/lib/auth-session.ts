@@ -16,6 +16,33 @@ export type UserRole =
 
 export type LeadershipRole = 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'CLASS_TEACHER';
 
+export interface TeachingLoad {
+  class: string;
+  subject: string;
+}
+
+export const PRIMARY_CLASSES_LIST = [
+  'Standard 7 (Grade 7)',
+  'Standard 6 (Grade 6)',
+  'Standard 5 (Grade 5)',
+  'Standard 4 (Grade 4)',
+  'Standard 3 (Grade 3)',
+  'Standard 2 (Grade 2)',
+  'Standard 1 (Grade 1)',
+];
+
+export const PRIMARY_SUBJECTS_LIST = [
+  'Mathematics (Hisabati)',
+  'Science & Technology (Sayansi)',
+  'English Language',
+  'Kiswahili',
+  'Civic & Moral Education (Uraia na Maadili)',
+  'Social Studies (Maarifa ya Jamii)',
+  'Vocational Skills (Stadi za Kazi)',
+  'Religious Studies (Elimu ya Dini)',
+  'ICT / Computer Studies (Tehama)',
+];
+
 export interface UserAccount {
   id: string;
   fullName: string;
@@ -27,6 +54,7 @@ export interface UserAccount {
   assignedClass?: string;
   assignedClasses?: string[];
   subjects?: string[];
+  teachingAssignments?: TeachingLoad[];
   isHomeroomMaster?: boolean;
   candidateType?: 'PSLE' | 'SFNA';
   examIndexNo?: string;
@@ -47,6 +75,10 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     assignedClass: 'Senior Standards (Std 6 & 7)',
     assignedClasses: ['Standard 7 (Grade 7)', 'Standard 6 (Grade 6)'],
     subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Social Studies (Maarifa ya Jamii)'],
+    teachingAssignments: [
+      { class: 'Standard 7 (Grade 7)', subject: 'Civic & Moral Education (Uraia na Maadili)' },
+      { class: 'Standard 6 (Grade 6)', subject: 'Social Studies (Maarifa ya Jamii)' },
+    ],
     status: 'ACTIVE',
     joinedDate: '2026-01-15',
   },

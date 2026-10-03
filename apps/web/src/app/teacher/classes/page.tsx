@@ -30,29 +30,23 @@ import {
   getStoredAccounts,
   saveStoredAccounts,
   INITIAL_BLUEPRINT_ACCOUNTS,
+  PRIMARY_CLASSES_LIST,
+  PRIMARY_SUBJECTS_LIST,
   UserAccount,
+  TeachingLoad,
 } from '@/lib/auth-session';
 import { INITIAL_PUPILS, StudentMark } from '@/lib/teacher-data';
 import { notifyUser } from '@/lib/notifications';
 
-const ALL_AVAILABLE_CLASSES = [
-  'Standard 7 (Grade 7)',
-  'Standard 6 (Grade 6)',
-  'Standard 5 (Grade 5)',
-  'Standard 4 (Grade 4)',
-  'Standard 3 (Grade 3)',
-  'Standard 2 (Grade 2)',
-  'Standard 1 (Grade 1)',
-];
-
 export default function MyClassesPage() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
-  const [teachingClasses, setTeachingClasses] = useState<string[]>([
-    'Standard 7 (Grade 7)',
-    'Standard 6 (Grade 6)',
+  const [teachingAssignments, setTeachingAssignments] = useState<TeachingLoad[]>([
+    { class: 'Standard 7 (Grade 7)', subject: 'Civic & Moral Education (Uraia na Maadili)' },
+    { class: 'Standard 6 (Grade 6)', subject: 'Social Studies (Maarifa ya Jamii)' },
   ]);
   const [showAddClassModal, setShowAddClassModal] = useState(false);
-  const [newClassToAdd, setNewClassToAdd] = useState('Standard 5 (Grade 5)');
+  const [newClassToAdd, setNewClassToAdd] = useState<string>(PRIMARY_CLASSES_LIST[0]);
+  const [newSubjectToAdd, setNewSubjectToAdd] = useState<string>(PRIMARY_SUBJECTS_LIST[0]);
 
   // Pupil Roster Modal
   const [rosterClassModal, setRosterClassModal] = useState<string | null>(null);
@@ -64,31 +58,47 @@ export default function MyClassesPage() {
     const session = getCurrentSession();
     if (session) {
       setCurrentUser(session);
-      const classes =
-        session.assignedClasses && session.assignedClasses.length > 0
-          ? session.assignedClasses
-          : ['Standard 7 (Grade 7)', 'Standard 6 (Grade 6)'];
-      setTeachingClasses(classes);
+      if (session.teachingAssignments && session.teachingAssignments.length > 0) {
+        setTeachingAssignments(session.teachingAssignments);
+      } else if (session.assignedClasses && session.assignedClasses.length > 0) {
+        const built = session.assignedClasses.map((cls, idx) => ({
+          class: cls,
+          subject: (session.subjects && session.subjects[idx]) || 'Civic & Moral Education (Uraia na Maadili)',
+        }));
+        setTeachingAssignments(built);
+      }
     }
   }, []);
 
-  const handleAddClass = (e: React.FormEvent) => {
+  const handleAddClassAndSubject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
-    if (teachingClasses.includes(newClassToAdd)) {
-      notifyUser('warning', 'Darasa Lipo Tayari', `${newClassToAdd} tayari lipo kwenye orodha ya madarasa unayofundisha.`);
+
+    const exists = teachingAssignments.some(
+      (a) => a.class === newClassToAdd && a.subject === newSubjectToAdd
+    );
+    if (exists) {
+      notifyUser('warning', 'Mgawo Upo Tayari', `${newClassToAdd} somo la ${newSubjectToAdd} tayari lipo kwenye ratiba yako.`);
       return;
     }
 
-    const updatedClasses = [...teachingClasses, newClassToAdd];
+    const updatedAssignments: TeachingLoad[] = [
+      ...teachingAssignments,
+      { class: newClassToAdd, subject: newSubjectToAdd },
+    ];
+    const updatedClasses = Array.from(new Set(updatedAssignments.map((a) => a.class)));
+    const updatedSubjects = Array.from(new Set(updatedAssignments.map((a) => a.subject)));
+
     const updatedUser: UserAccount = {
       ...currentUser,
+      teachingAssignments: updatedAssignments,
       assignedClasses: updatedClasses,
       assignedClass: updatedClasses.join(', '),
+      subjects: updatedSubjects,
     };
 
     setCurrentUser(updatedUser);
-    setTeachingClasses(updatedClasses);
+    setTeachingAssignments(updatedAssignments);
     setCurrentSession(updatedUser);
 
     const allAccounts = getStoredAccounts();
@@ -96,33 +106,39 @@ export default function MyClassesPage() {
     saveStoredAccounts(updatedAccounts);
 
     setShowAddClassModal(false);
-    notifyUser('success', 'Darasa Limeongezwa', `${newClassToAdd} limeongezwa kikamilifu.`);
+    notifyUser('success', 'Darasa na Somo Limeongezwa', `${newClassToAdd} — somo la ${newSubjectToAdd} limeongezwa kikamilifu.`);
   };
 
-  const handleRemoveClass = (clsToRemove: string, e: React.MouseEvent) => {
+  const handleRemoveAssignment = (indexToRemove: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!currentUser) return;
-    if (teachingClasses.length <= 1) {
-      notifyUser('warning', 'Kizuizi', 'Lazima ubakiwe na angalau darasa moja unalofundisha.');
+    if (teachingAssignments.length <= 1) {
+      notifyUser('warning', 'Kizuizi', 'Lazima ubakiwe na angalau darasa na somo moja unalofundisha.');
       return;
     }
 
-    const updatedClasses = teachingClasses.filter((c) => c !== clsToRemove);
+    const removed = teachingAssignments[indexToRemove];
+    const updatedAssignments = teachingAssignments.filter((_, idx) => idx !== indexToRemove);
+    const updatedClasses = Array.from(new Set(updatedAssignments.map((a) => a.class)));
+    const updatedSubjects = Array.from(new Set(updatedAssignments.map((a) => a.subject)));
+
     const updatedUser: UserAccount = {
       ...currentUser,
+      teachingAssignments: updatedAssignments,
       assignedClasses: updatedClasses,
       assignedClass: updatedClasses.join(', '),
+      subjects: updatedSubjects,
     };
 
     setCurrentUser(updatedUser);
-    setTeachingClasses(updatedClasses);
+    setTeachingAssignments(updatedAssignments);
     setCurrentSession(updatedUser);
 
     const allAccounts = getStoredAccounts();
     const updatedAccounts = allAccounts.map((a) => (a.id === updatedUser.id ? updatedUser : a));
     saveStoredAccounts(updatedAccounts);
 
-    notifyUser('info', 'Darasa Limeondolewa', `${clsToRemove} limeondolewa kwenye madarasa unayofundisha.`);
+    notifyUser('info', 'Darasa Limeondolewa', `${removed.class} — ${removed.subject} limeondolewa.`);
   };
 
   // Pupils for currently opened roster modal
@@ -141,7 +157,7 @@ export default function MyClassesPage() {
   return (
     <TeacherShell
       pageTitle="Madarasa Yangu (My Classes)"
-      pageDescription="Madarasa uliyopangiwa kufundisha na usimamizi wa ufundishaji."
+      pageDescription="Madarasa na masomo uliyopangiwa kufundisha na usimamizi wa ufundishaji."
     >
       <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
         {/* Top Header Card */}
@@ -149,10 +165,10 @@ export default function MyClassesPage() {
           <div>
             <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
               <GraduationCap className="w-6 h-6 text-emerald-800" />
-              <span>Madarasa Ninayofundisha ({teachingClasses.length})</span>
+              <span>Madarasa Ninayofundisha ({teachingAssignments.length})</span>
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              Mwalimu: <strong className="text-emerald-950 font-bold">{currentUser?.fullName || 'Mwl. Augustine Mrosso'}</strong> • Madarasa uliyopangiwa kufundisha katika muhula huu
+              Mwalimu: <strong className="text-emerald-950 font-bold">{currentUser?.fullName || 'Mwl. Augustine Mrosso'}</strong> • Madarasa na masomo uliyopangiwa katika muhula huu
             </p>
           </div>
 
@@ -162,14 +178,14 @@ export default function MyClassesPage() {
             className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-emerald-950 font-black text-xs flex items-center gap-2 shadow-sm transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Ongeza Darasa Lingine</span>
+            <span>+ Ongeza Darasa na Somo</span>
           </button>
         </div>
 
         {/* Teaching Classes Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {teachingClasses.map((cls) => {
-            const classPupils = INITIAL_PUPILS[cls] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
+          {teachingAssignments.map((assignment, index) => {
+            const classPupils = INITIAL_PUPILS[assignment.class] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
             const pupilCount = classPupils.length;
             const boys = classPupils.filter((p) => p.gender === 'M').length;
             const girls = classPupils.filter((p) => p.gender === 'F').length;
@@ -177,25 +193,31 @@ export default function MyClassesPage() {
 
             return (
               <div
-                key={cls}
+                key={`${assignment.class}-${assignment.subject}-${index}`}
                 className="bg-white rounded-3xl border border-emerald-200 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase tracking-wider">
+                  <div className="space-y-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase tracking-wider">
                       Darasa Linalofundishwa
                     </span>
-                    <h3 className="text-xl font-black text-slate-900 mt-2">{cls}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <h3 className="text-xl font-black text-slate-900 mt-1">{assignment.class}</h3>
+                    
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 bg-emerald-50/80 px-2.5 py-1 rounded-xl border border-emerald-100 mt-1">
+                      <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Somo: {assignment.subject}</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 mt-1">
                       Wanafunzi {pupilCount} (Wavulana {boys} • Wasichana {girls})
                     </p>
                   </div>
 
-                  {teachingClasses.length > 1 && (
+                  {teachingAssignments.length > 1 && (
                     <button
                       type="button"
-                      onClick={(e) => handleRemoveClass(cls, e)}
-                      title={`Ondoa ${cls} kwenye madarasa unayofundisha`}
+                      onClick={(e) => handleRemoveAssignment(index, e)}
+                      title={`Ondoa ${assignment.class} - ${assignment.subject}`}
                       className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -219,12 +241,12 @@ export default function MyClassesPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons for each class */}
+                {/* Action Buttons for each class and subject */}
                 <div className="flex flex-wrap items-center gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => {
-                      setRosterClassModal(cls);
+                      setRosterClassModal(assignment.class);
                       setSearchTerm('');
                     }}
                     className="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-colors flex items-center justify-center gap-1.5"
@@ -234,7 +256,7 @@ export default function MyClassesPage() {
                   </button>
 
                   <Link
-                    href={`/teacher/attendance?class=${encodeURIComponent(cls)}`}
+                    href={`/teacher/attendance?class=${encodeURIComponent(assignment.class)}`}
                     className="py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs transition-colors flex items-center gap-1"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -242,7 +264,7 @@ export default function MyClassesPage() {
                   </Link>
 
                   <Link
-                    href={`/teacher/marks?class=${encodeURIComponent(cls)}`}
+                    href={`/teacher/marks?class=${encodeURIComponent(assignment.class)}&subject=${encodeURIComponent(assignment.subject)}`}
                     className="py-2 px-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs transition-colors flex items-center gap-1 shadow-xs"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -254,14 +276,14 @@ export default function MyClassesPage() {
           })}
         </div>
 
-        {/* Modal: Ongeza Darasa Lingine */}
+        {/* Modal: Ongeza Darasa na Somo */}
         {showAddClassModal && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <GraduationCap className="w-5 h-5 text-emerald-800" />
-                  <h3 className="text-base font-black text-slate-900">Ongeza Darasa Unalofundisha</h3>
+                  <h3 className="text-base font-black text-slate-900">Ongeza Darasa na Somo</h3>
                 </div>
                 <button
                   type="button"
@@ -272,26 +294,45 @@ export default function MyClassesPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleAddClass} className="space-y-4">
+              <form onSubmit={handleAddClassAndSubject} className="space-y-4">
+                {/* 1. Chagua Darasa */}
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">
-                    Chagua Darasa la Msingi (Standard 1–7):
+                    1. Chagua Darasa la Msingi (Standard 1–7):
                   </label>
                   <select
                     value={newClassToAdd}
                     onChange={(e) => setNewClassToAdd(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-emerald-800 bg-white"
                   >
-                    {ALL_AVAILABLE_CLASSES.map((cls) => (
-                      <option key={cls} value={cls} disabled={teachingClasses.includes(cls)}>
-                        {cls} {teachingClasses.includes(cls) ? '(Unalo Tayari)' : ''}
+                    {PRIMARY_CLASSES_LIST.map((cls) => (
+                      <option key={cls} value={cls}>
+                        {cls}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 2. Chagua Somo */}
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    2. Chagua Somo Utakalofundisha:
+                  </label>
+                  <select
+                    value={newSubjectToAdd}
+                    onChange={(e) => setNewSubjectToAdd(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-emerald-800 bg-white"
+                  >
+                    {PRIMARY_SUBJECTS_LIST.map((subj) => (
+                      <option key={subj} value={subj}>
+                        {subj}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
-                  Darasa hili litaongezwa kwenye ratiba yako ya ufundishaji na litatokea kwenye orodha yako ya madarasa.
+                  Utaongezewa darasa hili na somo ulilochagua kwenye ratiba yako ya kufundisha na uwekaji wa alama.
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2">
@@ -306,7 +347,7 @@ export default function MyClassesPage() {
                     type="submit"
                     className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-black text-xs shadow-md"
                   >
-                    Hifadhi Darasa
+                    Hifadhi Darasa na Somo
                   </button>
                 </div>
               </form>
