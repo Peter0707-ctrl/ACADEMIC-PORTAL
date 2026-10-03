@@ -23,7 +23,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
-import { getCurrentSession, UserAccount } from '@/lib/auth-session';
+import { getCurrentSession, INITIAL_BLUEPRINT_ACCOUNTS, UserAccount } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
 
 const TIMETABLE_STORAGE_KEY = 'school_master_timetable_2026_v1';
@@ -124,7 +124,7 @@ const DEFAULT_STD7_TIMETABLE: Record<string, Record<string, TimetableSlot>> = {
 };
 
 export default function TimetablePage() {
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(INITIAL_BLUEPRINT_ACCOUNTS[0] || null);
   const [selectedTerm, setSelectedTerm] = useState<'TERM_1' | 'TERM_2'>('TERM_1');
   const [selectedClass, setSelectedClass] = useState<string>('Standard 7 (Grade 7)');
   const [viewMode, setViewMode] = useState<'CLASS' | 'TEACHER' | 'FULL_SCHOOL'>('CLASS');
