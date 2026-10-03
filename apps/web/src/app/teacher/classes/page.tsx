@@ -51,12 +51,14 @@ export default function MyClassesPage() {
     'Standard 7 (Grade 7)',
     'Standard 6 (Grade 6)',
   ]);
-  const [selectedClass, setSelectedClass] = useState<string>('Standard 7 (Grade 7)');
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [newClassToAdd, setNewClassToAdd] = useState('Standard 5 (Grade 5)');
+
+  // Pupil Roster Modal
+  const [rosterClassModal, setRosterClassModal] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPupil, setSelectedPupil] = useState<StudentMark | null>(null);
   const [filterGender, setFilterGender] = useState<'ALL' | 'M' | 'F'>('ALL');
+  const [selectedPupil, setSelectedPupil] = useState<StudentMark | null>(null);
 
   useEffect(() => {
     const session = getCurrentSession();
@@ -67,7 +69,6 @@ export default function MyClassesPage() {
           ? session.assignedClasses
           : ['Standard 7 (Grade 7)', 'Standard 6 (Grade 6)'];
       setTeachingClasses(classes);
-      setSelectedClass(classes[0]);
     }
   }, []);
 
@@ -88,7 +89,6 @@ export default function MyClassesPage() {
 
     setCurrentUser(updatedUser);
     setTeachingClasses(updatedClasses);
-    setSelectedClass(newClassToAdd);
     setCurrentSession(updatedUser);
 
     const allAccounts = getStoredAccounts();
@@ -116,9 +116,6 @@ export default function MyClassesPage() {
 
     setCurrentUser(updatedUser);
     setTeachingClasses(updatedClasses);
-    if (selectedClass === clsToRemove) {
-      setSelectedClass(updatedClasses[0]);
-    }
     setCurrentSession(updatedUser);
 
     const allAccounts = getStoredAccounts();
@@ -128,9 +125,12 @@ export default function MyClassesPage() {
     notifyUser('info', 'Darasa Limeondolewa', `${clsToRemove} limeondolewa kwenye madarasa unayofundisha.`);
   };
 
-  const pupils: StudentMark[] = INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
+  // Pupils for currently opened roster modal
+  const rosterPupils: StudentMark[] = rosterClassModal
+    ? INITIAL_PUPILS[rosterClassModal] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || []
+    : [];
 
-  const filteredPupils = pupils.filter((p) => {
+  const filteredRosterPupils = rosterPupils.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.admNo.toLowerCase().includes(searchTerm.toLowerCase());
@@ -138,391 +138,121 @@ export default function MyClassesPage() {
     return matchesSearch && matchesGender;
   });
 
-  // Calculate class statistics
-  const totalPupils = pupils.length;
-  const boysCount = pupils.filter((p) => p.gender === 'M').length;
-  const girlsCount = pupils.filter((p) => p.gender === 'F').length;
-  const totalScore = pupils.reduce((sum, p) => sum + p.mark, 0);
-  const classAverage = totalPupils > 0 ? Math.round(totalScore / totalPupils) : 0;
-
-  const countGrade = (g: string) => pupils.filter((p) => p.grade === g).length;
-  const gradeA = countGrade('A');
-  const gradeB = countGrade('B');
-  const gradeC = countGrade('C');
-  const gradeD = countGrade('D');
-  const gradeF = countGrade('F');
-
-  const topPupil = pupils.length > 0 ? [...pupils].sort((a, b) => b.mark - a.mark)[0] : null;
-
   return (
     <TeacherShell
       pageTitle="Madarasa Yangu (My Classes)"
-      pageDescription="Usimamizi wa madarasa uliyopangiwa kufundisha, orodha ya wanafunzi, wasifu wa mwanafunzi na tathmini ya darasa."
+      pageDescription="Madarasa uliyopangiwa kufundisha na usimamizi wa ufundishaji."
     >
-      <div className="space-y-6 animate-fade-in">
-        {/* Class Selection Tabs - ONLY Assigned Classes */}
-        <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-xs">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-emerald-800" />
-              <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                Madarasa Ninayofundisha ({teachingClasses.length}):
-              </h2>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                {currentUser?.fullName || 'Mwl. Augustine Mrosso'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowAddClassModal(true)}
-                className="px-3 py-1 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-500 text-emerald-950 flex items-center gap-1 shadow-xs transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Ongeza Darasa</span>
-              </button>
-            </div>
+      <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+        {/* Top Header Card */}
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-emerald-200 shadow-xs">
+          <div>
+            <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <GraduationCap className="w-6 h-6 text-emerald-800" />
+              <span>Madarasa Ninayofundisha ({teachingClasses.length})</span>
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Mwalimu: <strong className="text-emerald-950 font-bold">{currentUser?.fullName || 'Mwl. Augustine Mrosso'}</strong> • Madarasa uliyopangiwa kufundisha katika muhula huu
+            </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 items-center">
-            {teachingClasses.map((cls) => {
-              const isSelected = selectedClass === cls;
-              return (
-                <div
-                  key={cls}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                    isSelected
-                      ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
-                      : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 border border-slate-200 cursor-pointer'
-                  }`}
-                  onClick={() => setSelectedClass(cls)}
-                >
-                  <span>{cls}</span>
+          <button
+            type="button"
+            onClick={() => setShowAddClassModal(true)}
+            className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-emerald-950 font-black text-xs flex items-center gap-2 shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Ongeza Darasa Lingine</span>
+          </button>
+        </div>
+
+        {/* Teaching Classes Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {teachingClasses.map((cls) => {
+            const classPupils = INITIAL_PUPILS[cls] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
+            const pupilCount = classPupils.length;
+            const boys = classPupils.filter((p) => p.gender === 'M').length;
+            const girls = classPupils.filter((p) => p.gender === 'F').length;
+            const avg = pupilCount > 0 ? Math.round(classPupils.reduce((s, p) => s + p.mark, 0) / pupilCount) : 0;
+
+            return (
+              <div
+                key={cls}
+                className="bg-white rounded-3xl border border-emerald-200 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase tracking-wider">
+                      Darasa Linalofundishwa
+                    </span>
+                    <h3 className="text-xl font-black text-slate-900 mt-2">{cls}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Wanafunzi {pupilCount} (Wavulana {boys} • Wasichana {girls})
+                    </p>
+                  </div>
+
                   {teachingClasses.length > 1 && (
                     <button
                       type="button"
                       onClick={(e) => handleRemoveClass(cls, e)}
-                      title={`Ondoa ${cls} kwenye orodha yangu`}
-                      className={`ml-1 p-1 rounded-md transition-colors ${
-                        isSelected
-                          ? 'hover:bg-emerald-700 text-emerald-200 hover:text-white'
-                          : 'hover:bg-slate-200 text-slate-400 hover:text-rose-600'
-                      }`}
+                      title={`Ondoa ${cls} kwenye madarasa unayofundisha`}
+                      className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   )}
                 </div>
-              );
-            })}
 
-            <button
-              type="button"
-              onClick={() => setShowAddClassModal(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-50 text-slate-600 border border-dashed border-slate-300 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 flex items-center gap-1.5 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>+ Ongeza Darasa Lingine</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Class Performance Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                Jumla ya Wanafunzi
-              </span>
-              <span className="text-2xl font-black text-slate-900 block mt-1">{totalPupils}</span>
-              <span className="text-[11px] font-semibold text-emerald-700">
-                Wavulana {boysCount} • Wasichana {girlsCount}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                Wastani wa Darasa
-              </span>
-              <span className="text-2xl font-black text-emerald-800 block mt-1">{classAverage}%</span>
-              <span className="text-[11px] font-semibold text-emerald-600">
-                Daraja: {classAverage >= 81 ? 'A (Bora)' : classAverage >= 65 ? 'B (Nzuri)' : 'C (Wastani)'}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                Mwanafunzi Bora (Kinara)
-              </span>
-              <span className="text-sm font-black text-slate-900 block mt-1 truncate max-w-[150px]">
-                {topPupil?.name || 'Hamna'}
-              </span>
-              <span className="text-[11px] font-semibold text-amber-600">
-                Alama: {topPupil?.mark || 0}% (Daraja {topPupil?.grade || '-'})
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <Award className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                Mgawanyo wa Madaraja
-              </span>
-              <div className="flex items-center gap-1.5 mt-2">
-                <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 text-[10px] font-black">
-                  A:{gradeA}
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-900 text-[10px] font-black">
-                  B:{gradeB}
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-black">
-                  C:{gradeC}
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-900 text-[10px] font-black">
-                  D/F:{gradeD + gradeF}
-                </span>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
-              <BookOpen className="w-5 h-5" />
-            </div>
-          </div>
-        </div>
-
-        {/* Pupils in Selected Class Table */}
-        <div className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <h2 className="text-base font-black text-slate-900">
-                Wanafunzi wa {selectedClass} (Pupils Roster)
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Bofya jina la mwanafunzi yeyote ili kuona Wasifu (Profile) na taarifa za wazazi.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Search */}
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Tafuta jina au namba..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none w-48 sm:w-56"
-                />
-              </div>
-
-              {/* Gender Filter */}
-              <select
-                value={filterGender}
-                onChange={(e) => setFilterGender(e.target.value as any)}
-                className="py-1.5 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
-              >
-                <option value="ALL">Wote (All)</option>
-                <option value="M">Wavulana (Boys)</option>
-                <option value="F">Wasichana (Girls)</option>
-              </select>
-
-              <Link
-                href={`/teacher/marks?class=${encodeURIComponent(selectedClass)}`}
-                className="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>Weka Alama &rarr;</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Roster Table */}
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-3">#</th>
-                  <th className="py-3 px-3">Namba ya Usajili</th>
-                  <th className="py-3 px-3">Jina Kamili la Mwanafunzi</th>
-                  <th className="py-3 px-3 text-center">Jinsia</th>
-                  <th className="py-3 px-3 text-center">Wastani wa Alama</th>
-                  <th className="py-3 px-3 text-center">Daraja</th>
-                  <th className="py-3 px-3 text-center">Mahudhurio</th>
-                  <th className="py-3 px-3 text-right">Kitendo</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                {filteredPupils.map((pupil, idx) => (
-                  <tr
-                    key={pupil.id}
-                    onClick={() => setSelectedPupil(pupil)}
-                    className="hover:bg-emerald-50/50 cursor-pointer transition-colors"
-                  >
-                    <td className="py-2.5 px-3 font-mono text-slate-400">{idx + 1}</td>
-                    <td className="py-2.5 px-3 font-mono font-bold text-emerald-900">{pupil.admNo}</td>
-                    <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-bold">
-                        {pupil.name.charAt(0)}
-                      </div>
-                      <span>{pupil.name}</span>
-                    </td>
-                    <td className="py-2.5 px-3 text-center">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          pupil.gender === 'F' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'
-                        }`}
-                      >
-                        {pupil.gender === 'F' ? 'Kike (F)' : 'Kiume (M)'}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-center font-bold text-slate-900">{pupil.mark}%</td>
-                    <td className="py-2.5 px-3 text-center">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                          pupil.grade === 'A'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : pupil.grade === 'B'
-                            ? 'bg-blue-100 text-blue-800'
-                            : pupil.grade === 'C'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {pupil.grade}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-center">
-                      <span className="text-[11px] font-bold text-emerald-700">96.8%</span>
-                    </td>
-                    <td className="py-2.5 px-3 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedPupil(pupil);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-200"
-                      >
-                        Wasifu &rarr;
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Pupil Profile Modal / Drawer */}
-        {selectedPupil && (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-5">
-              <div className="flex items-start justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-800 text-amber-300 flex items-center justify-center font-black text-lg shadow-md">
-                    {selectedPupil.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-slate-900">{selectedPupil.name}</h3>
-                    <span className="text-xs font-mono font-bold text-emerald-800">
-                      {selectedPupil.admNo} • {selectedClass}
+                {/* Quick Performance & Attendance Indicators */}
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                  <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Wastani wa Darasa</span>
+                    <span className="text-lg font-black text-emerald-800 block mt-0.5">{avg}%</span>
+                    <span className="text-[10px] font-bold text-emerald-600">
+                      {avg >= 81 ? 'Daraja A (Bora)' : avg >= 65 ? 'Daraja B (Nzuri)' : 'Daraja C (Wastani)'}
                     </span>
                   </div>
+                  <div className="p-3 rounded-2xl bg-blue-50/70 border border-blue-100">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Mahudhurio ya Leo</span>
+                    <span className="text-lg font-black text-blue-900 block mt-0.5">96.8%</span>
+                    <span className="text-[10px] font-bold text-blue-600">Waliohudhuria: {pupilCount - 1}/{pupilCount}</span>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSelectedPupil(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              {/* Profile Details Grid */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-slate-400 font-bold block text-[10px] uppercase">Jinsia</span>
-                  <span className="font-bold text-slate-800">
-                    {selectedPupil.gender === 'F' ? 'Kike (Female)' : 'Kiume (Male)'}
-                  </span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-slate-400 font-bold block text-[10px] uppercase">Hali ya Mahudhurio</span>
-                  <span className="font-bold text-emerald-700">96.8% (Mahudhurio Mazuri)</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-slate-400 font-bold block text-[10px] uppercase">Wastani wa Alama</span>
-                  <span className="font-bold text-emerald-800 text-sm">
-                    {selectedPupil.mark}% (Daraja {selectedPupil.grade})
-                  </span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-slate-400 font-bold block text-[10px] uppercase">Simu ya Mzazi</span>
-                  <span className="font-bold text-blue-800">+255 754 {Math.floor(100000 + Math.random() * 900000)}</span>
-                </div>
-              </div>
+                {/* Action Buttons for each class */}
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRosterClassModal(cls);
+                      setSearchTerm('');
+                    }}
+                    className="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Wanafunzi ({pupilCount})</span>
+                  </button>
 
-              {/* Assessment Breakdown */}
-              <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-                <span className="text-xs font-black text-emerald-900 block">
-                  Matokeo ya Majaribio (Continuous Assessment):
-                </span>
-                <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-white border border-emerald-200">
-                    <span className="text-[10px] text-slate-500 block">Jaribio 1</span>
-                    <span className="font-black text-slate-900">{selectedPupil.monthlyTest1}%</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white border border-emerald-200">
-                    <span className="text-[10px] text-slate-500 block">Jaribio 2</span>
-                    <span className="font-black text-slate-900">{selectedPupil.monthlyTest2}%</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white border border-emerald-200">
-                    <span className="text-[10px] text-slate-500 block">Midterm</span>
-                    <span className="font-black text-slate-900">{selectedPupil.midtermExam}%</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white border border-emerald-200">
-                    <span className="text-[10px] text-slate-500 block">Terminal</span>
-                    <span className="font-black text-emerald-800">{selectedPupil.terminalExam}%</span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-600 mt-1 italic">
-                  Maoni ya Mwalimu: {selectedPupil.remarks || 'Anajitahidi sana darasani na nidhamu yake ni ya kiwango cha juu.'}
-                </p>
-              </div>
+                  <Link
+                    href={`/teacher/attendance?class=${encodeURIComponent(cls)}`}
+                    className="py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs transition-colors flex items-center gap-1"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Mahudhurio</span>
+                  </Link>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    notifyUser('info', 'Ujumbe kwa Mzazi', `Dirisha la ujumbe kwa mzazi wa ${selectedPupil.name} limefunguliwa.`);
-                    setSelectedPupil(null);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs"
-                >
-                  Tuma Ujumbe kwa Mzazi
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedPupil(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
-                >
-                  Funga
-                </button>
+                  <Link
+                    href={`/teacher/marks?class=${encodeURIComponent(cls)}`}
+                    className="py-2 px-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs transition-colors flex items-center gap-1 shadow-xs"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <span>Weka Alama</span>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            );
+          })}
+        </div>
 
         {/* Modal: Ongeza Darasa Lingine */}
         {showAddClassModal && (
@@ -583,8 +313,165 @@ export default function MyClassesPage() {
             </div>
           </div>
         )}
+
+        {/* Modal: Orodha ya Wanafunzi (Roster Viewer) */}
+        {rosterClassModal && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-4 max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-emerald-800" />
+                  <h3 className="text-base font-black text-slate-900">
+                    Orodha ya Wanafunzi: {rosterClassModal} ({rosterPupils.length})
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRosterClassModal(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Search & Filter */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Tafuta jina au namba..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+
+                <select
+                  value={filterGender}
+                  onChange={(e) => setFilterGender(e.target.value as any)}
+                  className="py-2 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white"
+                >
+                  <option value="ALL">Jinsia Zote</option>
+                  <option value="M">Wavulana Tu</option>
+                  <option value="F">Wasichana Tu</option>
+                </select>
+
+                <Link
+                  href={`/teacher/marks?class=${encodeURIComponent(rosterClassModal)}`}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>Weka Alama &rarr;</span>
+                </Link>
+              </div>
+
+              {/* Roster Table */}
+              <div className="overflow-y-auto flex-1 border border-slate-100 rounded-2xl">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-600 sticky top-0 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="py-2.5 px-3">#</th>
+                      <th className="py-2.5 px-3">Namba ya Usajili</th>
+                      <th className="py-2.5 px-3">Jina Kamili</th>
+                      <th className="py-2.5 px-3">Jinsia</th>
+                      <th className="py-2.5 px-3 text-center">Wastani</th>
+                      <th className="py-2.5 px-3 text-center">Daraja</th>
+                      <th className="py-2.5 px-3 text-right">Kitendo</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredRosterPupils.map((pupil, idx) => (
+                      <tr key={pupil.id} className="hover:bg-emerald-50/50 transition-colors">
+                        <td className="py-2 px-3 font-mono text-slate-400">{idx + 1}</td>
+                        <td className="py-2 px-3 font-mono font-bold text-emerald-800">{pupil.admNo}</td>
+                        <td className="py-2 px-3 font-bold text-slate-900">{pupil.name}</td>
+                        <td className="py-2 px-3">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              pupil.gender === 'F' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'
+                            }`}
+                          >
+                            {pupil.gender === 'F' ? 'Kike' : 'Kiume'}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-center font-bold text-slate-800">{pupil.mark}%</td>
+                        <td className="py-2 px-3 text-center">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-black text-[10px]">
+                            {pupil.grade}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPupil(pupil)}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-200"
+                          >
+                            Wasifu
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Wasifu wa Mwanafunzi */}
+        {selectedPupil && (
+          <div className="fixed inset-0 z-60 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-4">
+              <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-800 text-amber-300 flex items-center justify-center font-black text-lg shadow-md">
+                    {selectedPupil.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">{selectedPupil.name}</h3>
+                    <span className="text-xs font-mono font-bold text-emerald-800">
+                      {selectedPupil.admNo} • {rosterClassModal}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPupil(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-400 font-bold block text-[10px] uppercase">Jinsia</span>
+                  <span className="font-bold text-slate-800">
+                    {selectedPupil.gender === 'F' ? 'Kike (Female)' : 'Kiume (Male)'}
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-400 font-bold block text-[10px] uppercase">Wastani</span>
+                  <span className="font-bold text-emerald-800 text-sm">
+                    {selectedPupil.mark}% (Daraja {selectedPupil.grade})
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPupil(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
+                >
+                  Funga
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </TeacherShell>
   );
 }
-
