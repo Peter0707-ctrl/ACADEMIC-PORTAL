@@ -382,108 +382,122 @@ export default function TeacherShell({
           </div>
 
           {/* ================================================================= */}
-          {/* GROUP 2: OFISI YA MWALIMU MKUU & UONGOZI (EXECUTIVE LEADERSHIP) */}
+          {/* GROUP 2: OFISI YA MWALIMU MKUU & TAALUMA (EXECUTIVE & ACADEMIC LEADERSHIP) */}
+          {/* GATED: Only rendered for Headteacher, Academic Master, Discipline Master, or Admin */}
+          {/* NEVER SHOWN TO REGULAR TEACHERS */}
           {/* ================================================================= */}
-          <div className="space-y-1 pt-3 border-t border-emerald-100">
-            <div className="px-2.5 py-1 flex items-center justify-between text-slate-700">
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900">
-                {isHeadteacher ? 'Ofisi ya Mwalimu Mkuu' : 'Executive Leadership'}
-              </span>
-              <Award className="w-3.5 h-3.5 text-amber-500" />
+          {(isHeadteacher || isAcademicMaster || isDisciplineMaster || isAdmin) && (
+            <div className="space-y-1 pt-3 border-t border-emerald-100">
+              <div className="px-2.5 py-1 flex items-center justify-between text-slate-700">
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900">
+                  {isHeadteacher ? 'Ofisi ya Mwalimu Mkuu' : isAcademicMaster ? 'Ofisi ya Taaluma' : 'Ofisi ya Uongozi'}
+                </span>
+                <Award className="w-3.5 h-3.5 text-amber-500" />
+              </div>
+
+              <div className="space-y-1">
+                {/* Idhini ya Matokeo & Muhuri (Headteacher Only) */}
+                {(isHeadteacher || isAdmin) && (
+                  <Link
+                    href="/teacher/approvals"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/approvals'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Award className={`w-4 h-4 ${pathname === '/teacher/approvals' ? 'text-amber-300' : 'text-amber-600'}`} />
+                      <span>Results Approval &amp; Seal</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/approvals' ? 'bg-amber-400 text-amber-950' : 'bg-amber-100 text-amber-900'}`}>
+                      Mkuu
+                    </span>
+                  </Link>
+                )}
+
+                {/* Broadsheet ya Shule Nzima (Headteacher & Academic Master) */}
+                {(isHeadteacher || isAcademicMaster || isAdmin) && (
+                  <Link
+                    href="/teacher/broadsheet"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/broadsheet'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FileSpreadsheet className={`w-4 h-4 ${pathname === '/teacher/broadsheet' ? 'text-blue-200' : 'text-blue-600'}`} />
+                      <span>School Broadsheet</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/broadsheet' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-900'}`}>
+                      Taaluma
+                    </span>
+                  </Link>
+                )}
+
+                {/* Walimu Wangu (Staff Directory - Headteacher Only) */}
+                {(isHeadteacher || isAdmin) && (
+                  <Link
+                    href="/teacher/staff"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/staff'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Users className={`w-4 h-4 ${pathname === '/teacher/staff' ? 'text-emerald-200' : 'text-emerald-700'}`} />
+                      <span>Staff Directory</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/staff' ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800'}`}>
+                      Walimu
+                    </span>
+                  </Link>
+                )}
+
+                {/* Watahiniwa wa Taifa (NECTA Candidates - Headteacher & Academic Master) */}
+                {(isHeadteacher || isAcademicMaster || isAdmin) && (
+                  <Link
+                    href="/teacher/candidates"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/candidates'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <GraduationCap className={`w-4 h-4 ${pathname === '/teacher/candidates' ? 'text-purple-200' : 'text-purple-600'}`} />
+                      <span>National Candidates (NECTA)</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/candidates' ? 'bg-purple-700 text-white' : 'bg-purple-100 text-purple-900'}`}>
+                      Std 4 &amp; 7
+                    </span>
+                  </Link>
+                )}
+
+                {/* Discipline & Truancy (Headteacher & Discipline Master) */}
+                {(isHeadteacher || isDisciplineMaster || isAdmin) && (
+                  <Link
+                    href="/teacher/discipline"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/discipline'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Shield className={`w-4 h-4 ${pathname === '/teacher/discipline' ? 'text-rose-200' : 'text-rose-600'}`} />
+                      <span>Discipline &amp; Truancy</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/discipline' ? 'bg-rose-700 text-white' : 'bg-rose-100 text-rose-900'}`}>
+                      Nidhamu
+                    </span>
+                  </Link>
+                )}
+              </div>
             </div>
-
-            <div className="space-y-1">
-              {/* Idhini ya Matokeo & Muhuri (Headteacher Primary Activity) */}
-              <Link
-                href="/teacher/approvals"
-                className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/approvals'
-                    ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
-                    : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Award className={`w-4 h-4 ${pathname === '/teacher/approvals' ? 'text-amber-300' : 'text-amber-600'}`} />
-                  <span>Results Approval &amp; Seal</span>
-                </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/approvals' ? 'bg-amber-400 text-amber-950' : 'bg-amber-100 text-amber-900'}`}>
-                  Mkuu
-                </span>
-              </Link>
-
-              {/* Broadsheet ya Shule Nzima */}
-              <Link
-                href="/teacher/broadsheet"
-                className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/broadsheet'
-                    ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
-                    : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <FileSpreadsheet className={`w-4 h-4 ${pathname === '/teacher/broadsheet' ? 'text-blue-200' : 'text-blue-600'}`} />
-                  <span>School Broadsheet</span>
-                </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/broadsheet' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-900'}`}>
-                  Reports
-                </span>
-              </Link>
-
-              {/* Walimu Wangu (Staff Directory - Teachers Only under Headteacher) */}
-              <Link
-                href="/teacher/staff"
-                className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/staff'
-                    ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
-                    : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Users className={`w-4 h-4 ${pathname === '/teacher/staff' ? 'text-emerald-200' : 'text-emerald-700'}`} />
-                  <span>Staff Directory</span>
-                </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/staff' ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800'}`}>
-                  Walimu
-                </span>
-              </Link>
-
-              {/* Watahiniwa wa Taifa (NECTA Candidates) */}
-              <Link
-                href="/teacher/candidates"
-                className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/candidates'
-                    ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
-                    : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <GraduationCap className={`w-4 h-4 ${pathname === '/teacher/candidates' ? 'text-purple-200' : 'text-purple-600'}`} />
-                  <span>National Candidates (NECTA)</span>
-                </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/candidates' ? 'bg-purple-700 text-white' : 'bg-purple-100 text-purple-900'}`}>
-                  Std 4 &amp; 7
-                </span>
-              </Link>
-
-              {/* Discipline & Truancy */}
-              <Link
-                href="/teacher/discipline"
-                className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
-                  pathname === '/teacher/discipline'
-                    ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
-                    : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Shield className={`w-4 h-4 ${pathname === '/teacher/discipline' ? 'text-rose-200' : 'text-rose-600'}`} />
-                  <span>Discipline &amp; Truancy</span>
-                </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/discipline' ? 'bg-rose-700 text-white' : 'bg-rose-100 text-rose-900'}`}>
-                  Nidhamu
-                </span>
-              </Link>
-            </div>
-          </div>
+          )}
 
           {/* ================================================================= */}
           {/* GROUP 3: UTAWALA WA MFUMO - STRICTLY RENDERED FOR ADMIN ONLY */}

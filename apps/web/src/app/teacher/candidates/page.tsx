@@ -42,6 +42,7 @@ export default function CandidatesPage() {
     <TeacherShell
       pageTitle="Watahiniwa wa Taifa (NECTA Candidates: PSLE & SFNA)"
       pageDescription="Ofisi ya Mwalimu wa Taaluma: Usimamizi wa watahiniwa wa Mitihani ya Taifa ya Darasa la Saba (PSLE) na Upimaji wa Kitaifa wa Darasa la Nne (SFNA)."
+      requiredRole="ACADEMIC"
     >
       <div className="space-y-6 animate-fade-in">
         {/* KPI Cards */}

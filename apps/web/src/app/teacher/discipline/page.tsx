@@ -371,6 +371,7 @@ export default function DisciplineAndAttendancePage() {
     <TeacherShell
       pageTitle="Nidhamu ya Shule, Mahudhurio & Ufuatiliaji wa Utoro"
       pageDescription="Ofisi ya Mwalimu Mkuu & Mwalimu wa Nidhamu: Mapokezi ya kila siku ya mahudhurio kutoka kwa walimu wa madarasa, uthibitisho wa utoro, kurekodi kwenye Masijala ya Shule, na mawasiliano ya dharura na wazazi."
+      requiredRole="DISCIPLINE"
     >
       <div className="space-y-6 animate-fade-in">
         {/* Notice alert */}

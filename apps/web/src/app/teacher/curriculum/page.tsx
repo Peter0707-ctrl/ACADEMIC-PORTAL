@@ -376,28 +376,30 @@ export default function CurriculumOversightPage() {
             </span>
           </button>
 
-          {/* TAB 2: UKAGUZI WA MAANDALIO YA WALIMU (FOR HEADMASTER, SECOND HEAD, ACADEMIC & ASSISTANTS) */}
-          <button
-            type="button"
-            onClick={() => setActiveMainTab('STAFF_INSPECTION')}
-            className={`flex-1 py-3 px-5 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
-              activeMainTab === 'STAFF_INSPECTION'
-                ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
-                : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
-            }`}
-          >
-            <ShieldCheck className={`w-4 h-4 ${activeMainTab === 'STAFF_INSPECTION' ? 'text-amber-300' : 'text-emerald-700'}`} />
-            <span>2. Ukaguzi wa Maandalio ya Walimu (Staff Lesson Plan Review)</span>
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+          {/* TAB 2: UKAGUZI WA MAANDALIO YA WALIMU (STRICTLY FOR HEADMASTER & ACADEMIC MASTER) */}
+          {isLeadershipUser && (
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('STAFF_INSPECTION')}
+              className={`flex-1 py-3 px-5 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
                 activeMainTab === 'STAFF_INSPECTION'
-                  ? 'bg-amber-400 text-emerald-950'
-                  : 'bg-emerald-100 text-emerald-800'
+                  ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
+                  : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
               }`}
             >
-              Ofisi ya Mkuu &amp; Taaluma
-            </span>
-          </button>
+              <ShieldCheck className={`w-4 h-4 ${activeMainTab === 'STAFF_INSPECTION' ? 'text-amber-300' : 'text-emerald-700'}`} />
+              <span>2. Ukaguzi wa Maandalio ya Walimu (Staff Lesson Plan Review)</span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                  activeMainTab === 'STAFF_INSPECTION'
+                    ? 'bg-amber-400 text-emerald-950'
+                    : 'bg-emerald-100 text-emerald-800'
+                }`}
+              >
+                Ofisi ya Mkuu &amp; Taaluma
+              </span>
+            </button>
+          )}
         </div>
 
         {/* ================================================================= */}
@@ -555,7 +557,7 @@ export default function CurriculumOversightPage() {
         {/* MODE 2: STAFF LESSON PLAN REVIEW & INSPECTION                      */}
         {/* (UKAGUZI WA MAANDALIO YA WALIMU WOTE SHULENI)                      */}
         {/* ================================================================= */}
-        {activeMainTab === 'STAFF_INSPECTION' && (
+        {activeMainTab === 'STAFF_INSPECTION' && isLeadershipUser && (
           <div className="space-y-6">
             {/* Leadership Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

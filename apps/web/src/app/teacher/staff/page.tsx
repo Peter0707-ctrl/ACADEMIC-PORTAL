@@ -43,6 +43,7 @@ export default function TeachingStaffPage() {
     <TeacherShell
       pageTitle="Walimu Wangu & Idara (Teaching Staff Directory)"
       pageDescription="Ofisi ya Mwalimu Mkuu: Orodha ya walimu unaowasimamia shuleni (Mwalimu wa Taaluma, Nidhamu, na Walimu wa Madarasa). Usimamizi na ufutaji wa akaunti zote za mfumo hufanywa na Admin pekee."
+      requiredRole="HEADTEACHER"
     >
       <div className="space-y-6 animate-fade-in">
         {/* Header and Filter */}
