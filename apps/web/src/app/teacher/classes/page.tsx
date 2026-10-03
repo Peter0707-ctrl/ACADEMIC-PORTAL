@@ -124,14 +124,19 @@ export default function MyClassesPage() {
     refreshRecords();
   }, []);
 
-  // Check roles: Academic Master, Headteacher, Second Master
-  const isAcademicOrLeadership =
+  // Usajili wa Wanafunzi Wapya: Strictly Mwalimu wa Taaluma (Academic) na Mwalimu Mkuu (Headmaster) tu!
+  const isAcademicMaster =
     currentUser?.role === 'ACADEMIC' ||
     currentUser?.leadershipRole === 'ACADEMIC' ||
+    currentUser?.leadershipRole === 'ASSISTANT_ACADEMIC';
+
+  const isHeadmaster =
     currentUser?.role === 'HEADTEACHER' ||
     currentUser?.leadershipRole === 'HEADTEACHER' ||
     currentUser?.leadershipRole === 'SECOND_MASTER' ||
     currentUser?.role === 'ADMIN';
+
+  const isAuthorizedToEnroll = isAcademicMaster || isHeadmaster;
 
   // Handler: Add Class and Subject to Teacher's Load
   const handleAddClassAndSubject = (e: React.FormEvent) => {
@@ -208,6 +213,11 @@ export default function MyClassesPage() {
   // Handler: Enroll Student (MoEST / TAMISEMI Process)
   const handleAdmissionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthorizedToEnroll) {
+      notifyUser('warning', 'Kizuizi cha Mamlaka', 'Usajili wa wanafunzi wapya unaruhusiwa kwa Mwalimu wa Taaluma na Mwalimu Mkuu pekee.');
+      return;
+    }
+
     if (!admissionForm.firstName || !admissionForm.surname || !admissionForm.parentName || !admissionForm.parentPhone) {
       notifyUser('warning', 'Taarifa Hazijakamilika', 'Tafadhali jaza Majina ya mwanafunzi, Jina la Mzazi na Nambari ya Simu.');
       return;
@@ -321,39 +331,44 @@ export default function MyClassesPage() {
               <span>Madarasa Ninayofundisha ({teachingAssignments.length})</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('CENTRAL_REGISTRY');
-                refreshRecords();
-              }}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-2 ${
-                activeTab === 'CENTRAL_REGISTRY'
-                  ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
-                  : 'text-emerald-950 hover:bg-emerald-100/70'
-              }`}
-            >
-              <Building2 className="w-4 h-4 text-amber-300" />
-              <span>Daftari Kuu la Udahili (School Record &amp; Katibu)</span>
-              {enrolledRecords.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-emerald-950 font-mono text-[10px] font-bold">
-                  {enrolledRecords.length}
-                </span>
-              )}
-            </button>
+            {/* Daftari Kuu: Strictly for ACADEMIC MASTER and HEADMASTER */}
+            {isAuthorizedToEnroll && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('CENTRAL_REGISTRY');
+                  refreshRecords();
+                }}
+                className={`px-4 sm:px-5 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-2 ${
+                  activeTab === 'CENTRAL_REGISTRY'
+                    ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
+                    : 'text-emerald-950 hover:bg-emerald-100/70'
+                }`}
+              >
+                <Building2 className="w-4 h-4 text-amber-300" />
+                <span>Daftari Kuu la Udahili (School Record &amp; Katibu)</span>
+                {enrolledRecords.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-emerald-950 font-mono text-[10px] font-bold">
+                    {enrolledRecords.length}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Student Admission Button */}
-            <button
-              type="button"
-              onClick={() => setShowAdmissionModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition-all"
-            >
-              <UserCheck className="w-4 h-4 text-emerald-200" />
-              <span>+ Sajili Mwanafunzi (Taaluma)</span>
-            </button>
+            {/* Student Admission Button: Strictly for ACADEMIC MASTER and HEADMASTER ONLY (Hidden for other teachers) */}
+            {isAuthorizedToEnroll && (
+              <button
+                type="button"
+                onClick={() => setShowAdmissionModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <UserCheck className="w-4 h-4 text-emerald-200" />
+                <span>+ Sajili Mwanafunzi (Taaluma)</span>
+              </button>
+            )}
 
             {/* Add Class/Subject to load */}
             <button
@@ -676,7 +691,7 @@ export default function MyClassesPage() {
         {/* ================================================================= */}
         {/* 4. MODAL: SAJILI MWANAFUNZI MPYA (MOEST & TAMISEMI ADMISSION FORM) */}
         {/* ================================================================= */}
-        {showAdmissionModal && (
+        {showAdmissionModal && isAuthorizedToEnroll && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-5 max-h-[92vh] flex flex-col">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
