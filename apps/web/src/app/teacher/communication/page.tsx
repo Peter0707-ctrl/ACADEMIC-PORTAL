@@ -17,9 +17,14 @@ import {
   Plus,
   Shield,
   Sparkles,
+  Smartphone,
+  ExternalLink,
+  Lock,
+  Share2,
+  Check,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
-import { getCurrentSession, UserAccount } from '@/lib/auth-session';
+import { getCurrentSession, INITIAL_BLUEPRINT_ACCOUNTS, UserAccount } from '@/lib/auth-session';
 import { notifyUser } from '@/lib/notifications';
 
 interface SchoolAnnouncement {
@@ -42,6 +47,18 @@ interface DirectMessage {
   timestamp: string;
   message: string;
   isSelf: boolean;
+}
+
+interface SentBroadcast {
+  id: string;
+  channel: 'WHATSAPP' | 'SMS';
+  category: string;
+  recipientGroup: string;
+  senderName: string;
+  senderRole: string;
+  message: string;
+  sentAt: string;
+  recipientCount: number;
 }
 
 const INITIAL_ANNOUNCEMENTS: SchoolAnnouncement[] = [
@@ -99,39 +116,159 @@ const INITIAL_MESSAGES: DirectMessage[] = [
     message: 'Asante sana Mwl. Taaluma. Nimeshaanza pia maandalizi ya masomo ya ziada kwa wanafunzi 4 wanaohitaji uangalizi.',
     isSelf: true,
   },
+];
+
+const INITIAL_SENT_BROADCASTS: SentBroadcast[] = [
   {
-    id: 'msg-03',
-    sender: 'Mwl. Augustine Mrosso (Mkuu)',
-    senderRole: 'Head Teacher',
-    receiver: 'Me',
-    timestamp: 'Jana, 04:15 PM',
-    message: 'Mwalimu hakikisha umechapisha nakala ya Lesson Plan ya wiki ijayo kwa ajili ya ukaguzi wa ufundishaji.',
-    isSelf: false,
+    id: 'bcast-01',
+    channel: 'WHATSAPP',
+    category: 'MATOKEO',
+    recipientGroup: 'Standard 7 (Grade 7) — Wazazi 95',
+    senderName: 'Mwl. Beatrice Kimaro',
+    senderRole: 'Mwalimu wa Taaluma',
+    message: '*SHULE YA MSINGI PRIMARY & NURSERY*\n*TAARIFA YA MATOKEO YA NUSU MUHULA (MID-TERM 2026)*\n\nMpendwa Mzazi/Mlezi wa Standard 7,\nTunapenda kukutaarifu kuwa matokeo ya mitihani ya Nusu Muhula wa 1 (2026) yametangazwa rasmi leo. Unaweza kuangalia ripoti ya mwanao kwa kiungo kilicho hapa chini.\n\n🌐 Kiungo cha Matokeo: https://primaryschool.ac.tz/results\n\nImetolewa na: Ofisi ya Taaluma & Mkuu wa Shule.',
+    sentAt: '27 Machi 2026, 14:30',
+    recipientCount: 95,
+  },
+  {
+    id: 'bcast-02',
+    channel: 'WHATSAPP',
+    category: 'LIKIZO',
+    recipientGroup: 'Shule Nzima (Wazazi Wote 190)',
+    senderName: 'Mwl. Augustine Mrosso',
+    senderRole: 'Mwalimu Mkuu',
+    message: '*SHULE YA MSINGI PRIMARY & NURSERY*\n*TAARIFA YA KUFUNGA SHULE KWA LIKIZO FUPI*\n\nMpendwa Mzazi/Mlezi,\nShule itafungwa rasmi tarehe 28 Machi 2026 kwa likizo fupi ya nusu muhula na itafunguliwa tarehe 07 Aprili 2026 saa 1:30 asubuhi.\n\nWanafunzi wamepewa mazoezi ya likizo kwenye madaftari yao. Tunawatakia likizo njema na salama.',
+    sentAt: '26 Machi 2026, 10:00',
+    recipientCount: 190,
   },
 ];
 
 export default function CommunicationPage() {
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
-  const [activeTab, setActiveTab] = useState<'ANNOUNCEMENTS' | 'MESSAGES' | 'PARENT_SMS'>('ANNOUNCEMENTS');
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(INITIAL_BLUEPRINT_ACCOUNTS[0] || null);
+  const [activeTab, setActiveTab] = useState<'PARENT_BROADCAST' | 'ANNOUNCEMENTS' | 'MESSAGES'>('PARENT_BROADCAST');
+
   const [announcements, setAnnouncements] = useState<SchoolAnnouncement[]>(INITIAL_ANNOUNCEMENTS);
   const [messages, setMessages] = useState<DirectMessage[]>(INITIAL_MESSAGES);
+  const [sentBroadcasts, setSentBroadcasts] = useState<SentBroadcast[]>(INITIAL_SENT_BROADCASTS);
   const [replyText, setReplyText] = useState('');
 
-  // Parent SMS State
-  const [smsRecipientClass, setSmsRecipientClass] = useState('Standard 6 (Grade 6)');
-  const [smsCategory, setSmsCategory] = useState<'ATTENDANCE' | 'ACADEMIC' | 'GENERAL'>('ACADEMIC');
-  const [smsMessage, setSmsMessage] = useState(
-    'Mpendwa Mzazi/Mlezi, Matokeo ya majaribio ya mwezi wa Machi yameshatolewa. Unaweza kuangalia maendeleo ya mwanao shuleni. Asanteni.'
+  // Parent WhatsApp / SMS Form State
+  const [recipientGroup, setRecipientGroup] = useState('Standard 7 (Grade 7) — Wazazi 95');
+  const [selectedChannel, setSelectedChannel] = useState<'WHATSAPP' | 'SMS'>('WHATSAPP');
+  const [broadcastCategory, setBroadcastCategory] = useState<'MATOKEO' | 'LIKIZO' | 'MKUTANO' | 'ADA' | 'DHARURA'>('MATOKEO');
+
+  const [broadcastMessage, setBroadcastMessage] = useState(
+    '*SHULE YA MSINGI PRIMARY & NURSERY*\n*TAARIFA YA MATOKEO YA MITIHANI (2026)*\n\nMpendwa Mzazi/Mlezi wa Standard 7,\nTunapenda kukutaarifu kuwa matokeo ya mitihani ya Muhula wa 1 yamekamilika na kuidhinishwa rasmi. Unaweza kuangalia maendeleo ya mwanao kupitia kiungo rasmi cha mfumo.\n\n🌐 Tazama Matokeo Hapa: https://primaryschool.ac.tz/results\n\nImetolewa na: Ofisi ya Mwalimu Mkuu & Mwalimu wa Taaluma.'
   );
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const session = getCurrentSession();
     if (session) {
       setCurrentUser(session);
     }
   }, []);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  // Check if current user is authorized to send broadcasts to parents:
+  // HEADTEACHER, ACADEMIC MASTER, SECOND MASTER, ASSISTANT ACADEMIC, ADMIN
+  const isAuthorizedToBroadcast =
+    currentUser?.role === 'HEADTEACHER' ||
+    currentUser?.leadershipRole === 'HEADTEACHER' ||
+    currentUser?.leadershipRole === 'SECOND_MASTER' ||
+    currentUser?.leadershipRole === 'DEPUTY_HEADTEACHER' ||
+    currentUser?.role === 'ACADEMIC' ||
+    currentUser?.leadershipRole === 'ACADEMIC' ||
+    currentUser?.leadershipRole === 'ASSISTANT_ACADEMIC' ||
+    currentUser?.role === 'ADMIN';
+
+  // Handle Preset Template Selection
+  const handleTemplateSelect = (type: 'MATOKEO' | 'LIKIZO' | 'MKUTANO' | 'ADA' | 'DHARURA') => {
+    setBroadcastCategory(type);
+    const schoolName = '*SHULE YA MSINGI PRIMARY & NURSERY*';
+
+    if (type === 'MATOKEO') {
+      setBroadcastMessage(
+        `${schoolName}\n*TAARIFA YA MATOKEO YA MITIHANI (2026)*\n\nMpendwa Mzazi/Mlezi wa ${recipientGroup.split(' —')[0]},\nTunapenda kukutaarifu kuwa matokeo ya mitihani ya muhula huu yamekamilika na kuidhinishwa rasmi na Mwalimu Mkuu.\n\n📊 Kila mwanafunzi amepewa ripoti ya maendeleo ya taaluma.\n🌐 Tazama Matokeo Mtandaoni: https://primaryschool.ac.tz/results\n\nAsanteni kwa ushirikiano wenu katika maendeleo ya mwanao.\nImetolewa na: Ofisi ya Mwalimu Mkuu & Taaluma.`
+      );
+    } else if (type === 'LIKIZO') {
+      setBroadcastMessage(
+        `${schoolName}\n*TAARIFA YA KUFUNGA/KUFUNGUA SHULE NA LIKIZO*\n\nMpendwa Mzazi/Mlezi,\nShule itafungwa rasmi kwa ajili ya likizo kuanzia tarehe 28 Machi 2026 na itafunguliwa tarehe 07 Aprili 2026 saa 1:30 asubuhi.\n\nWanafunzi wamepewa mazoezi ya likizo ya kufanya nyumbani. Tafadhali msimamie mwanao kukamilisha kazi zake.\n\nTunawatakia likizo njema na yenye amani.`
+      );
+    } else if (type === 'MKUTANO') {
+      setBroadcastMessage(
+        `${schoolName}\n*MWALIKO WA MKUTANO MKUU WA WAZAZI*\n\nMpendwa Mzazi/Mlezi,\nUongozi wa shule unakualika kwa heshima kwenye Mkutano Mkuu wa Wazazi utakaofanyika shuleni siku ya Ijumaa saa 3:00 Asubuhi.\n\n📋 *Ajenda Kuu:*\n1. Tathmini ya Maendeleo ya Kitaaluma\n2. Maandalizi ya Mitihani ya Kitaifa ya NECTA (PSLE & SFNA)\n3. Nidhamu na Malezi ya Wanafunzi\n\nUwepo wako ni muhimu sana kwa maendeleo ya shule yetu.`
+      );
+    } else if (type === 'ADA') {
+      setBroadcastMessage(
+        `${schoolName}\n*UKUMBUSHO WA MALIPO YA ADA & MICHANGO*\n\nMpendwa Mzazi/Mlezi,\nUongozi unawakumbusha wazazi wote kukamilisha malipo ya ada na michango ya shule ya Muhula wa 1 kabla ya tarehe 30 Machi 2026.\n\n🏦 *Namba ya Akaunti / Control No:*\n• Benki: NMB Bank\n• Jina la Akaunti: Primary & Nursery School\n• Namba ya Malipo (Control No): 9912345678\n\nTafadhali wasilisha risiti ya benki ofisi ya Uhasibu.`
+      );
+    } else {
+      setBroadcastMessage(
+        `${schoolName}\n*TANGAZO MAALUM KUTOKA KWA UONGOZI WA SHULE*\n\nMpendwa Mzazi/Mlezi,\nTunapenda kukutaarifu kuwa kutakuwa na mabadiliko ya ratiba ya wiki hii kutokana na maelekezo ya Wizara ya Elimu (MoEST).\n\nTafadhali hakikisha mwanao anafika shuleni kwa wakati akiwa amevalia sare kamili na nadhifu.\n\nAsanteni kwa ushirikiano wenu.`
+      );
+    }
+  };
+
+  // Handle Dispatch WhatsApp / SMS Broadcast
+  const handleSendBroadcast = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!broadcastMessage.trim()) return;
+
+    const uploaderRole =
+      currentUser?.leadershipRole === 'HEADTEACHER' || currentUser?.role === 'HEADTEACHER'
+        ? 'Mwalimu Mkuu'
+        : 'Mwalimu wa Taaluma';
+
+    const timestamp = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const recipientCount = recipientGroup.includes('190') ? 190 : recipientGroup.includes('95') ? 95 : 35;
+
+    const newBroadcast: SentBroadcast = {
+      id: `bcast-${Date.now()}`,
+      channel: selectedChannel,
+      category: broadcastCategory,
+      recipientGroup,
+      senderName: currentUser?.fullName || 'Mwl. Augustine Mrosso',
+      senderRole: uploaderRole,
+      message: broadcastMessage,
+      sentAt: timestamp,
+      recipientCount,
+    };
+
+    setSentBroadcasts([newBroadcast, ...sentBroadcasts]);
+
+    if (selectedChannel === 'WHATSAPP') {
+      // Create WhatsApp Web direct link for sharing
+      const encodedText = encodeURIComponent(broadcastMessage);
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+
+      notifyUser(
+        'success',
+        'Ujumbe wa WhatsApp Umetumwa & Kufunguliwa!',
+        `Ujumbe umetumwa kwa wazazi ${recipientCount} wa ${recipientGroup}. Dirisha la WhatsApp limefunguliwa.`
+      );
+
+      // Open WhatsApp web link in new window for instant blast
+      if (typeof window !== 'undefined') {
+        window.open(whatsappUrl, '_blank');
+      }
+    } else {
+      notifyUser(
+        'success',
+        'SMS Zimetumwa kwa Wazazi!',
+        `SMS ${recipientCount} zimetumwa kikamilifu kwa wazazi wa ${recipientGroup} kupitia SMS Gateway ya shule.`
+      );
+    }
+  };
+
+  // Internal messages sender
+  const handleSendInternalMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!replyText.trim()) return;
 
@@ -147,43 +284,34 @@ export default function CommunicationPage() {
 
     setMessages([...messages, newMsg]);
     setReplyText('');
-    notifyUser('success', 'Ujumbe Umetumwa!', 'Ujumbe wako umetumwa kwa mafanikio.');
-  };
-
-  const handleSendParentSms = (e: React.FormEvent) => {
-    e.preventDefault();
-    notifyUser(
-      'success',
-      'SMS Imetumwa kwa Wazazi!',
-      `Ujumbe umetumwa kwa wazazi 35 wa wanafunzi wa ${smsRecipientClass} kupitia mfumo wa SMS wa Shule.`
-    );
-  };
-
-  const handlePresetSelect = (type: 'ATTENDANCE' | 'ACADEMIC' | 'GENERAL') => {
-    setSmsCategory(type);
-    if (type === 'ATTENDANCE') {
-      setSmsMessage(
-        'Mpendwa Mzazi, tunakukumbusha kufuatilia mahudhurio ya mwanao shuleni. Mwanafunzi anapaswa kuwepo darasani kabla ya saa 1:30 asubuhi.'
-      );
-    } else if (type === 'ACADEMIC') {
-      setSmsMessage(
-        'Mpendwa Mzazi/Mlezi, Matokeo ya majaribio ya mwezi wa Machi yameshatolewa. Unaweza kuangalia maendeleo ya mwanao shuleni. Asanteni.'
-      );
-    } else {
-      setSmsMessage(
-        'Mpendwa Mzazi, Uongozi wa shule unakualika kwenye kikao cha wazazi kitakachofanyika siku ya Ijumaa kuanzia saa 3:00 asubuhi.'
-      );
-    }
+    notifyUser('success', 'Ujumbe Umetumwa!', 'Ujumbe wako umetumwa kwa walimu wenzako.');
   };
 
   return (
     <TeacherShell
-      pageTitle="Mawasiliano ya Shule (School Communication)"
-      pageDescription="Matangazo ya shule, jumbe za ndani na mawasiliano yaliyoidhinishwa na wazazi kupitia SMS."
+      pageTitle="Mawasiliano ya Shule & WhatsApp Gateway"
+      pageDescription="Mfumo rasmi wa kutuma taarifa za matokeo na matangazo ya shule kwa wazazi kupitia WhatsApp na SMS."
     >
-      <div className="space-y-6 animate-fade-in">
-        {/* Navigation Tabs */}
+      <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
+        {/* ================================================================= */}
+        {/* 1. TOP NAVIGATION TABS */}
+        {/* ================================================================= */}
         <div className="flex border-b border-slate-200 gap-2 bg-white px-4 pt-3 rounded-2xl border border-emerald-200 shadow-xs">
+          <button
+            onClick={() => setActiveTab('PARENT_BROADCAST')}
+            className={`py-2 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === 'PARENT_BROADCAST'
+                ? 'border-emerald-700 text-emerald-900 bg-emerald-50/50 rounded-t-xl'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Smartphone className="w-4 h-4 text-emerald-700" />
+            <span>Mawasiliano na Wazazi (WhatsApp &amp; SMS)</span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-800 text-white text-[10px] font-black shadow-2xs">
+              WhatsApp Gateway
+            </span>
+          </button>
+
           <button
             onClick={() => setActiveTab('ANNOUNCEMENTS')}
             className={`py-2 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
@@ -193,7 +321,7 @@ export default function CommunicationPage() {
             }`}
           >
             <Bell className="w-4 h-4 text-emerald-700" />
-            <span>Matangazo ya Shule (Announcements)</span>
+            <span>Matangazo ya Shule (Noticeboard)</span>
             <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black">
               {announcements.length}
             </span>
@@ -208,26 +336,286 @@ export default function CommunicationPage() {
             }`}
           >
             <MessageSquare className="w-4 h-4 text-emerald-700" />
-            <span>Jumbe za Ndani (Messages)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('PARENT_SMS')}
-            className={`py-2 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === 'PARENT_SMS'
-                ? 'border-emerald-700 text-emerald-900 bg-emerald-50/50 rounded-t-xl'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Phone className="w-4 h-4 text-emerald-700" />
-            <span>Mawasiliano na Wazazi (Authorized Parent SMS)</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 text-[10px] font-black">
-              SMS Gateway
-            </span>
+            <span>Jumbe za Ndani (Staff Messages)</span>
           </button>
         </div>
 
-        {/* TAB 1: ANNOUNCEMENTS */}
+        {/* ================================================================= */}
+        {/* 2. TAB 1: PARENT BROADCAST (WHATSAPP & SMS) */}
+        {/* ================================================================= */}
+        {activeTab === 'PARENT_BROADCAST' && (
+          <div className="space-y-6">
+            {/* If user is NOT Headmaster or Academic Master */}
+            {!isAuthorizedToBroadcast ? (
+              <div className="bg-white rounded-3xl border border-amber-200 p-8 text-center space-y-4 shadow-xs">
+                <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center mx-auto">
+                  <Lock className="w-7 h-7" />
+                </div>
+                <div className="space-y-1 max-w-md mx-auto">
+                  <h3 className="text-base font-black text-slate-900">
+                    Eneo Lililohifadhiwa kwa Mwalimu Mkuu &amp; Taaluma
+                  </h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Haki ya kutuma matokeo, matangazo ya ada, na jumbe rasmi za shule kwa wazazi kupitia WhatsApp na SMS imeidhinishwa kwa <strong>Mwalimu Mkuu (Headmaster)</strong> na <strong>Mwalimu wa Taaluma (Academic Master)</strong> pekee ili kulinda nidhamu ya mawasiliano ya shule.
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">
+                  <span>Wasiliana na Mkuu wa Shule au Taaluma iwapo unahitaji tangazo litumwe kwa wazazi wako.</span>
+                </div>
+              </div>
+            ) : (
+              /* If AUTHORIZED: Full WhatsApp & SMS Dispatch Dashboard */
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left 2 Cols: The Dispatcher Form */}
+                <div className="lg:col-span-2 bg-white rounded-3xl border border-emerald-200 p-6 shadow-xs space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center shadow-xs">
+                        <Smartphone className="w-5 h-5 text-emerald-300" />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-black text-slate-900">
+                          Tuma Taarifa &amp; Matokeo kwa Wazazi
+                        </h2>
+                        <span className="text-[11px] font-bold text-emerald-800">
+                          Idhini Rasmi: Mwalimu Mkuu au Mwalimu wa Taaluma
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-950 font-bold text-xs flex items-center gap-1 border border-emerald-300">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Idhini Imetolewa</span>
+                    </span>
+                  </div>
+
+                  <form onSubmit={handleSendBroadcast} className="space-y-4 text-xs">
+                    {/* Channel Selector: WhatsApp vs SMS */}
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        1. Chagua Mfumo wa Kutuma (Channel):
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedChannel('WHATSAPP')}
+                          className={`p-3 rounded-2xl border-2 flex items-center justify-center gap-2 transition-all font-black ${
+                            selectedChannel === 'WHATSAPP'
+                              ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-xs'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          }`}
+                        >
+                          <span className="w-3 h-3 rounded-full bg-emerald-600"></span>
+                          <span>WhatsApp (Inayopendekezwa)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedChannel('SMS')}
+                          className={`p-3 rounded-2xl border-2 flex items-center justify-center gap-2 transition-all font-black ${
+                            selectedChannel === 'SMS'
+                              ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-xs'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          }`}
+                        >
+                          <span className="w-3 h-3 rounded-full bg-blue-600"></span>
+                          <span>SMS ya Kawaida (SMS Gateway)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Announcement Category Selector */}
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        2. Aina ya Tangazo / Taarifa (Chagua Kiolezo):
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleTemplateSelect('MATOKEO')}
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                            broadcastCategory === 'MATOKEO'
+                              ? 'bg-emerald-800 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          📊 Matokeo ya Mitihani
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleTemplateSelect('MKUTANO')}
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                            broadcastCategory === 'MKUTANO'
+                              ? 'bg-emerald-800 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          👥 Mkutano wa Wazazi
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleTemplateSelect('LIKIZO')}
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                            broadcastCategory === 'LIKIZO'
+                              ? 'bg-emerald-800 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          🏖️ Kufunga / Kufungua Shule
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleTemplateSelect('ADA')}
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                            broadcastCategory === 'ADA'
+                              ? 'bg-emerald-800 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          💰 Ada &amp; Michango
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleTemplateSelect('DHARURA')}
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                            broadcastCategory === 'DHARURA'
+                              ? 'bg-emerald-800 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          📢 Tangazo Maalum
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Recipient Class / Group */}
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        3. Walengwa wa Ujumbe (Recipients):
+                      </label>
+                      <select
+                        value={recipientGroup}
+                        onChange={(e) => setRecipientGroup(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-semibold focus:outline-emerald-800 bg-white"
+                      >
+                        <option value="Standard 7 (Grade 7) — Wazazi 95">Standard 7 (Grade 7) — Wazazi 95 (Watahiniwa wa PSLE)</option>
+                        <option value="Standard 6 (Grade 6) — Wazazi 35">Standard 6 (Grade 6) — Wazazi 35</option>
+                        <option value="Standard 5 (Grade 5) — Wazazi 32">Standard 5 (Grade 5) — Wazazi 32</option>
+                        <option value="Standard 4 (Grade 4) — Wazazi 40">Standard 4 (Grade 4) — Wazazi 40 (Watahiniwa wa SFNA)</option>
+                        <option value="Shule Nzima (Wazazi Wote 190)">Shule Nzima (Wazazi Wote 190)</option>
+                      </select>
+                    </div>
+
+                    {/* Message Text Area */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="font-bold text-slate-700">
+                          4. Maandishi ya Ujumbe:
+                        </label>
+                        <span className="text-[11px] text-slate-400">
+                          {broadcastMessage.length} Herufi
+                        </span>
+                      </div>
+                      <textarea
+                        rows={7}
+                        value={broadcastMessage}
+                        onChange={(e) => setBroadcastMessage(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-2xl border border-slate-300 text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                        <Shield className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Inatumwa kutoka: {currentUser?.fullName} ({currentUser?.role === 'HEADTEACHER' ? 'Mwalimu Mkuu' : 'Mwalimu wa Taaluma'})</span>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className={`px-6 py-2.5 rounded-xl text-white font-black shadow-md flex items-center gap-2 transition-all ${
+                          selectedChannel === 'WHATSAPP'
+                            ? 'bg-emerald-800 hover:bg-emerald-900'
+                            : 'bg-blue-700 hover:bg-blue-800'
+                        }`}
+                      >
+                        <Send className="w-4 h-4" />
+                        <span>
+                          {selectedChannel === 'WHATSAPP'
+                            ? `Tuma kwa WhatsApp (${recipientGroup.split(' —')[0]})`
+                            : `Tuma SMS kwa Wazazi (${recipientGroup.split(' —')[0]})`}
+                        </span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Right Col: Live WhatsApp Preview & Sent History */}
+                <div className="space-y-4">
+                  {/* WhatsApp Message Live Preview Box */}
+                  <div className="bg-[#EFEAE2] rounded-3xl border border-emerald-300/80 p-4 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between border-b border-emerald-200/60 pb-2">
+                      <span className="text-[11px] font-black uppercase text-emerald-950 flex items-center gap-1.5">
+                        <Smartphone className="w-4 h-4 text-emerald-800" />
+                        <span>Mwonekano kwenye WhatsApp ya Mzazi:</span>
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-800 text-white font-bold">
+                        WhatsApp Live
+                      </span>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-2 text-xs font-sans">
+                      <div className="whitespace-pre-wrap text-slate-800 leading-relaxed text-[11px]">
+                        {broadcastMessage}
+                      </div>
+                      <div className="text-right text-[9px] text-slate-400 font-mono">
+                        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ✓✓
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-slate-500 italic text-center">
+                      Mzazi akipokea ujumbe huu anabofya kiungo na kuona ripoti ya mwanao mara moja.
+                    </p>
+                  </div>
+
+                  {/* Broadcast History */}
+                  <div className="bg-white rounded-3xl border border-emerald-200 p-4 shadow-xs space-y-3">
+                    <h3 className="text-xs font-black text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">
+                      <span>Historia ya Jumbe Zilizotumwa</span>
+                      <span className="text-[10px] font-mono text-emerald-800 font-bold">{sentBroadcasts.length} Jumbe</span>
+                    </h3>
+
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                      {sentBroadcasts.map((bcast) => (
+                        <div key={bcast.id} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-900 font-black text-[9px] uppercase">
+                              {bcast.channel}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">{bcast.sentAt}</span>
+                          </div>
+                          <span className="font-bold text-slate-900 block text-[11px] truncate">
+                            {bcast.recipientGroup}
+                          </span>
+                          <p className="text-[10px] text-slate-500 line-clamp-2">
+                            {bcast.message}
+                          </p>
+                          <div className="text-[9px] font-semibold text-emerald-700 pt-0.5">
+                            Imetumwa na: {bcast.senderName} ({bcast.senderRole})
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================================================================= */}
+        {/* 3. TAB 2: ANNOUNCEMENTS (NOTICEBOARD) */}
+        {/* ================================================================= */}
         {activeTab === 'ANNOUNCEMENTS' && (
           <div className="space-y-4">
             {announcements.map((ann) => (
@@ -248,27 +636,31 @@ export default function CommunicationPage() {
                     >
                       {ann.priority === 'URGENT' ? 'Dharura' : ann.priority === 'HIGH' ? 'Muhimu' : 'Kawaida'}
                     </span>
-                    <span className="text-xs font-bold text-slate-500">• {ann.category}</span>
+                    <h3 className="text-sm sm:text-base font-black text-slate-900">{ann.title}</h3>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{ann.date}</span>
+                  </div>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                  {ann.content}
+                </p>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px]">
+                      {ann.author.charAt(0)}
+                    </div>
+                    <div>
+                      <span className="font-bold text-slate-800 block text-[11px]">{ann.author}</span>
+                      <span className="text-[10px] text-slate-400 block">{ann.role}</span>
+                    </div>
                   </div>
 
-                  <span className="text-[11px] text-slate-500 flex items-center gap-1 font-semibold">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Tarehe: {ann.date}</span>
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-base font-black text-slate-900">{ann.title}</h3>
-                  <p className="text-xs text-slate-700 leading-relaxed mt-2">{ann.content}</p>
-                </div>
-
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="font-bold text-emerald-800">
-                    Kutoka: {ann.author} ({ann.role})
-                  </span>
-                  <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Imethibitishwa na Uongozi</span>
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                    Tangazo Rasmi la Shule
                   </span>
                 </div>
               </div>
@@ -276,53 +668,48 @@ export default function CommunicationPage() {
           </div>
         )}
 
-        {/* TAB 2: MESSAGES */}
+        {/* ================================================================= */}
+        {/* 4. TAB 3: INTERNAL STAFF MESSAGES */}
+        {/* ================================================================= */}
         {activeTab === 'MESSAGES' && (
           <div className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-4">
             <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-black text-slate-900">
-                Mazungumzo ya Kitaaluma na Uongozi wa Shule
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Mawasiliano ya haraka kati ya Walimu, Mwalimu wa Taaluma na Mwalimu Mkuu.
-              </p>
+              <h2 className="text-base font-black text-slate-900">Jumbe za Ndani ya Shule (Staff Messages)</h2>
+              <p className="text-xs text-slate-500">Mawasiliano ya haraka kati ya walimu na uongozi wa shule.</p>
             </div>
 
-            {/* Chat Box */}
-            <div className="space-y-3 max-h-[400px] overflow-y-auto p-3 rounded-2xl bg-slate-50 border border-slate-200">
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
               {messages.map((m) => (
                 <div
                   key={m.id}
-                  className={`flex flex-col ${m.isSelf ? 'items-end' : 'items-start'}`}
+                  className={`p-4 rounded-2xl max-w-xl text-xs space-y-1 ${
+                    m.isSelf
+                      ? 'ml-auto bg-emerald-800 text-white'
+                      : 'mr-auto bg-slate-100 text-slate-800'
+                  }`}
                 >
-                  <span className="text-[10px] text-slate-400 font-semibold mb-0.5 px-1">
-                    {m.sender} • {m.timestamp}
-                  </span>
-                  <div
-                    className={`max-w-md p-3 rounded-2xl text-xs leading-relaxed ${
-                      m.isSelf
-                        ? 'bg-emerald-800 text-white rounded-br-xs'
-                        : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs shadow-2xs'
-                    }`}
-                  >
-                    {m.message}
+                  <div className="flex items-center justify-between gap-2 border-b border-white/20 pb-1">
+                    <span className="font-bold">{m.sender}</span>
+                    <span className={`text-[10px] ${m.isSelf ? 'text-emerald-200' : 'text-slate-500'}`}>
+                      {m.timestamp}
+                    </span>
                   </div>
+                  <p className="pt-1 leading-relaxed">{m.message}</p>
                 </div>
               ))}
             </div>
 
-            {/* Input Bar */}
-            <form onSubmit={handleSendMessage} className="flex gap-2 pt-2">
+            <form onSubmit={handleSendInternalMessage} className="pt-3 border-t border-slate-100 flex gap-2">
               <input
                 type="text"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Andika ujumbe wako hapa..."
+                placeholder="Andika ujumbe wako kwa walimu au uongozi hapa..."
                 className="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               />
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-xs flex items-center gap-1.5"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Tuma</span>
@@ -330,106 +717,7 @@ export default function CommunicationPage() {
             </form>
           </div>
         )}
-
-        {/* TAB 3: AUTHORIZED PARENT SMS */}
-        {activeTab === 'PARENT_SMS' && (
-          <div className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-5">
-            <div className="border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-emerald-700" />
-                <h3 className="text-base font-black text-slate-900">
-                  Kutuma SMS Iliyoidhinishwa kwa Wazazi wa Darasa Lako
-                </h3>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Kama mwalimu wa darasa, una idhini ya kutuma taarifa rasmi za mahudhurio, matokeo, au vikao kwa wazazi wote wa darasa lako mara moja.
-              </p>
-            </div>
-
-            <form onSubmit={handleSendParentSms} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Darasa Lengwa (Recipient Class):</label>
-                  <select
-                    value={smsRecipientClass}
-                    onChange={(e) => setSmsRecipientClass(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
-                  >
-                    <option value="Standard 6 (Grade 6)">Standard 6 (Grade 6) — Wazazi 35</option>
-                    <option value="Standard 7 (Grade 7)">Standard 7 (Grade 7) — Wazazi 15</option>
-                    <option value="Standard 5 (Grade 5)">Standard 5 (Grade 5) — Wazazi 32</option>
-                    <option value="Standard 4 (Grade 4)">Standard 4 (Grade 4) — Wazazi 40</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Aina ya Ujumbe (Pre-filled Templates):</label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handlePresetSelect('ACADEMIC')}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex-1 ${
-                        smsCategory === 'ACADEMIC'
-                          ? 'bg-emerald-800 text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      Matokeo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handlePresetSelect('ATTENDANCE')}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex-1 ${
-                        smsCategory === 'ATTENDANCE'
-                          ? 'bg-emerald-800 text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      Mahudhurio
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handlePresetSelect('GENERAL')}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex-1 ${
-                        smsCategory === 'GENERAL'
-                          ? 'bg-emerald-800 text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      Kikao / Mkutano
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Maandishi ya Ujumbe wa SMS:</label>
-                <textarea
-                  rows={4}
-                  value={smsMessage}
-                  onChange={(e) => setSmsMessage(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                />
-                <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
-                  <span>Wahusika: {smsMessage.length} / 160 (SMS 1)</span>
-                  <span className="text-emerald-700 font-semibold">Gharama: Imefadhiliwa na Shule</span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end">
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md flex items-center gap-2 cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Tuma SMS kwa Wazazi Wote ({smsRecipientClass})</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
       </div>
     </TeacherShell>
   );
 }
-
