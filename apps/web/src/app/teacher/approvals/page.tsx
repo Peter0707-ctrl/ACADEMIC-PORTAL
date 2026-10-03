@@ -369,13 +369,30 @@ export default function HeadteacherApprovalsPage() {
     notifyUser('info', 'Muhuri Umewekwa Upya', `Matokeo ya ${currentClass.name} yamerudishwa kwenye hali ya kusubiri muhuri.`);
   };
 
+  const isAcademicMaster = currentUser?.role === 'ACADEMIC' || currentUser?.leadershipRole === 'ACADEMIC';
+
   return (
     <TeacherShell
       pageTitle="Idhini ya Matokeo & Muhuri Rasmi wa Shule"
-      pageDescription="Ofisi ya Mwalimu Mkuu: Chagua darasa linalopigiwa muhuri, gonga Muhuri Rasmi wa Kidigitali wa Shule, na panga lini matokeo yataonekana kwenye Portal ya Wazazi na Wanafunzi."
+      pageDescription="Ofisi ya Mwalimu Mkuu & Taaluma: Chagua darasa linalopigiwa muhuri, gonga Muhuri Rasmi wa Kidigitali wa Shule, na panga lini matokeo yataonekana kwenye Portal ya Wazazi na Wanafunzi."
       requiredRole="HEADTEACHER"
     >
       <div className="space-y-6 animate-fade-in">
+        {/* Delegated Authority Notice for Academic Master */}
+        {isAcademicMaster && (
+          <div className="p-4 rounded-3xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-3 shadow-xs">
+            <Award className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-black text-amber-900 uppercase tracking-wide">
+                Mamlaka ya Kaimu Mkuu wa Shule (Delegated Leadership Authority)
+              </h4>
+              <p className="text-xs text-amber-800 leading-relaxed">
+                Uko kwenye mfumo kama <strong>{currentUser?.fullName || 'Mwalimu wa Taaluma'}</strong> mwenye idhini maalum ya Mkuu wa Shule ya kuidhinisha, kupiga muhuri rasmi, na kuchapisha matokeo kwa wazazi na wanafunzi wakati Mkuu wa Shule anapokuwa na majukumu mengine au hayupo.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* ===================================================================== */}
         {/* 1. CLASS PICKER TABS: SPECIFY EXACTLY WHICH CLASS IS BEING SEALED */}
         {/* ===================================================================== */}

@@ -46,7 +46,7 @@ interface TeacherShellProps {
   children: React.ReactNode;
   pageTitle?: string;
   pageDescription?: string;
-  requiredRole?: 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE';
+  requiredRole?: 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'LEADERSHIP';
 }
 
 export default function TeacherShell({
@@ -61,6 +61,7 @@ export default function TeacherShell({
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [allAccounts, setAllAccounts] = useState<UserAccount[]>([]);
+  const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
   const triggerNotification = useCallback(
     (type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => {
@@ -68,6 +69,20 @@ export default function TeacherShell({
     },
     []
   );
+
+  // Security: Protect against accidental tab closure or loss of unsaved school work
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'Kikao cha mfumo wa shule kinalindwa. Je, una uhakika unataka kufunga au kuondoka kwenye ukurasa huu?';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   // 1. Session & Access Verification
   useEffect(() => {
@@ -92,24 +107,50 @@ export default function TeacherShell({
     }
 
     // Role-specific check if page requires specific leadership role
-    // Mwalimu Mkuu (HEADTEACHER) and ADMIN have universal executive oversight across all school modules
-    if (
-      requiredRole &&
-      session.role !== requiredRole &&
-      session.leadershipRole !== requiredRole &&
-      session.role !== 'ADMIN' &&
-      session.role !== 'HEADTEACHER'
-    ) {
-      setIsAuthorized(false);
-      triggerNotification(
-        'error',
-        'Eneo Lililozuiliwa',
-        `Sehemu hii imehifadhiwa mahsusi kwa ${requiredRole === 'HEADTEACHER' ? 'Mwalimu Mkuu' : requiredRole === 'ACADEMIC' ? 'Mwalimu wa Taaluma' : 'Mwalimu wa Nidhamu'}. Utaelekezwa kwenye Dashibodi Kuu.`
-      );
-      setTimeout(() => {
-        router.push('/teacher');
-      }, 2500);
-      return;
+    if (requiredRole) {
+      const isLeadershipRole =
+        ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'ADMIN'].includes(session.role) ||
+        ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(session.leadershipRole || '');
+
+      let allowed = false;
+      if (requiredRole === 'LEADERSHIP') {
+        allowed = isLeadershipRole;
+      } else if (requiredRole === 'HEADTEACHER') {
+        // Headteacher, Admin, or Academic Master (delegated authority)
+        allowed =
+          session.role === 'HEADTEACHER' ||
+          session.leadershipRole === 'HEADTEACHER' ||
+          session.role === 'ADMIN' ||
+          session.role === 'ACADEMIC' ||
+          session.leadershipRole === 'ACADEMIC';
+      } else {
+        allowed =
+          session.role === requiredRole ||
+          session.leadershipRole === requiredRole ||
+          session.role === 'ADMIN' ||
+          session.role === 'HEADTEACHER';
+      }
+
+      if (!allowed) {
+        setIsAuthorized(false);
+        triggerNotification(
+          'error',
+          'Eneo Lililozuiliwa',
+          `Sehemu hii imehifadhiwa mahsusi kwa ${
+            requiredRole === 'HEADTEACHER'
+              ? 'Ofisi ya Mwalimu Mkuu / Taaluma'
+              : requiredRole === 'ACADEMIC'
+              ? 'Mwalimu wa Taaluma'
+              : requiredRole === 'DISCIPLINE'
+              ? 'Mwalimu wa Nidhamu'
+              : 'Ofisi za Uongozi wa Shule'
+          }. Utaelekezwa kwenye Dashibodi Kuu.`
+        );
+        setTimeout(() => {
+          router.push('/teacher');
+        }, 2500);
+        return;
+      }
     }
 
     setIsAuthorized(true);
@@ -456,6 +497,26 @@ export default function TeacherShell({
                   </Link>
                 )}
 
+                {/* Daftari Kuu la Udahili wa Wanafunzi (Mwalimu Mkuu, Taaluma, Nidhamu) */}
+                {(isHeadteacher || isAcademicMaster || isDisciplineMaster || isAdmin) && (
+                  <Link
+                    href="/teacher/enrollment"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/enrollment'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Building2 className={`w-4 h-4 ${pathname === '/teacher/enrollment' ? 'text-teal-200' : 'text-teal-700'}`} />
+                      <span>Pupil Enrollment (Daftari Kuu)</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/enrollment' ? 'bg-teal-700 text-white' : 'bg-teal-100 text-teal-900'}`}>
+                      Udahili
+                    </span>
+                  </Link>
+                )}
+
                 {/* Watahiniwa wa Taifa (NECTA Candidates - Headteacher & Academic Master) */}
                 {(isHeadteacher || isAcademicMaster || isAdmin) && (
                   <Link
@@ -541,9 +602,9 @@ export default function TeacherShell({
 
             <button
               type="button"
-              onClick={handleLogout}
-              className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1.5 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50"
-              title="Ondoka kwenye mfumo na kurudi ukurasa wa Login"
+              onClick={() => setShowLogoutModal(true)}
+              className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1.5 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50 cursor-pointer"
+              title="Ondoka kwenye mfumo kwa usalama"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Toka</span>
@@ -576,8 +637,16 @@ export default function TeacherShell({
             </span>
           </div>
 
-          {/* Right Controls: User Profile Chip */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          {/* Right Controls: Security Badge + User Profile Chip + Prominent Logout */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Security Indicator */}
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800"
+              title="Kikao chako kinalindwa dhidi ya kufunga tab kwa bahati mbaya"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Kikao Kinalindwa 🔒</span>
+            </div>
 
             {/* User Profile Chip (Avatar + Full Name + Role) */}
             <Link
@@ -597,6 +666,18 @@ export default function TeacherShell({
                 </span>
               </div>
             </Link>
+
+            {/* Prominent Header Logout Button */}
+            <button
+              type="button"
+              onClick={() => setShowLogoutModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="Toka kwenye mfumo kwa usalama"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-600" />
+              <span className="hidden sm:inline">Toka Salama</span>
+              <span className="sm:hidden">Toka</span>
+            </button>
           </div>
         </header>
 
@@ -605,6 +686,53 @@ export default function TeacherShell({
           {children}
         </main>
       </div>
+
+      {/* ===================================================================== */}
+      {/* 4. LOGOUT SECURITY CONFIRMATION MODAL */}
+      {/* ===================================================================== */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl border border-rose-200 p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 mx-auto">
+              <ShieldCheck className="w-7 h-7" />
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="text-base font-black text-slate-900">Uthibitisho wa Usalama wa Kikao</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Je, una uhakika unataka kutoka kwenye Mfumo wa Shule? Taarifa zote ulizojaza zimehifadhiwa salama kwenye kumbukumbu ya mfumo.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-1">
+              <div className="flex items-center gap-2 font-bold text-emerald-900">
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>Ulinzi wa Data &amp; Usalama wa Tab Upo Hai</span>
+              </div>
+              <p className="text-[11px] text-emerald-800 leading-relaxed">
+                Kutoka kutalinda akaunti yako isitumiwe na mtu mwingine kwenye kompyuta hii ya shule.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="py-2.5 px-4 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Ghairi (Baki Mfumoni)
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-1.5"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Ndiyo, Toka Salama</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

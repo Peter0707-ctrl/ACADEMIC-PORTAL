@@ -445,6 +445,61 @@ export default function AcademicBroadsheetHubPage() {
     setActiveNotice(`Broadsheet ya ${currentClassInfo.name} imewasilishwa kwa Mwalimu Mkuu (${timestamp}).`);
   };
 
+  // Delegated Publishing by Academic Master (when Headteacher is busy/delegated)
+  const handleDelegatedPublish = () => {
+    const timestamp = new Date().toLocaleString('sw-TZ', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const updatedSubmissions = {
+      ...submissionsState,
+      [currentClassInfo.name]: {
+        isSubmitted: true,
+        timestamp,
+        className: currentClassInfo.name,
+        academicMaster: currentUser?.fullName || 'Mwl. Beatrice Kimaro',
+      },
+    };
+    try {
+      localStorage.setItem('academic_submissions_to_headmaster_v1', JSON.stringify(updatedSubmissions));
+      setSubmissionsState(updatedSubmissions);
+    } catch {}
+
+    try {
+      const storageKey = 'headteacher_results_approval_map_v2';
+      const raw = localStorage.getItem(storageKey);
+      let map = raw ? JSON.parse(raw) : {};
+
+      const classId = currentClassInfo.id;
+      map[classId] = {
+        hasApproved: true,
+        approvalTimestamp: timestamp,
+        sealCertNumber: `VER-2026-ACAD-DELEGATE-${Math.floor(10000 + Math.random() * 90000)}`,
+        publishingMode: 'IMMEDIATE',
+        resultsReleaseDate: new Date().toISOString().split('T')[0],
+        resultsReleaseTime: '08:00',
+        isPublishedToUsers: true,
+        publishedTimestamp: timestamp,
+        delegatedTo: currentUser?.fullName || 'Mwl. Beatrice Kimaro (Taaluma)',
+      };
+
+      localStorage.setItem(storageKey, JSON.stringify(map));
+    } catch (e) {
+      console.error(e);
+    }
+
+    notifyUser(
+      'success',
+      'Matokeo Yameidhinishwa & Kuchapishwa kwa Wazazi!',
+      `Kwa idhini maalum ya Mkuu wa Shule aliyeko kwenye majukumu mengine, matokeo ya ${currentClassInfo.name} yamepigiwa Muhuri Rasmi na sasa yanaonekana rasmi kwenye Portal ya Wazazi.`
+    );
+    setActiveNotice(`Matokeo ya ${currentClassInfo.name} yamechapishwa kwa wazazi (Idhini Maalum ya Uongozi - ${timestamp}).`);
+  };
+
   // Download Broadsheet CSV / Excel
   const handleDownloadCSV = () => {
     let headers = '';
@@ -766,22 +821,36 @@ export default function AcademicBroadsheetHubPage() {
                   <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
                 </Link>
               ) : (
-                // ACADEMIC MASTER: Show submission to Headteacher
-                !isClassSubmitted ? (
+                // ACADEMIC MASTER: Show submission to Headteacher PLUS Delegated Publish Button
+                <div className="flex items-center gap-2 flex-wrap">
+                  {!isClassSubmitted ? (
+                    <button
+                      type="button"
+                      onClick={handleAcademicMasterSubmit}
+                      className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-300 flex items-center gap-1.5 transition-all"
+                      title="Tuma broadsheet kwa Mwalimu Mkuu kwa mapitio na muhuri"
+                    >
+                      <Send className="w-3.5 h-3.5 text-slate-600" />
+                      <span>Wasilisha kwa Mkuu</span>
+                    </button>
+                  ) : (
+                    <span className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-950 text-xs font-bold border border-emerald-300 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                      <span>Imewasilishwa kwa Mkuu ✓</span>
+                    </span>
+                  )}
+
+                  {/* DELEGATED PUBLISH BUTTON: When Headteacher is busy/delegated */}
                   <button
                     type="button"
-                    onClick={handleAcademicMasterSubmit}
+                    onClick={handleDelegatedPublish}
                     className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-black shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                    title="Mkuu wa Shule akiwa na majukumu mengine au hayupo, idhinisha na toa matokeo moja kwa moja kwa wazazi"
                   >
-                    <Send className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Wasilisha kwa Mwalimu Mkuu</span>
+                    <Award className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Idhinisha &amp; Chapisha (Kwa Idhini ya Mkuu)</span>
                   </button>
-                ) : (
-                  <span className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-950 text-xs font-black border border-emerald-300 flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                    <span>Imewasilishwa kwa Mkuu wa Shule ✓</span>
-                  </span>
-                )
+                </div>
               )}
             </div>
           </div>
