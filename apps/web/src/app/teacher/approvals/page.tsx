@@ -12,7 +12,6 @@ import {
   Check,
   ShieldCheck,
   ArrowRight,
-  BookOpen,
   FolderArchive,
   Sparkles,
   RotateCcw,
@@ -473,28 +472,6 @@ export default function HeadteacherApprovalsPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Quick Link to Classroom Teaching for Headteacher */}
-        <div className="p-5 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-slate-900">Unataka Kujaza Alama za Darasa Lako?</h4>
-              <p className="text-xs text-slate-500">
-                Kama Mwalimu Mkuu unafundisha Standard 6 &amp; 7 (Uraia na Maadili &amp; Maarifa ya Jamii). Bofya hapa kwenda moja kwa moja kwenye ukurasa wa kujaza alama zako.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/teacher/marks"
-            className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs flex items-center gap-1.5 self-start sm:self-auto shrink-0 transition-colors shadow-xs"
-          >
-            <span>Kujaza Alama Zangu</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
 
         {/* ===================================================================== */}
