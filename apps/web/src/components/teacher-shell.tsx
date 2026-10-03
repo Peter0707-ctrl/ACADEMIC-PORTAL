@@ -30,6 +30,7 @@ import {
   Layers,
   MessageSquare,
   BarChart3,
+  Calendar,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -331,6 +332,24 @@ export default function TeacherShell({
               </div>
             </Link>
 
+            {/* School Timetable (Ratiba ya Shule ya Mwaka Mzima) */}
+            <Link
+              href="/teacher/timetable"
+              className={`w-full px-3 py-2 rounded-xl transition-all flex items-center justify-between text-xs ${
+                pathname === '/teacher/timetable'
+                  ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                  : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950 font-medium'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Calendar className={`w-4 h-4 ${pathname === '/teacher/timetable' ? 'text-emerald-200' : 'text-emerald-700'}`} />
+                <span>School Timetable</span>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/timetable' ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-900'}`}>
+                Mwaka Mzima
+              </span>
+            </Link>
+
             {/* School Communication */}
             <Link
               href="/teacher/communication"
@@ -346,7 +365,7 @@ export default function TeacherShell({
               </div>
             </Link>
 
-            {/* Profile & Timetable */}
+            {/* Profile & Settings */}
             <Link
               href="/teacher/settings"
               className={`w-full px-3 py-2 rounded-xl transition-all flex items-center justify-between text-xs ${
@@ -357,7 +376,7 @@ export default function TeacherShell({
             >
               <div className="flex items-center gap-2.5">
                 <Settings className={`w-4 h-4 ${pathname === '/teacher/settings' ? 'text-emerald-200' : 'text-emerald-700'}`} />
-                <span>Profile &amp; Timetable</span>
+                <span>Profile &amp; Settings</span>
               </div>
             </Link>
           </div>

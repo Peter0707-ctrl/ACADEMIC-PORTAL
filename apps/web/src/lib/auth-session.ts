@@ -14,7 +14,14 @@ export type UserRole =
   | 'CANDIDATE'
   | 'ADMIN';
 
-export type LeadershipRole = 'HEADTEACHER' | 'ACADEMIC' | 'DISCIPLINE' | 'CLASS_TEACHER';
+export type LeadershipRole =
+  | 'HEADTEACHER'
+  | 'SECOND_MASTER'
+  | 'DEPUTY_HEADTEACHER'
+  | 'ACADEMIC'
+  | 'ASSISTANT_ACADEMIC'
+  | 'DISCIPLINE'
+  | 'CLASS_TEACHER';
 
 export interface TeachingLoad {
   class: string;
@@ -155,6 +162,42 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Vocational Skills'],
     status: 'ACTIVE',
     joinedDate: '2026-02-01',
+  },
+  {
+    id: 'USR-007',
+    fullName: 'Mwl. Jumanne Khalfan',
+    role: 'HEADTEACHER',
+    leadershipRole: 'SECOND_MASTER',
+    identifier: 'SEC-2026-001',
+    email: 'secondmaster@primaryschool.ac.tz',
+    phone: '+255 755 889 900',
+    assignedClass: 'Standard 6 (Grade 6)',
+    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'],
+    subjects: ['Mathematics (Hisabati)', 'English Language'],
+    teachingAssignments: [
+      { class: 'Standard 6 (Grade 6)', subject: 'Mathematics (Hisabati)' },
+      { class: 'Standard 7 (Grade 7)', subject: 'English Language' },
+    ],
+    status: 'ACTIVE',
+    joinedDate: '2026-01-18',
+  },
+  {
+    id: 'USR-008',
+    fullName: 'Mwl. Rehema Mushi',
+    role: 'ACADEMIC',
+    leadershipRole: 'ASSISTANT_ACADEMIC',
+    identifier: 'ASST-ACAD-2026-001',
+    email: 'asst.academic@primaryschool.ac.tz',
+    phone: '+255 768 112 334',
+    assignedClass: 'Standard 5 (Grade 5)',
+    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 4 (Grade 4)'],
+    subjects: ['Science & Technology (Sayansi)', 'Kiswahili'],
+    teachingAssignments: [
+      { class: 'Standard 5 (Grade 5)', subject: 'Science & Technology (Sayansi)' },
+      { class: 'Standard 4 (Grade 4)', subject: 'Kiswahili' },
+    ],
+    status: 'ACTIVE',
+    joinedDate: '2026-01-25',
   },
 ];
 
