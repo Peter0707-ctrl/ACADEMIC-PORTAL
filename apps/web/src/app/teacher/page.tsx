@@ -3,16 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Award,
-  FileSpreadsheet,
   User,
   GraduationCap,
-  BookOpen,
   Plus,
-  Trash2,
-  CheckCircle2,
   X,
-  Users,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import {
@@ -139,19 +133,32 @@ export default function TeacherDashboardPage() {
     notifyUser('info', 'Darasa Limeondolewa', `${removed.class} — ${removed.subject} limeondolewa kwenye ratiba yako.`);
   };
 
-  const currentHour = new Date().getHours();
-  const timeGreetingSwahili =
-    currentHour < 12
-      ? 'Habari za Asubuhi'
-      : currentHour < 16
-      ? 'Habari za Mchana'
-      : 'Habari za Jioni';
-  const timeGreetingEnglish =
-    currentHour < 12
-      ? 'Good Morning'
-      : currentHour < 16
-      ? 'Good Afternoon'
-      : 'Good Evening';
+  // Typewriter Greeting based on time of day
+  const [typedGreeting, setTypedGreeting] = useState('');
+
+  useEffect(() => {
+    const currentHour = new Date().getHours();
+    const greeting =
+      currentHour >= 5 && currentHour < 12
+        ? 'Habari za Asubuhi! Karibu kwenye Portal ya Walimu.'
+        : currentHour >= 12 && currentHour < 16
+        ? 'Habari za Mchana! Karibu kwenye Portal ya Walimu.'
+        : currentHour >= 16 && currentHour < 20
+        ? 'Habari za Jioni! Karibu kwenye Portal ya Walimu.'
+        : 'Habari za Usiku! Karibu kwenye Portal ya Walimu.';
+
+    let i = 0;
+    setTypedGreeting('');
+    const timer = setInterval(() => {
+      i++;
+      setTypedGreeting(greeting.slice(0, i));
+      if (i >= greeting.length) {
+        clearInterval(timer);
+      }
+    }, 35);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const roleTitleSwahili =
     currentUser?.role === 'HEADTEACHER'
@@ -161,15 +168,6 @@ export default function TeacherDashboardPage() {
       : currentUser?.role === 'DISCIPLINE'
       ? 'Mwalimu wa Nidhamu'
       : 'Mwalimu wa Darasa';
-
-  const roleTitleEnglish =
-    currentUser?.role === 'HEADTEACHER'
-      ? 'Head Teacher'
-      : currentUser?.role === 'ACADEMIC'
-      ? 'Academic Master'
-      : currentUser?.role === 'DISCIPLINE'
-      ? 'Discipline Master'
-      : 'Class Teacher';
 
   const shellTitle =
     currentUser?.role === 'HEADTEACHER'
@@ -190,61 +188,30 @@ export default function TeacherDashboardPage() {
       pageTitle={shellTitle}
       pageDescription={shellDesc}
     >
-      <div className="space-y-10 animate-fade-in max-w-4xl mx-auto py-6 sm:py-10">
-        {/* 1. HERO: Frameless Avatar, Dynamic Salutation & Teacher Profile */}
-        <div className="flex flex-col items-center justify-center text-center space-y-5">
-          {/* Dynamic Self-Writing Salutation */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100/80 border border-emerald-300 text-emerald-950 font-bold text-xs sm:text-sm tracking-wide shadow-2xs">
-            <span>{timeGreetingSwahili}, {roleTitleSwahili}</span>
-            <span className="text-emerald-500">•</span>
-            <span className="text-emerald-800">{timeGreetingEnglish}, {roleTitleEnglish}</span>
+      <div className="space-y-8 animate-fade-in max-w-4xl mx-auto py-4 sm:py-6">
+        {/* 1. HERO KIMSTARI: Typewriter Salutation, Inline Avatar + Name, na Cheo */}
+        <div className="flex flex-col items-center justify-center text-center space-y-2">
+          {/* Juu: Salutation inayochange kutokana na mda na inajitype */}
+          <div className="min-h-[26px] text-xs sm:text-sm font-semibold text-emerald-800 tracking-wide flex items-center justify-center">
+            <span>{typedGreeting}</span>
+            <span className="inline-block w-1.5 h-3.5 ml-1 bg-emerald-600 animate-pulse" />
           </div>
 
-          {/* Frameless Picture / Avatar (NO frame, NO border) */}
-          <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-emerald-800 text-white flex items-center justify-center shadow-xl shadow-emerald-950/20">
-            <User className="w-16 h-16 sm:w-20 sm:h-20 text-emerald-200" />
-          </div>
-
-          {/* Teacher Name & Role Under the Picture */}
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+          {/* Chini yake: Picha + Jina lake kimstari */}
+          <div className="flex items-center justify-center gap-2.5 pt-0.5">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold shadow-xs">
+              <User className="w-5 h-5 text-emerald-200" />
+            </div>
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
               {currentUser?.fullName || 'Mwl. Augustine Mrosso'}
             </h1>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-              <span className="px-3 py-1 rounded-full bg-emerald-800 text-white font-black text-xs uppercase tracking-wider shadow-xs">
-                {roleTitleSwahili}
-              </span>
-              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-mono text-xs font-bold border border-slate-200">
-                {currentUser?.identifier || 'HT-2026-001'}
-              </span>
-            </div>
-
-            <p className="text-xs sm:text-sm text-slate-500 flex flex-wrap items-center justify-center gap-2 pt-1">
-              <span>{currentUser?.email || 'headteacher@primaryschool.ac.tz'}</span>
-              <span className="text-slate-300">•</span>
-              <span>{currentUser?.phone || '+255 754 112 233'}</span>
-            </p>
           </div>
 
-          {/* Primary Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-            {currentUser?.role === 'HEADTEACHER' && (
-              <Link
-                href="/teacher/approvals"
-                className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-emerald-950 font-black text-xs transition-all shadow-md flex items-center gap-2"
-              >
-                <Award className="w-4 h-4 text-emerald-950" />
-                <span>Idhinisha Matokeo na Muhuri</span>
-              </Link>
-            )}
-            <Link
-              href="/teacher/marks"
-              className="px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs transition-all shadow-md flex items-center gap-2"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-300" />
-              <span>Weka Alama za Masomo Yangu</span>
-            </Link>
+          {/* Chini yake: Cheo kimstari */}
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
+            <span className="font-bold text-emerald-800 uppercase tracking-wider">{roleTitleSwahili}</span>
+            <span className="text-slate-300">•</span>
+            <span className="font-mono text-slate-600">{currentUser?.identifier || 'HT-2026-001'}</span>
           </div>
         </div>
 
