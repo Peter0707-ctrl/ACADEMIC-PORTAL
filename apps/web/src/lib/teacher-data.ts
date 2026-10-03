@@ -337,3 +337,173 @@ export const INITIAL_INCIDENTS: DisciplineIncident[] = [
     status: 'RESOLVED',
   },
 ];
+
+// =============================================================================
+// CENTRAL STUDENT ENROLLMENT & ADMISSION REGISTRY (MOEST & TAMISEMI)
+// Shared across: Academic Master, Teachers (Classrooms), and Secretary (School Record)
+// =============================================================================
+
+export interface EnrolledStudent extends StudentMark {
+  assignedClass: string;
+  stream?: string;
+  admissionType: 'NEW_INTAKE' | 'TRANSFER';
+  birthDate?: string;
+  ritaNumber?: string;
+  parentName: string;
+  parentRelationship: string;
+  parentPhone: string;
+  residence: string;
+  previousSchool?: string;
+  transferLetterRef?: string;
+  specialNeeds?: string;
+  enrolledAt: string;
+  enrolledBy: string;
+}
+
+export const CENTRAL_REGISTRY_KEY = 'academic_portal_registered_pupils_v2';
+export const ENROLLED_RECORDS_KEY = 'school_enrolled_records_archive_2026_v1';
+
+export function getStoredPupilsRegistry(): Record<string, StudentMark[]> {
+  if (typeof window === 'undefined') return INITIAL_PUPILS;
+  try {
+    const raw = localStorage.getItem(CENTRAL_REGISTRY_KEY);
+    if (!raw) {
+      localStorage.setItem(CENTRAL_REGISTRY_KEY, JSON.stringify(INITIAL_PUPILS));
+      return INITIAL_PUPILS;
+    }
+    const parsed = JSON.parse(raw);
+    return { ...INITIAL_PUPILS, ...parsed };
+  } catch {
+    return INITIAL_PUPILS;
+  }
+}
+
+export function getPupilsForClass(className: string): StudentMark[] {
+  const registry = getStoredPupilsRegistry();
+  return registry[className] || INITIAL_PUPILS[className] || [];
+}
+
+export function savePupilsRegistry(registry: Record<string, StudentMark[]>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(CENTRAL_REGISTRY_KEY, JSON.stringify(registry));
+  } catch (e) {
+    console.error('Error saving pupils registry', e);
+  }
+}
+
+export function getAllEnrolledRecords(): EnrolledStudent[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(ENROLLED_RECORDS_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+export function enrollNewPupil(
+  data: {
+    firstName: string;
+    middleName?: string;
+    surname: string;
+    gender: 'M' | 'F';
+    assignedClass: string;
+    stream?: string;
+    admissionType: 'NEW_INTAKE' | 'TRANSFER';
+    birthDate?: string;
+    ritaNumber?: string;
+    parentName: string;
+    parentRelationship: string;
+    parentPhone: string;
+    residence: string;
+    previousSchool?: string;
+    transferLetterRef?: string;
+    specialNeeds?: string;
+    enrolledBy: string;
+  }
+): EnrolledStudent {
+  const registry = getStoredPupilsRegistry();
+  const classList = registry[data.assignedClass] || INITIAL_PUPILS[data.assignedClass] || [];
+
+  const fullName = [data.firstName, data.middleName, data.surname].filter(Boolean).join(' ');
+  const classShort = data.assignedClass.includes('7')
+    ? '07'
+    : data.assignedClass.includes('6')
+    ? '06'
+    : data.assignedClass.includes('5')
+    ? '05'
+    : data.assignedClass.includes('4')
+    ? '04'
+    : data.assignedClass.includes('3')
+    ? '03'
+    : data.assignedClass.includes('2')
+    ? '02'
+    : data.assignedClass.includes('1')
+    ? '01'
+    : '00';
+
+  const nextSeq = classList.length + 1;
+  const seqPadded = nextSeq < 10 ? `0${nextSeq}` : `${nextSeq}`;
+  const admNo = `PUP-2026-${classShort}${seqPadded}`;
+  const id = `pup-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  const newMark: StudentMark = {
+    id,
+    admNo,
+    name: fullName,
+    gender: data.gender,
+    monthlyTest1: 0,
+    monthlyTest2: 0,
+    monthlyAvg: 0,
+    midtermExam: 0,
+    terminalExam: 0,
+    mark: 0,
+    grade: 'C',
+    remarks: 'Mwanafunzi Mpya — Anaanza Muhula',
+    attendance: 'PRESENT',
+  };
+
+  const updatedClassList = [...classList, newMark];
+  const updatedRegistry = {
+    ...registry,
+    [data.assignedClass]: updatedClassList,
+  };
+  savePupilsRegistry(updatedRegistry);
+
+  const fullRecord: EnrolledStudent = {
+    ...newMark,
+    assignedClass: data.assignedClass,
+    stream: data.stream || 'Stream A',
+    admissionType: data.admissionType,
+    birthDate: data.birthDate || '',
+    ritaNumber: data.ritaNumber || '',
+    parentName: data.parentName,
+    parentRelationship: data.parentRelationship,
+    parentPhone: data.parentPhone,
+    residence: data.residence,
+    previousSchool: data.previousSchool || '',
+    transferLetterRef: data.transferLetterRef || '',
+    specialNeeds: data.specialNeeds || '',
+    enrolledAt: new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }),
+    enrolledBy: data.enrolledBy,
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      const records = getAllEnrolledRecords();
+      records.unshift(fullRecord);
+      localStorage.setItem(ENROLLED_RECORDS_KEY, JSON.stringify(records));
+    } catch (e) {
+      console.error('Error saving enrolled record', e);
+    }
+  }
+
+  return fullRecord;
+}
+

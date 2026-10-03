@@ -311,6 +311,24 @@ export default function TimetablePage() {
     referenceNumber: 'SCH-ALMANAC-2026-MOEST',
   });
 
+  // Official Uploaded Almanac Document State
+  const ALMANAC_DOC_KEY = 'school_almanac_document_file_v2';
+  const [almanacDocument, setAlmanacDocument] = useState<{
+    fileName: string;
+    fileSize: string;
+    uploadedAt: string;
+    uploadedBy: string;
+    fileType: string;
+  }>({
+    fileName: 'ALMANAC_KUU_YA_MWAKA_2026_TAMISEMI_APPROVED.pdf',
+    fileSize: '2.4 MB',
+    uploadedAt: '10 Januari 2026',
+    uploadedBy: 'Mwl. Beatrice Kimaro (Mwalimu wa Taaluma)',
+    fileType: 'application/pdf',
+  });
+  const [showDocPreviewModal, setShowDocPreviewModal] = useState(false);
+  const directDocInputRef = React.useRef<HTMLInputElement>(null);
+
   // Modal State for Uploading Timetable / Almanac
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<'TIMETABLE' | 'ALMANAC'>('TIMETABLE');
@@ -331,8 +349,56 @@ export default function TimetablePage() {
       if (stored) setUploadInfo(JSON.parse(stored));
       const storedAlm = localStorage.getItem(ALMANAC_STORAGE_KEY);
       if (storedAlm) setAlmanacInfo(JSON.parse(storedAlm));
+      const storedDoc = localStorage.getItem(ALMANAC_DOC_KEY);
+      if (storedDoc) setAlmanacDocument(JSON.parse(storedDoc));
     } catch {}
   }, []);
+
+  // Handle Direct Document Upload for School Almanac
+  const handleDirectDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser) return;
+
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    const updatedDoc = {
+      fileName: file.name,
+      fileSize: `${sizeMB} MB`,
+      uploadedAt: new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
+      uploadedBy: `${currentUser.fullName} (${currentUser.role === 'ACADEMIC' ? 'Taaluma' : currentUser.role === 'HEADTEACHER' ? 'Mkuu wa Shule' : 'Uongozi'})`,
+      fileType: file.type || 'application/pdf',
+    };
+
+    setAlmanacDocument(updatedDoc);
+    try {
+      localStorage.setItem(ALMANAC_DOC_KEY, JSON.stringify(updatedDoc));
+    } catch {}
+
+    notifyUser(
+      'success',
+      'Nyaraka ya Almanac Imepakiwa!',
+      `Hati "${file.name}" imepakiwa kama Nyaraka Rasmi ya Almanac ya Shule 2026.`
+    );
+  };
+
+  // Handle Download Official Almanac Document
+  const handleDownloadAlmanacDoc = () => {
+    const content = `JAMHURI YA MUUNGANO WA TANZANIA\nOFISI YA RAIS - TAMISEMI & WIZARA YA ELIMU\nKALENDA KUU YA MWAKA WA MASOMO 2026 (SCHOOL ALMANAC)\n\nNyaraka Rasmi: ${almanacDocument.fileName}\nImepakiwa na: ${almanacDocument.uploadedBy}\nTarehe: ${almanacDocument.uploadedAt}\nRejea: ${almanacInfo.referenceNumber}\n\nMATUKIO MAKUU YA MWAKA 2026:\n1. 12 Jan 2026: Kufungua Shule Muhula wa 1\n2. 23 - 27 Machi 2026: Mitihani ya Nusu Muhula wa 1\n3. 28 Machi - 06 Aprili 2026: Likizo Fupi ya Nusu Muhula\n4. 25 - 29 Mei 2026: Mitihani ya Mwisho wa Muhula wa 1 (Terminal Exams)\n5. 05 Juni - 05 Julai 2026: Likizo ya Muhula wa 1\n6. 06 Julai 2026: Kufungua Shule Muhula wa 2\n7. 09 - 10 Septemba 2026: MTIHANI WA TAIFA WA DARASA LA SABA (NECTA PSLE 2026)\n8. 21 - 22 Oktoba 2026: UPIMAJI WA TAIFA WA DARASA LA NNE (NECTA SFNA 2026)\n9. 23 - 27 Novemba 2026: Mitihani ya Kufunga Mwaka (Annual Exams Std 1-6)\n10. 04 Desemba 2026: Kufunga Shule Likizo ya Mwisho wa Mwaka\n\nImeidhinishwa na Mwalimu wa Taaluma na Mkuu wa Shule.\n`;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = almanacDocument.fileName.replace('.pdf', '.txt');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    notifyUser('success', 'Nyaraka Imepakuliwa', `Faili la ${almanacDocument.fileName} limepakuliwa kikamilifu kwenye kifaa chako.`);
+  };
 
   // Check if current user has permission to upload/manage Timetable & Almanac:
   // ACADEMIC MASTER (Primary Responsible), ASSISTANT ACADEMIC, HEADTEACHER, SECOND MASTER, ADMIN
@@ -717,6 +783,76 @@ export default function TimetablePage() {
               </div>
             </div>
 
+            {/* OFFICIAL UPLOADED ALMANAC DOCUMENT CARD */}
+            <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-emerald-700/60 flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="flex items-start gap-4">
+                <div className="w-13 h-13 rounded-2xl bg-amber-400 text-emerald-950 flex items-center justify-center shrink-0 shadow-sm font-black">
+                  <FileText className="w-7 h-7 text-emerald-950" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-700/80 border border-emerald-500/50 text-emerald-200 font-black text-[10px] uppercase tracking-wider">
+                      Hati Rasmi Iliyopakiwa (Uploaded Document)
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-mono text-[10px] font-bold">
+                      {almanacDocument.fileSize}
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white tracking-tight">
+                    {almanacDocument.fileName}
+                  </h3>
+                  <p className="text-xs text-emerald-200 flex flex-wrap items-center gap-2">
+                    <span>Imepakiwa na: <strong>{almanacDocument.uploadedBy}</strong></span>
+                    <span className="text-emerald-400">•</span>
+                    <span>Tarehe: {almanacDocument.uploadedAt}</span>
+                    <span className="text-emerald-400">•</span>
+                    <span className="font-mono text-emerald-300">Wizara ya Elimu (MoEST &amp; TAMISEMI)</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Download, Preview, Upload New */}
+              <div className="flex items-center gap-2.5 flex-wrap shrink-0">
+                <button
+                  type="button"
+                  onClick={handleDownloadAlmanacDoc}
+                  className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-emerald-950 font-black text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                >
+                  <Download className="w-4 h-4 text-emerald-950" />
+                  <span>Pakua Nyaraka Rasmi (Download)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDocPreviewModal(true)}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 border border-white/20 transition-all"
+                >
+                  <FileText className="w-4 h-4 text-emerald-300" />
+                  <span>Tazama Hati (Preview)</span>
+                </button>
+
+                {isAuthorizedToUpload && (
+                  <>
+                    <input
+                      type="file"
+                      ref={directDocInputRef}
+                      onChange={handleDirectDocUpload}
+                      accept=".pdf,.doc,.docx,.xlsx,.xls,.png,.jpg"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => directDocInputRef.current?.click()}
+                      className="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-emerald-100 font-bold text-xs flex items-center gap-1.5 border border-emerald-500/40 transition-all"
+                    >
+                      <UploadCloud className="w-4 h-4 text-amber-300" />
+                      <span>Pakia Nyaraka Mpya (Upload)</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
             {/* National Exam Highlights (SFNA & PSLE) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md space-y-2">
@@ -997,6 +1133,127 @@ export default function TimetablePage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================= */}
+        {/* 5. MODAL: TAZAMA HATI YA SCHOOL ALMANAC (DOCUMENT PREVIEW) */}
+        {/* ================================================================= */}
+        {showDocPreviewModal && (
+          <div className="fixed inset-0 z-60 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-4 max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-amber-300 flex items-center justify-center font-black">
+                    <FileText className="w-5 h-5 text-amber-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">
+                      Nyaraka Rasmi ya Almanac ya Shule 2026
+                    </h3>
+                    <p className="text-xs text-emerald-800 font-semibold">
+                      {almanacDocument.fileName} • {almanacDocument.fileSize}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDocPreviewModal(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Document Mock Viewer Body */}
+              <div className="overflow-y-auto flex-1 p-5 border-2 border-emerald-800/30 rounded-2xl bg-emerald-50/20 space-y-4 text-xs font-sans leading-relaxed">
+                <div className="text-center space-y-1 border-b border-emerald-800/20 pb-3">
+                  <h4 className="font-black text-slate-900 text-sm tracking-wide">
+                    JAMHURI YA MUUNGANO WA TANZANIA
+                  </h4>
+                  <p className="font-bold text-slate-700 text-xs">
+                    OFISI YA RAIS - TAMISEMI &bull; WIZARA YA ELIMU, SAYANSI NA TEKNOLOJIA
+                  </p>
+                  <p className="text-[11px] font-semibold text-emerald-900">
+                    KALENDA RASMI YA MWAKA WA MASOMO 2026 KWA SHULE ZA MSINGI NA AWALI
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Nyaraka:</span>
+                    <span className="font-mono font-bold text-slate-800 text-[11px]">{almanacDocument.fileName}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Imepakiwa na:</span>
+                    <span className="font-bold text-emerald-900 text-[11px]">{almanacDocument.uploadedBy}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h5 className="font-black text-slate-900 uppercase tracking-wide text-[11px]">
+                    Muhtasari wa Mihula na Mitihani ya Kitaifa (NECTA):
+                  </h5>
+                  <div className="space-y-1.5 divide-y divide-slate-200 bg-white p-3 rounded-xl border border-slate-200">
+                    <div className="pt-1 flex items-center justify-between">
+                      <span className="font-bold text-slate-800">1. Kufungua Shule Muhula wa 1:</span>
+                      <span className="font-mono font-bold text-emerald-800">12 Januari 2026</span>
+                    </div>
+                    <div className="pt-1.5 flex items-center justify-between">
+                      <span className="font-bold text-slate-800">2. Mitihani ya Nusu Muhula wa 1:</span>
+                      <span className="font-mono font-bold text-slate-700">23 – 27 Machi 2026</span>
+                    </div>
+                    <div className="pt-1.5 flex items-center justify-between">
+                      <span className="font-bold text-slate-800">3. Likizo ya Nusu Muhula wa 1:</span>
+                      <span className="font-mono text-slate-600">28 Machi – 06 Aprili 2026</span>
+                    </div>
+                    <div className="pt-1.5 flex items-center justify-between">
+                      <span className="font-bold text-slate-800">4. Mitihani ya Muhula wa 1 (Terminal):</span>
+                      <span className="font-mono font-bold text-slate-700">25 – 29 Mei 2026</span>
+                    </div>
+                    <div className="pt-1.5 flex items-center justify-between">
+                      <span className="font-bold text-slate-800">5. Kufungua Shule Muhula wa 2:</span>
+                      <span className="font-mono font-bold text-emerald-800">06 Julai 2026</span>
+                    </div>
+                    <div className="pt-1.5 flex items-center justify-between bg-amber-50 -mx-3 px-3 py-1 rounded-lg">
+                      <span className="font-black text-amber-950">6. MTIHANI WA TAIFA LA SABA (NECTA PSLE):</span>
+                      <span className="font-mono font-black text-amber-900">09 – 10 Septemba 2026</span>
+                    </div>
+                    <div className="pt-1.5 flex items-center justify-between bg-emerald-50 -mx-3 px-3 py-1 rounded-lg">
+                      <span className="font-black text-emerald-950">7. UPIMAJI WA TAIFA LA NNE (NECTA SFNA):</span>
+                      <span className="font-mono font-black text-emerald-900">21 – 22 Oktoba 2026</span>
+                    </div>
+                    <div className="pt-1.5 flex items-center justify-between">
+                      <span className="font-bold text-slate-800">8. Kufunga Shule Likizo ya Mwaka:</span>
+                      <span className="font-mono font-bold text-slate-700">04 Desemba 2026</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-dashed border-emerald-300 flex items-center justify-between text-[11px] text-slate-500">
+                  <span>Imeidhinishwa Rasmi kwa Matumizi ya Walimu na Wazazi</span>
+                  <span className="font-bold text-emerald-800">Muhuri Rasmi &bull; MoEST Compliant</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowDocPreviewModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
+                >
+                  Funga
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadAlmanacDoc}
+                  className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-emerald-950 font-black text-xs flex items-center gap-1.5 shadow-sm"
+                >
+                  <Download className="w-4 h-4 text-emerald-950" />
+                  <span>Pakua Hati (Download)</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession, UserAccount } from '@/lib/auth-session';
-import { INITIAL_PUPILS, StudentMark } from '@/lib/teacher-data';
+import { getPupilsForClass, StudentMark } from '@/lib/teacher-data';
 import { notifyUser } from '@/lib/notifications';
 
 const PRIMARY_CLASSES = [
@@ -39,6 +39,7 @@ export default function PupilPerformancePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [performanceTab, setPerformanceTab] = useState<'OVERVIEW' | 'ATTENTION' | 'INDIVIDUAL'>('OVERVIEW');
   const [selectedPupil, setSelectedPupil] = useState<StudentMark | null>(null);
+  const [pupils, setPupils] = useState<StudentMark[]>([]);
 
   useEffect(() => {
     const session = getCurrentSession();
@@ -50,7 +51,9 @@ export default function PupilPerformancePage() {
     }
   }, []);
 
-  const pupils: StudentMark[] = INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
+  useEffect(() => {
+    setPupils(getPupilsForClass(selectedClass));
+  }, [selectedClass]);
 
   const totalPupils = pupils.length;
   const totalScore = pupils.reduce((sum, p) => sum + p.mark, 0);
