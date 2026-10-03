@@ -20,13 +20,22 @@ import {
   X,
   Printer,
   ChevronRight,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
-import { getCurrentSession, INITIAL_BLUEPRINT_ACCOUNTS, UserAccount } from '@/lib/auth-session';
+import {
+  getCurrentSession,
+  setCurrentSession,
+  getStoredAccounts,
+  saveStoredAccounts,
+  INITIAL_BLUEPRINT_ACCOUNTS,
+  UserAccount,
+} from '@/lib/auth-session';
 import { INITIAL_PUPILS, StudentMark } from '@/lib/teacher-data';
 import { notifyUser } from '@/lib/notifications';
 
-const PRIMARY_CLASSES = [
+const ALL_AVAILABLE_CLASSES = [
   'Standard 7 (Grade 7)',
   'Standard 6 (Grade 6)',
   'Standard 5 (Grade 5)',
@@ -38,7 +47,13 @@ const PRIMARY_CLASSES = [
 
 export default function MyClassesPage() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
-  const [selectedClass, setSelectedClass] = useState<string>('Standard 6 (Grade 6)');
+  const [teachingClasses, setTeachingClasses] = useState<string[]>([
+    'Standard 7 (Grade 7)',
+    'Standard 6 (Grade 6)',
+  ]);
+  const [selectedClass, setSelectedClass] = useState<string>('Standard 7 (Grade 7)');
+  const [showAddClassModal, setShowAddClassModal] = useState(false);
+  const [newClassToAdd, setNewClassToAdd] = useState('Standard 5 (Grade 5)');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPupil, setSelectedPupil] = useState<StudentMark | null>(null);
   const [filterGender, setFilterGender] = useState<'ALL' | 'M' | 'F'>('ALL');
@@ -47,11 +62,71 @@ export default function MyClassesPage() {
     const session = getCurrentSession();
     if (session) {
       setCurrentUser(session);
-      if (session.assignedClasses && session.assignedClasses.length > 0) {
-        setSelectedClass(session.assignedClasses[0]);
-      }
+      const classes =
+        session.assignedClasses && session.assignedClasses.length > 0
+          ? session.assignedClasses
+          : ['Standard 7 (Grade 7)', 'Standard 6 (Grade 6)'];
+      setTeachingClasses(classes);
+      setSelectedClass(classes[0]);
     }
   }, []);
+
+  const handleAddClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    if (teachingClasses.includes(newClassToAdd)) {
+      notifyUser('warning', 'Darasa Lipo Tayari', `${newClassToAdd} tayari lipo kwenye orodha ya madarasa unayofundisha.`);
+      return;
+    }
+
+    const updatedClasses = [...teachingClasses, newClassToAdd];
+    const updatedUser: UserAccount = {
+      ...currentUser,
+      assignedClasses: updatedClasses,
+      assignedClass: updatedClasses.join(', '),
+    };
+
+    setCurrentUser(updatedUser);
+    setTeachingClasses(updatedClasses);
+    setSelectedClass(newClassToAdd);
+    setCurrentSession(updatedUser);
+
+    const allAccounts = getStoredAccounts();
+    const updatedAccounts = allAccounts.map((a) => (a.id === updatedUser.id ? updatedUser : a));
+    saveStoredAccounts(updatedAccounts);
+
+    setShowAddClassModal(false);
+    notifyUser('success', 'Darasa Limeongezwa', `${newClassToAdd} limeongezwa kikamilifu.`);
+  };
+
+  const handleRemoveClass = (clsToRemove: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentUser) return;
+    if (teachingClasses.length <= 1) {
+      notifyUser('warning', 'Kizuizi', 'Lazima ubakiwe na angalau darasa moja unalofundisha.');
+      return;
+    }
+
+    const updatedClasses = teachingClasses.filter((c) => c !== clsToRemove);
+    const updatedUser: UserAccount = {
+      ...currentUser,
+      assignedClasses: updatedClasses,
+      assignedClass: updatedClasses.join(', '),
+    };
+
+    setCurrentUser(updatedUser);
+    setTeachingClasses(updatedClasses);
+    if (selectedClass === clsToRemove) {
+      setSelectedClass(updatedClasses[0]);
+    }
+    setCurrentSession(updatedUser);
+
+    const allAccounts = getStoredAccounts();
+    const updatedAccounts = allAccounts.map((a) => (a.id === updatedUser.id ? updatedUser : a));
+    saveStoredAccounts(updatedAccounts);
+
+    notifyUser('info', 'Darasa Limeondolewa', `${clsToRemove} limeondolewa kwenye madarasa unayofundisha.`);
+  };
 
   const pupils: StudentMark[] = INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
 
@@ -82,50 +157,73 @@ export default function MyClassesPage() {
   return (
     <TeacherShell
       pageTitle="Madarasa Yangu (My Classes)"
-      pageDescription="Usimamizi wa madarasa uliyopangiwa (Standard 1–7), orodha ya wanafunzi, wasifu wa mwanafunzi na tathmini ya darasa."
+      pageDescription="Usimamizi wa madarasa uliyopangiwa kufundisha, orodha ya wanafunzi, wasifu wa mwanafunzi na tathmini ya darasa."
     >
       <div className="space-y-6 animate-fade-in">
-        {/* Class Selection Tabs */}
+        {/* Class Selection Tabs - ONLY Assigned Classes */}
         <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-xs">
-          <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-emerald-800" />
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                Chagua Darasa (Standard 1–7):
+                Madarasa Ninayofundisha ({teachingClasses.length}):
               </h2>
             </div>
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              Mwalimu: {currentUser?.fullName || 'Mwl. Augustine Mrosso'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                {currentUser?.fullName || 'Mwl. Augustine Mrosso'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAddClassModal(true)}
+                className="px-3 py-1 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-500 text-emerald-950 flex items-center gap-1 shadow-xs transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Ongeza Darasa</span>
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {PRIMARY_CLASSES.map((cls) => {
-              const isAssigned = currentUser?.assignedClasses?.includes(cls);
+          <div className="flex flex-wrap gap-2 items-center">
+            {teachingClasses.map((cls) => {
               const isSelected = selectedClass === cls;
               return (
-                <button
+                <div
                   key={cls}
-                  onClick={() => setSelectedClass(cls)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                     isSelected
                       ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
-                      : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 border border-slate-200'
+                      : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 border border-slate-200 cursor-pointer'
                   }`}
+                  onClick={() => setSelectedClass(cls)}
                 >
                   <span>{cls}</span>
-                  {isAssigned && (
-                    <span
-                      className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${
-                        isSelected ? 'bg-amber-400 text-emerald-950' : 'bg-emerald-100 text-emerald-800'
+                  {teachingClasses.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveClass(cls, e)}
+                      title={`Ondoa ${cls} kwenye orodha yangu`}
+                      className={`ml-1 p-1 rounded-md transition-colors ${
+                        isSelected
+                          ? 'hover:bg-emerald-700 text-emerald-200 hover:text-white'
+                          : 'hover:bg-slate-200 text-slate-400 hover:text-rose-600'
                       }`}
                     >
-                      Wangu
-                    </span>
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   )}
-                </button>
+                </div>
               );
             })}
+
+            <button
+              type="button"
+              onClick={() => setShowAddClassModal(true)}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-50 text-slate-600 border border-dashed border-slate-300 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 flex items-center gap-1.5 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Ongeza Darasa Lingine</span>
+            </button>
           </div>
         </div>
 
@@ -422,6 +520,66 @@ export default function MyClassesPage() {
                   Funga
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Ongeza Darasa Lingine */}
+        {showAddClassModal && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-emerald-800" />
+                  <h3 className="text-base font-black text-slate-900">Ongeza Darasa Unalofundisha</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddClassModal(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddClass} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Chagua Darasa la Msingi (Standard 1–7):
+                  </label>
+                  <select
+                    value={newClassToAdd}
+                    onChange={(e) => setNewClassToAdd(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-emerald-800 bg-white"
+                  >
+                    {ALL_AVAILABLE_CLASSES.map((cls) => (
+                      <option key={cls} value={cls} disabled={teachingClasses.includes(cls)}>
+                        {cls} {teachingClasses.includes(cls) ? '(Unalo Tayari)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
+                  Darasa hili litaongezwa kwenye ratiba yako ya ufundishaji na litatokea kwenye orodha yako ya madarasa.
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddClassModal(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
+                  >
+                    Ghairi
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-black text-xs shadow-md"
+                  >
+                    Hifadhi Darasa
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
