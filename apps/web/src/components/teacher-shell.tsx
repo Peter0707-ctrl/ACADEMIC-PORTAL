@@ -31,6 +31,7 @@ import {
   MessageSquare,
   BarChart3,
   Calendar,
+  ClipboardList,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -431,7 +432,13 @@ export default function TeacherShell({
             <div className="space-y-1 pt-3 border-t border-emerald-100">
               <div className="px-2.5 py-1 flex items-center justify-between text-slate-700">
                 <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900">
-                  {isHeadteacher ? 'Ofisi ya Mwalimu Mkuu' : isAcademicMaster ? 'Ofisi ya Taaluma' : 'Ofisi ya Uongozi'}
+                  {isHeadteacher
+                    ? 'Ofisi ya Mwalimu Mkuu'
+                    : isAcademicMaster
+                    ? 'Ofisi ya Taaluma'
+                    : isDisciplineMaster
+                    ? 'Ofisi ya Nidhamu na Maadili'
+                    : 'Ofisi ya Uongozi'}
                 </span>
                 <Award className="w-3.5 h-3.5 text-amber-500" />
               </div>
@@ -553,6 +560,46 @@ export default function TeacherShell({
                     </div>
                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/discipline' ? 'bg-rose-700 text-white' : 'bg-rose-100 text-rose-900'}`}>
                       Nidhamu
+                    </span>
+                  </Link>
+                )}
+
+                {/* Student Gate Pass & Permissions (Headteacher & Discipline Master) */}
+                {(isHeadteacher || isDisciplineMaster || isAdmin) && (
+                  <Link
+                    href="/teacher/gatepass"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/gatepass'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ShieldCheck className={`w-4 h-4 ${pathname === '/teacher/gatepass' ? 'text-amber-200' : 'text-amber-600'}`} />
+                      <span>Student Gate Pass</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/gatepass' ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-900'}`}>
+                      Ruhusa
+                    </span>
+                  </Link>
+                )}
+
+                {/* School Prefects Council (Headteacher & Discipline Master) */}
+                {(isHeadteacher || isDisciplineMaster || isAdmin) && (
+                  <Link
+                    href="/teacher/prefects"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      pathname === '/teacher/prefects'
+                        ? 'bg-emerald-800 text-white shadow-sm shadow-emerald-950/20 font-bold'
+                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-950'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ClipboardList className={`w-4 h-4 ${pathname === '/teacher/prefects' ? 'text-purple-200' : 'text-purple-600'}`} />
+                      <span>School Prefects Council</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${pathname === '/teacher/prefects' ? 'bg-purple-700 text-white' : 'bg-purple-100 text-purple-900'}`}>
+                      Viranja
                     </span>
                   </Link>
                 )}

@@ -532,6 +532,44 @@ export default function DisciplineAndAttendancePage() {
       requiredRole="DISCIPLINE"
     >
       <div className="space-y-5 animate-fade-in">
+        {/* Quick Links Nav for Discipline Office */}
+        <div className="flex items-center gap-2 flex-wrap pb-1">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1">
+            Ofisi ya Nidhamu:
+          </span>
+
+          <span className="px-3 py-1.5 rounded-xl bg-rose-900 text-white text-xs font-black shadow-xs flex items-center gap-1.5">
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-300" />
+            <span>Kesi za Nidhamu &amp; Makosa</span>
+          </span>
+
+          <Link
+            href="/teacher/gatepass"
+            className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors flex items-center gap-1.5"
+            title="Daftari la Vibali vya Ruhusa na Udhibiti wa Geti"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+            <span>Vibali vya Ruhusa &amp; Getini</span>
+          </Link>
+
+          <Link
+            href="/teacher/prefects"
+            className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold transition-colors flex items-center gap-1.5"
+            title="Baraza la Viranja na Viongozi wa Wanafunzi"
+          >
+            <Users className="w-3.5 h-3.5 text-purple-600" />
+            <span>Baraza la Viranja wa Shule</span>
+          </Link>
+
+          <Link
+            href="/teacher/enrollment"
+            className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200 text-xs font-bold transition-colors flex items-center gap-1.5"
+            title="Daftari Kuu la Udahili wa Wanafunzi wa Shule Nzima"
+          >
+            <Building2 className="w-3.5 h-3.5 text-teal-600" />
+            <span>Daftari Kuu la Udahili</span>
+          </Link>
+        </div>
         {/* Flash Alert */}
         {activeNotice && (
           <div className="p-3.5 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-2xs">
