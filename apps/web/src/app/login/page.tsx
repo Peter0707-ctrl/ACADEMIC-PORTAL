@@ -203,26 +203,7 @@ export default function LoginPage() {
       },
       path: '/parent',
       badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
-      description: 'Watoto 3 (Std 7, 6, 4), Matokeo, Ada (GePG) & Ruhusa',
-    },
-    {
-      title: 'Mwanafunzi (Std 7)',
-      roleLabel: 'Student 360° Portal',
-      user: {
-        id: 'USR-008',
-        fullName: 'Kelvin Shirima',
-        role: 'STUDENT',
-        identifier: 'PSLE-2026-0428',
-        email: 'kelvin.shirima@student.ac.tz',
-        assignedClass: 'Standard 7 (Grade 7)',
-        candidateType: 'PSLE',
-        examIndexNo: 'PSLE/2026/0428',
-        status: 'ACTIVE',
-        joinedDate: '2026-01-08',
-      },
-      path: '/student',
-      badgeColor: 'bg-indigo-100 text-indigo-900 border-indigo-300',
-      description: 'Matokeo, Ratiba, Kitambulisho cha QR & Mahafali 2026',
+      description: 'Mzazi wa Watoto 3 (Std 7, 6, 4): Matokeo, Ada (GePG), Mahudhurio & Nidhamu',
     },
   ];
 

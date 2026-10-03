@@ -122,7 +122,27 @@ export default function StudentPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col">
+      {/* Primary School Clarification Notice */}
+      <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 shadow-xs z-50">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded bg-black/20 text-white text-[10px] font-black uppercase tracking-wider">
+            PRIMARY SCHOOL NOTICE
+          </span>
+          <span>
+            Katika Shule ya Msingi, wanafunzi hawamiliki simu au akaunti binafsi. Taarifa zote za maendeleo zinasimamiwa na Mzazi / Mlezi.
+          </span>
+        </div>
+        <Link
+          href="/parent"
+          className="px-3 py-1 rounded-lg bg-black text-amber-300 font-black text-xs hover:bg-slate-900 transition-colors flex items-center gap-1"
+        >
+          <span>Fungua Portal ya Mzazi (/parent)</span>
+          <ArrowLeft className="w-3 h-3 rotate-180" />
+        </Link>
+      </div>
+
+      <div className="flex-1 flex flex-col lg:flex-row">
       {/* ===================================================================== */}
       {/* 1. MOBILE TOP BAR (STICKY ON SMALL SCREENS < LG) */}
       {/* ===================================================================== */}
@@ -933,5 +953,6 @@ export default function StudentPortal() {
         </main>
       </div>
     </div>
-  );
+  </div>
+);
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Users,
@@ -23,6 +23,9 @@ import {
   FileCheck,
   ChevronDown,
   ChevronRight,
+  Lock,
+  Unlock,
+  Printer,
   TrendingUp,
   AlertCircle,
   Info,
@@ -306,6 +309,72 @@ export default function ParentGuardianPortal() {
   }, [children, selectedChildId]);
 
   const outstandingBalance = selectedChild.feeTotal - selectedChild.feePaid;
+
+  // Synchronization with Headteacher Official Seal & Discipline Registry
+  const [approvalMap, setApprovalMap] = useState<Record<string, any>>({});
+  const [disciplineRegistry, setDisciplineRegistry] = useState<any[]>([]);
+
+  useEffect(() => {
+    try {
+      const storedApproval = localStorage.getItem('headteacher_results_approval_map_v2');
+      if (storedApproval) {
+        setApprovalMap(JSON.parse(storedApproval));
+      } else {
+        // Fallback check legacy approval
+        const legacyApproval = localStorage.getItem('headteacher_results_approval_status_v1');
+        if (legacyApproval) {
+          const parsed = JSON.parse(legacyApproval);
+          setApprovalMap({
+            ALL: {
+              hasApproved: true,
+              isPublishedToUsers: true,
+              approvalTimestamp: parsed.approvalTimestamp || '2026-03-27',
+              sealCertNumber: parsed.sealCertNumber || 'VER-2026-HT-08492',
+              resultsReleaseDate: parsed.resultsReleaseDate || '2026-03-27',
+              resultsReleaseTime: parsed.resultsReleaseTime || '08:00',
+            },
+          });
+        }
+      }
+
+      const storedDiscipline = localStorage.getItem('school_discipline_registry_v2');
+      if (storedDiscipline) {
+        setDisciplineRegistry(JSON.parse(storedDiscipline));
+      }
+    } catch {}
+  }, []);
+
+  const childClassKey = useMemo(() => {
+    if (selectedChild.class.includes('7')) return 'std-7';
+    if (selectedChild.class.includes('6')) return 'std-6';
+    if (selectedChild.class.includes('5')) return 'std-5';
+    if (selectedChild.class.includes('4')) return 'std-4';
+    if (selectedChild.class.includes('3')) return 'std-3';
+    if (selectedChild.class.includes('2')) return 'std-2';
+    if (selectedChild.class.includes('1')) return 'std-1';
+    if (selectedChild.class.toLowerCase().includes('awali') || selectedChild.class.toLowerCase().includes('chekechea')) return 'chekechea';
+    return 'std-7';
+  }, [selectedChild.class]);
+
+  const classSeal = approvalMap[childClassKey] || approvalMap['ALL'];
+  const isResultsPublished = Boolean(
+    classSeal?.isPublishedToUsers ||
+    (classSeal?.hasApproved && classSeal?.publishingMode === 'IMMEDIATE')
+  );
+
+  const releaseDateDisplay = classSeal?.resultsReleaseDate || '2026-03-27';
+  const releaseTimeDisplay = classSeal?.resultsReleaseTime || '08:00';
+  const sealCertNumber = classSeal?.sealCertNumber || 'VER-2026-HT-08492';
+  const sealTimestamp = classSeal?.approvalTimestamp || '2026-03-27';
+
+  // Child matched discipline incidents
+  const matchedIncidents = useMemo(() => {
+    return disciplineRegistry.filter(
+      (inc) =>
+        inc.pupilName?.toLowerCase().includes(selectedChild.name.toLowerCase().split(' ')[0]) ||
+        inc.admNo === selectedChild.admNo
+    );
+  }, [disciplineRegistry, selectedChild]);
 
   const handleLeaveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -841,90 +910,220 @@ export default function ParentGuardianPortal() {
           {/* ================================================================= */}
           {activeTab === 'ACADEMIC' && (
             <div className="space-y-6 animate-fade-in">
-              {/* Official Result Slip Card with Seal */}
-              <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-sm space-y-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-100">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-base font-black text-slate-900">
-                        Ripoti Rasmi ya Maendeleo ya Mwanafunzi • Muhula wa 1, 2026
+              {/* RESULTS CARD: EITHER SEALED & PUBLISHED OR SCHEDULED LOCKED */}
+              {isResultsPublished ? (
+                /* OFFICIAL PUBLISHED TERMINAL REPORT CARD WITH RUBBER STAMP */
+                <div className="p-6 sm:p-8 rounded-3xl bg-white/95 border-2 border-emerald-200/90 shadow-md space-y-6">
+                  {/* Top Report Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-emerald-100">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 font-black text-[10px] border border-emerald-300 uppercase tracking-wider">
+                          Muhula wa 1 • 2026
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-800 text-white font-bold text-[10px] flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-300" />
+                          <span>Imethibitishwa na Mkuu wa Shule</span>
+                        </span>
+                      </div>
+                      <h2 className="text-base sm:text-lg font-black text-slate-900 mt-1">
+                        Ripoti Rasmi ya Maendeleo ya Mwanafunzi (Terminal Report Card)
                       </h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
-                        Imethibitishwa na Mkuu wa Shule
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Shule ya Msingi Kukumbuka • Halmashauri ya Wilaya • Idara ya Elimu ya Msingi
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Chapisha</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveNotice(
+                            `Ripoti rasmi ya ${selectedChild.name} inapakuliwa ikiwa na Muhuri Rasmi wa Mwalimu Mkuu...`
+                          )
+                        }
+                        className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all"
+                      >
+                        <Download className="w-4 h-4 text-amber-300" />
+                        <span>Pakua PDF</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Pupil Particulars Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 text-xs">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Jina la Mwanafunzi:</span>
+                      <strong className="text-slate-900 font-black text-xs">{selectedChild.name}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Namba ya Usajili:</span>
+                      <span className="font-mono font-bold text-emerald-900">{selectedChild.admNo}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Darasa &amp; Mkondo:</span>
+                      <strong className="text-slate-900 font-bold">{selectedChild.class}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Mwalimu wa Darasa:</span>
+                      <span className="text-slate-700 font-semibold">{selectedChild.homeroomTeacher}</span>
+                    </div>
+                  </div>
+
+                  {/* High Level Results Summary Banner */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Wastani wa Jumla</span>
+                      <span className="text-2xl font-black text-emerald-800 font-mono">{selectedChild.termAverage}%</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Daraja la Msingi</span>
+                      <span className="text-2xl font-black text-emerald-900">Daraja A</span>
+                      <span className="text-[9px] text-emerald-700 font-bold block">Ufaulu Bora Sana</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Nafasi Darasani</span>
+                      <span className="text-2xl font-black text-slate-900">{selectedChild.rank.split(' ')[2] || '1'}</span>
+                      <span className="text-[9px] text-slate-500 font-semibold block">{selectedChild.rank}</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Jumla ya Alama</span>
+                      <span className="text-2xl font-black text-slate-900 font-mono">
+                        {selectedChild.subjects.reduce((acc, s) => acc + s.average, 0)} / 600
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Matokeo yamekaguliwa na Mwalimu wa Taaluma na kugongwa Muhuri Rasmi wa Kidigitali.
-                    </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveNotice(`Ripoti ya ${selectedChild.name} inapakuliwa ikiwa na muhuri wa Mwalimu Mkuu...`)}
-                    className="px-4 py-2 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-1.5 self-start sm:self-auto transition-all"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Pakua Ripoti ya PDF</span>
-                  </button>
-                </div>
-
-                {/* Results Table */}
-                <div className="overflow-x-auto rounded-2xl border border-emerald-200">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-emerald-800 text-white font-bold uppercase tracking-wider text-[10px]">
-                        <th className="py-3 px-4">Somo</th>
-                        <th className="py-3 px-3 text-center">Monthly 1</th>
-                        <th className="py-3 px-3 text-center">Monthly 2</th>
-                        <th className="py-3 px-3 text-center">Mid-Term</th>
-                        <th className="py-3 px-3 text-center">Terminal</th>
-                        <th className="py-3 px-3 text-center bg-emerald-900">Wastani (%)</th>
-                        <th className="py-3 px-3 text-center">Daraja</th>
-                        <th className="py-3 px-4">Maoni ya Mwalimu</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-emerald-100 text-slate-800">
-                      {selectedChild.subjects.map((sub, idx) => (
-                        <tr key={sub.code} className={idx % 2 === 0 ? 'bg-white' : 'bg-emerald-50/20'}>
-                          <td className="py-3 px-4 font-bold text-slate-900">
-                            <div>{sub.name}</div>
-                            <span className="text-[10px] text-slate-400 font-mono">{sub.code}</span>
-                          </td>
-                          <td className="py-3 px-3 text-center font-mono">{sub.monthly1}</td>
-                          <td className="py-3 px-3 text-center font-mono">{sub.monthly2}</td>
-                          <td className="py-3 px-3 text-center font-mono">{sub.midterm}</td>
-                          <td className="py-3 px-3 text-center font-mono">{sub.terminal}</td>
-                          <td className="py-3 px-3 text-center font-mono font-black text-emerald-900 bg-emerald-50">
-                            {sub.average}%
-                          </td>
-                          <td className="py-3 px-3 text-center font-black">
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900">
-                              {sub.grade}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-slate-600 text-[11px]">{sub.remarks}</td>
+                  {/* 6 Core Subjects Results Table */}
+                  <div className="overflow-x-auto rounded-2xl border border-emerald-200">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-emerald-800 text-white font-bold uppercase tracking-wider text-[10px]">
+                          <th className="py-3 px-4">Somo</th>
+                          <th className="py-3 px-3 text-center">Mjaribio 1</th>
+                          <th className="py-3 px-3 text-center">Mjaribio 2</th>
+                          <th className="py-3 px-3 text-center">Nusu Muhula</th>
+                          <th className="py-3 px-3 text-center">Muhula (Final)</th>
+                          <th className="py-3 px-3 text-center bg-emerald-900">Wastani (%)</th>
+                          <th className="py-3 px-3 text-center">Daraja</th>
+                          <th className="py-3 px-4">Maoni ya Mwalimu wa Somo</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-emerald-100 text-slate-800 bg-white">
+                        {selectedChild.subjects.map((sub, idx) => (
+                          <tr key={sub.code} className={idx % 2 === 0 ? 'bg-white' : 'bg-emerald-50/20'}>
+                            <td className="py-3 px-4 font-bold text-slate-900">
+                              <div>{sub.name}</div>
+                              <span className="text-[10px] text-slate-400 font-mono">{sub.code} • {sub.teacher}</span>
+                            </td>
+                            <td className="py-3 px-3 text-center font-mono">{sub.monthly1}</td>
+                            <td className="py-3 px-3 text-center font-mono">{sub.monthly2}</td>
+                            <td className="py-3 px-3 text-center font-mono">{sub.midterm}</td>
+                            <td className="py-3 px-3 text-center font-mono">{sub.terminal}</td>
+                            <td className="py-3 px-3 text-center font-mono font-black text-emerald-900 bg-emerald-50">
+                              {sub.average}%
+                            </td>
+                            <td className="py-3 px-3 text-center font-black">
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-950 border border-emerald-300">
+                                {sub.grade}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-slate-600 text-[11px]">{sub.remarks}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
-                {/* Headteacher Endorsement Footer */}
-                <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  {/* OFFICIAL RUBBER STAMP & HEADTEACHER ENDORSEMENT */}
+                  <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-50/70 via-white to-teal-50/50 border-2 border-emerald-200 flex flex-col md:flex-row items-center justify-between gap-6">
+                    {/* Visual Stamp Impression */}
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="w-40 h-40 sm:w-44 sm:h-44 rounded-full border-4 border-emerald-800 bg-emerald-50/40 text-emerald-950 shadow-md flex flex-col items-center justify-center text-center p-2 relative select-none rotate-[-2deg]">
+                        <div className="absolute inset-1 rounded-full border border-emerald-700/70" />
+                        <div className="text-[6.5px] font-black uppercase text-emerald-900 leading-tight">
+                          ★ JAMHURI YA MUUNGANO WA TANZANIA ★
+                        </div>
+                        <div className="my-1 py-0.5 border-y border-emerald-700/60 w-full">
+                          <div className="text-[8px] font-black uppercase text-emerald-950">KUKUMBUKA PRIMARY</div>
+                          <div className="text-[6.5px] font-bold uppercase text-emerald-900">OFISI YA MWALIMU MKUU</div>
+                          <div className="text-[7px] font-black uppercase bg-emerald-800 text-white px-1 rounded mt-0.5">
+                            ★ APPROVED &amp; SEALED ★
+                          </div>
+                        </div>
+                        <div className="text-[6px] font-mono text-emerald-800">REF: {sealCertNumber}</div>
+                        <div className="text-[6px] font-mono text-emerald-900 font-bold">{sealTimestamp?.split('saa')[0]}</div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-950 font-black text-[9px] border border-emerald-300 uppercase">
+                          Muhuri Rasmi Umethibitishwa ✓
+                        </span>
+                        <div className="text-xs font-black text-slate-900">Mwl. Augustine Mrosso</div>
+                        <div className="text-[11px] text-emerald-800 font-semibold">Mkuu wa Shule (Headteacher)</div>
+                        <div className="text-[10px] font-mono text-slate-400">Tarehe ya Idhini: {sealTimestamp}</div>
+                      </div>
+                    </div>
+
+                    {/* Remarks of the Headteacher */}
+                    <div className="flex-1 space-y-2 text-xs border-t md:border-t-0 md:border-l border-emerald-100 md:pl-6 pt-4 md:pt-0">
+                      <span className="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">
+                        Maoni ya Mkuu wa Shule (Headteacher Remarks):
+                      </span>
+                      <p className="text-slate-700 italic leading-relaxed bg-white p-3 rounded-xl border border-emerald-200">
+                        &quot;Mwanafunzi {selectedChild.name} anaendelea vizuri sana kimasomo na kinidhamu. Ushirikiano wa mzazi unapongezwa sana. Shule inamtakia maandalizi mema kwa muhula unaofuata.&quot;
+                      </p>
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                        <span>Tarehe ya Kufungua Shule: <strong>06 Julai 2026</strong></span>
+                        <span className="text-emerald-800 font-bold">Muhula wa Pili</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* LOCKED BANNER: WHEN HEADTEACHER HAS SCHEDULED RELEASE */
+                <div className="p-8 sm:p-12 rounded-3xl bg-white border-2 border-dashed border-amber-300 shadow-sm text-center space-y-4 max-w-2xl mx-auto">
+                  <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto shadow-xs">
+                    <Lock className="w-8 h-8 text-amber-700" />
+                  </div>
+
                   <div>
-                    <span className="font-bold text-slate-800 block">Maoni ya Mwalimu Mkuu:</span>
-                    <p className="text-slate-600 mt-0.5">
-                      "Ufaulu mzuri sana. Kelvin anaonyesha nidhamu ya juu na utayari mkubwa kwa mitihani ya kitaifa ya PSLE."
+                    <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-950 font-black text-xs uppercase tracking-wider border border-amber-300">
+                      🔒 MATOKEO YAMEHIFADHIWA • YATAFUNGULIWA HIVI PUNDE
+                    </span>
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900 mt-3">
+                      Matokeo ya {selectedChild.name} ({selectedChild.class})
+                    </h2>
+                    <p className="text-xs text-slate-600 mt-2 max-w-lg mx-auto leading-relaxed">
+                      Uongozi wa Shule ya Msingi Kukumbuka unawataarifu wazazi kuwa matokeo ya Muhula wa 1 yamekamilika na yamekaguliwa na Mwalimu Mkuu. Ripoti rasmi zimepangwa kufunguliwa rasmi kwa wazazi wote siku ya kufunga shule:
                     </p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <span className="px-3 py-1 rounded-xl bg-white border border-emerald-300 text-emerald-900 font-mono font-bold text-[10px] inline-flex items-center gap-1 shadow-2xs">
-                      <Award className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Muhuri Rasmi: HT-VERIFIED-2026</span>
+
+                  {/* Scheduled Date Badge */}
+                  <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 max-w-md mx-auto text-xs space-y-1">
+                    <span className="text-[10px] text-amber-800 uppercase font-bold block">Tarehe Rasmi ya Kufunguliwa Matokeo:</span>
+                    <strong className="text-base font-black text-amber-950 font-mono block">
+                      {releaseDateDisplay} saa {releaseTimeDisplay} Asubuhi
+                    </strong>
+                    <span className="text-[11px] text-amber-800">
+                      Wazazi wataarifiwa pia kupitia ujumbe wa SMS / WhatsApp mara baada ya kufunguliwa.
                     </span>
                   </div>
+
+                  <p className="text-[11px] text-slate-400">
+                    Ikiwa unahitaji ufafanuzi wa dharura, unaweza kuwasiliana na Ofisi ya Mwalimu Mkuu kupitia namba 0754 000 111.
+                  </p>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
