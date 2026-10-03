@@ -20,22 +20,13 @@ import {
   X,
   Printer,
   ChevronRight,
-  Plus,
-  Trash2,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
-import {
-  getCurrentSession,
-  setCurrentSession,
-  getStoredAccounts,
-  saveStoredAccounts,
-  INITIAL_BLUEPRINT_ACCOUNTS,
-  UserAccount,
-} from '@/lib/auth-session';
+import { getCurrentSession, INITIAL_BLUEPRINT_ACCOUNTS, UserAccount } from '@/lib/auth-session';
 import { INITIAL_PUPILS, StudentMark } from '@/lib/teacher-data';
 import { notifyUser } from '@/lib/notifications';
 
-const ALL_PRIMARY_CLASSES = [
+const PRIMARY_CLASSES = [
   'Standard 7 (Grade 7)',
   'Standard 6 (Grade 6)',
   'Standard 5 (Grade 5)',
@@ -43,126 +34,24 @@ const ALL_PRIMARY_CLASSES = [
   'Standard 3 (Grade 3)',
   'Standard 2 (Grade 2)',
   'Standard 1 (Grade 1)',
-  'Pre-Unit / Kindergarten',
-  'Nursery & Day Care',
-];
-
-const ALL_PRIMARY_SUBJECTS = [
-  'Civic & Moral Education (Uraia na Maadili)',
-  'Social Studies (Maarifa ya Jamii)',
-  'Mathematics (Hisabati)',
-  'English Language',
-  'Kiswahili',
-  'Science & Technology (Sayansi na Teknolojia)',
-  'Vocational Skills (Stadi za Kazi)',
 ];
 
 export default function MyClassesPage() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
-  const [teachingClasses, setTeachingClasses] = useState<string[]>([
-    'Standard 7 (Grade 7)',
-    'Standard 6 (Grade 6)',
-  ]);
-  const [selectedClass, setSelectedClass] = useState<string>('Standard 7 (Grade 7)');
+  const [selectedClass, setSelectedClass] = useState<string>('Standard 6 (Grade 6)');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPupil, setSelectedPupil] = useState<StudentMark | null>(null);
   const [filterGender, setFilterGender] = useState<'ALL' | 'M' | 'F'>('ALL');
-
-  // Modal State for adding another class
-  const [showAddClassModal, setShowAddClassModal] = useState(false);
-  const [newSelectedClass, setNewSelectedClass] = useState('Standard 5 (Grade 5)');
-  const [newSelectedSubject, setNewSelectedSubject] = useState(ALL_PRIMARY_SUBJECTS[0]);
 
   useEffect(() => {
     const session = getCurrentSession();
     if (session) {
       setCurrentUser(session);
-      const classes =
-        session.assignedClasses && session.assignedClasses.length > 0
-          ? session.assignedClasses
-          : ['Standard 7 (Grade 7)', 'Standard 6 (Grade 6)'];
-      setTeachingClasses(classes);
-      setSelectedClass(classes[0]);
+      if (session.assignedClasses && session.assignedClasses.length > 0) {
+        setSelectedClass(session.assignedClasses[0]);
+      }
     }
   }, []);
-
-  // Handler: Add Another Class
-  const handleAddClass = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) return;
-
-    if (teachingClasses.includes(newSelectedClass)) {
-      notifyUser(
-        'warning',
-        'Darasa Lipo Tayari',
-        `${newSelectedClass} tayari lipo kwenye orodha ya madarasa unayofundisha.`
-      );
-      return;
-    }
-
-    const updatedClasses = [...teachingClasses, newSelectedClass];
-    const currentSubjects = currentUser.subjects || [];
-    const updatedSubjects = currentSubjects.includes(newSelectedSubject)
-      ? currentSubjects
-      : [...currentSubjects, newSelectedSubject];
-
-    const updatedUser: UserAccount = {
-      ...currentUser,
-      assignedClasses: updatedClasses,
-      assignedClass: updatedClasses.join(', '),
-      subjects: updatedSubjects,
-    };
-
-    setCurrentUser(updatedUser);
-    setTeachingClasses(updatedClasses);
-    setSelectedClass(newSelectedClass);
-    setCurrentSession(updatedUser);
-
-    // Save to stored accounts
-    const allAccounts = getStoredAccounts();
-    const updatedAccounts = allAccounts.map((a) =>
-      a.id === updatedUser.id ? updatedUser : a
-    );
-    saveStoredAccounts(updatedAccounts);
-
-    setShowAddClassModal(false);
-    notifyUser(
-      'success',
-      'Darasa Limeongezwa Kikamilifu',
-      `${newSelectedClass} sasa limeongezwa kwenye madarasa unayofundisha.`
-    );
-  };
-
-  // Handler: Remove Class from teaching schedule
-  const handleRemoveClass = (clsToRemove: string) => {
-    if (!currentUser) return;
-    if (teachingClasses.length <= 1) {
-      notifyUser('warning', 'Kizuizi', 'Lazima ubakiwe na angalau darasa moja unalofundisha.');
-      return;
-    }
-
-    const updatedClasses = teachingClasses.filter((c) => c !== clsToRemove);
-    const updatedUser: UserAccount = {
-      ...currentUser,
-      assignedClasses: updatedClasses,
-      assignedClass: updatedClasses.join(', '),
-    };
-
-    setCurrentUser(updatedUser);
-    setTeachingClasses(updatedClasses);
-    if (selectedClass === clsToRemove) {
-      setSelectedClass(updatedClasses[0]);
-    }
-    setCurrentSession(updatedUser);
-
-    const allAccounts = getStoredAccounts();
-    const updatedAccounts = allAccounts.map((a) =>
-      a.id === updatedUser.id ? updatedUser : a
-    );
-    saveStoredAccounts(updatedAccounts);
-
-    notifyUser('info', 'Darasa Limeondolewa', `${clsToRemove} limeondolewa kwenye madarasa unayofundisha.`);
-  };
 
   const pupils: StudentMark[] = INITIAL_PUPILS[selectedClass] || INITIAL_PUPILS['Standard 6 (Grade 6)'] || [];
 
@@ -196,67 +85,45 @@ export default function MyClassesPage() {
       pageDescription="Usimamizi wa madarasa uliyopangiwa (Standard 1–7), orodha ya wanafunzi, wasifu wa mwanafunzi na tathmini ya darasa."
     >
       <div className="space-y-6 animate-fade-in">
-        {/* Class Selection Tabs (ONLY Assigned Classes + Add Class button) */}
+        {/* Class Selection Tabs */}
         <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-emerald-800" />
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                Madarasa Ninayofundisha (Classes I Teach):
+                Chagua Darasa (Standard 1–7):
               </h2>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
-                {teachingClasses.length} Madarasa
-              </span>
             </div>
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                Mwalimu: {currentUser?.fullName || 'Mwl. Augustine Mrosso'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowAddClassModal(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Ongeza Darasa Lingine (Add Class)</span>
-              </button>
-            </div>
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              Mwalimu: {currentUser?.fullName || 'Mwl. Augustine Mrosso'}
+            </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {teachingClasses.map((cls) => {
+          <div className="flex flex-wrap gap-2">
+            {PRIMARY_CLASSES.map((cls) => {
+              const isAssigned = currentUser?.assignedClasses?.includes(cls);
               const isSelected = selectedClass === cls;
               return (
-                <div key={cls} className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedClass(cls)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                      isSelected
-                        ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
-                        : 'bg-emerald-50/70 text-slate-700 hover:bg-emerald-100/70 hover:text-emerald-900 border border-emerald-200'
-                    }`}
-                  >
-                    <span>{cls}</span>
+                <button
+                  key={cls}
+                  onClick={() => setSelectedClass(cls)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    isSelected
+                      ? 'bg-emerald-800 text-white shadow-md shadow-emerald-950/20'
+                      : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 border border-slate-200'
+                  }`}
+                >
+                  <span>{cls}</span>
+                  {isAssigned && (
                     <span
                       className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${
-                        isSelected ? 'bg-amber-400 text-emerald-950' : 'bg-emerald-200/80 text-emerald-900'
+                        isSelected ? 'bg-amber-400 text-emerald-950' : 'bg-emerald-100 text-emerald-800'
                       }`}
                     >
-                      {cls.includes('6') ? '35 Pupils' : cls.includes('7') ? '15 Pupils' : 'Assigned'}
+                      Wangu
                     </span>
-                  </button>
-                  {teachingClasses.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveClass(cls)}
-                      className="ml-1 p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Ondoa darasa hili kutoka ratiba yako"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -555,84 +422,6 @@ export default function MyClassesPage() {
                   Funga
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Add Class Modal */}
-        {showAddClassModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
-            <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-emerald-200 space-y-4 animate-scale-in">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                    <BookOpen className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900">Ongeza Darasa la Kufundisha</h3>
-                    <p className="text-[11px] text-slate-500">Chagua darasa unalotaka kuongeza kwenye orodha yako</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAddClassModal(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleAddClass} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Chagua Darasa (Class):
-                  </label>
-                  <select
-                    value={newSelectedClass}
-                    onChange={(e) => setNewSelectedClass(e.target.value)}
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white transition-colors"
-                  >
-                    {ALL_PRIMARY_CLASSES.map((c) => (
-                      <option key={c} value={c} disabled={teachingClasses.includes(c)}>
-                        {c} {teachingClasses.includes(c) ? '(Tayari Lipo)' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Chagua Somo Unalofundisha Katika Darasa Hili:
-                  </label>
-                  <select
-                    value={newSelectedSubject}
-                    onChange={(e) => setNewSelectedSubject(e.target.value)}
-                    className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white transition-colors"
-                  >
-                    {ALL_PRIMARY_SUBJECTS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddClassModal(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
-                  >
-                    Ghairi
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition-all"
-                  >
-                    Hifadhi Darasa
-                  </button>
-                </div>
-              </form>
             </div>
           </div>
         )}
