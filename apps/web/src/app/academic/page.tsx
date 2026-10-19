@@ -28,7 +28,7 @@ interface StudentResultReview {
 }
 
 export default function AcademicApproverPortal() {
-  const [scheduleId, setScheduleId] = useState('demo-schedule-01');
+  const [scheduleId, setScheduleId] = useState('SCHED-2026-TERM1');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'PENDING_REVIEW' | 'APPROVED' | 'RETURNED' | 'PUBLISHED'>('PENDING_REVIEW');
   const [approvalMessage, setApprovalMessage] = useState<string | null>(null);

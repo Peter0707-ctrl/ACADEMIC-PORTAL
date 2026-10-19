@@ -76,9 +76,12 @@ export default function SecretaryShell({
       const defaultSecretary =
         accounts.find((a) => a.role === 'SECRETARY') ||
         accounts.find((a) => a.role === 'HEADTEACHER') ||
+        accounts.find((a) => a.role === 'ADMIN') ||
         accounts[0];
-      setCurrentSession(defaultSecretary);
-      session = defaultSecretary;
+      if (defaultSecretary) {
+        setCurrentSession(defaultSecretary);
+        session = defaultSecretary;
+      }
     }
 
     if (!canAccessPortal(session, 'SECRETARY')) {

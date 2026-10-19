@@ -31,64 +31,11 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [emailOrId, setEmailOrId] = useState('headteacher@primaryschool.ac.tz');
-  const [password, setPassword] = useState('Password123!');
+  const [emailOrId, setEmailOrId] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Available demonstration & testing accounts
-  const demoAccounts = [
-    {
-      roleTitle: 'Head Teacher',
-      identifier: 'headteacher@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: School,
-      color: 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100',
-    },
-    {
-      roleTitle: 'Academic Master',
-      identifier: 'academic@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: BookOpen,
-      color: 'bg-teal-50 text-teal-900 border-teal-300 hover:bg-teal-100',
-    },
-    {
-      roleTitle: 'Discipline Master',
-      identifier: 'discipline@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: Shield,
-      color: 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100',
-    },
-    {
-      roleTitle: 'Class Teacher',
-      identifier: 'sarah.mollel@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: Users,
-      color: 'bg-blue-50 text-blue-900 border-blue-300 hover:bg-blue-100',
-    },
-    {
-      roleTitle: 'School Accountant',
-      identifier: 'accountant@primaryschool.ac.tz',
-      path: '/accountant',
-      icon: DollarSign,
-      color: 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100',
-    },
-    {
-      roleTitle: 'School Secretary',
-      identifier: 'secretary@primaryschool.ac.tz',
-      path: '/secretary',
-      icon: FolderArchive,
-      color: 'bg-indigo-50 text-indigo-900 border-indigo-300 hover:bg-indigo-100',
-    },
-    {
-      roleTitle: 'Parent Portal',
-      identifier: '+255 755 123 456',
-      path: '/parent',
-      icon: Heart,
-      color: 'bg-purple-50 text-purple-900 border-purple-300 hover:bg-purple-100',
-    },
-  ];
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,36 +76,9 @@ export default function LoginPage() {
           router.push('/teacher');
         }
       } else {
-        setError('Invalid credentials. Please verify your details or use Quick Demo Access.');
+        setError('Invalid credentials. Please verify your email or Staff ID and password.');
       }
     }, 300);
-  };
-
-  const handleDemoClick = (acc: typeof demoAccounts[0]) => {
-    const all = getStoredAccounts();
-    const cleanId = acc.identifier.replace(/\s+/g, '').toLowerCase();
-
-    const target = all.find(
-      (u) =>
-        (u.email && u.email.toLowerCase() === cleanId) ||
-        u.identifier.replace(/\s+/g, '').toLowerCase() === cleanId ||
-        (u.phone && u.phone.replace(/\s+/g, '') === cleanId)
-    );
-
-    if (target) {
-      setCurrentSession(target);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', `demo_token_${target.id}`);
-        localStorage.setItem('tenant_id', 'inst-001');
-        localStorage.setItem('user_roles', JSON.stringify([target.role]));
-      }
-      setLoading(true);
-      setTimeout(() => {
-        router.push(acc.path);
-      }, 250);
-    } else {
-      router.push(acc.path);
-    }
   };
 
   return (
@@ -258,30 +178,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Quick Demo Access Pills */}
-          <div className="pt-3 border-t border-slate-100 space-y-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Quick Demo Access:
-            </span>
-            <div className="grid grid-cols-2 gap-1.5 text-xs">
-              {demoAccounts.map((acc, idx) => {
-                const Icon = acc.icon;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleDemoClick(acc)}
-                    className={`p-2 rounded-xl border text-left transition-all flex items-center gap-1.5 ${acc.color}`}
-                  >
-                    <Icon className="w-3.5 h-3.5 shrink-0" />
-                    <span className="font-bold text-[11px] truncate">{acc.roleTitle}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="text-center pt-1">
+          <div className="text-center pt-3 border-t border-slate-100">
             <Link href="/" className="text-xs font-semibold text-emerald-800 hover:underline">
               Go to Home &bull; Parent Registration
             </Link>

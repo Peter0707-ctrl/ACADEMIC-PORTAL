@@ -82,12 +82,14 @@ export default function TeacherShell({
 
     let session = getCurrentSession();
     if (!session) {
-      const defaultLeader = accounts.find((a) => a.role === 'HEADTEACHER') || accounts[1];
-      setCurrentSession(defaultLeader);
-      session = defaultLeader;
+      const defaultLeader = accounts.find((a) => a.role === 'HEADTEACHER') || accounts.find((a) => a.role === 'ADMIN') || accounts[0];
+      if (defaultLeader) {
+        setCurrentSession(defaultLeader);
+        session = defaultLeader;
+      }
     }
 
-    if (!canAccessPortal(session, 'TEACHER')) {
+    if (!session || !canAccessPortal(session, 'TEACHER')) {
       setIsAuthorized(false);
       triggerNotification(
         'error',

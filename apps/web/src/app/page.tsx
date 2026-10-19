@@ -87,58 +87,6 @@ export default function PrimaryPortalHomePage() {
   const [registerSuccess, setRegisterSuccess] = useState<string | null>(null);
   const [registerError, setRegisterError] = useState<string | null>(null);
 
-  // Staff Testing Accounts (Staff Roles ONLY)
-  const staffAccounts = [
-    {
-      roleTitle: 'Head Teacher',
-      category: 'School Leadership',
-      identifier: 'headteacher@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: School,
-      color: 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100',
-    },
-    {
-      roleTitle: 'Academic Master',
-      category: 'Curriculum & Exams',
-      identifier: 'academic@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: BookOpen,
-      color: 'bg-teal-50 text-teal-900 border-teal-300 hover:bg-teal-100',
-    },
-    {
-      roleTitle: 'Discipline Master',
-      category: 'Student Welfare & Conduct',
-      identifier: 'discipline@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: Shield,
-      color: 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100',
-    },
-    {
-      roleTitle: 'Class Teacher',
-      category: 'Teaching & Roll Call',
-      identifier: 'sarah.mollel@primaryschool.ac.tz',
-      path: '/teacher',
-      icon: Users,
-      color: 'bg-blue-50 text-blue-900 border-blue-300 hover:bg-blue-100',
-    },
-    {
-      roleTitle: 'School Accountant',
-      category: 'Finance & School Fees',
-      identifier: 'accountant@primaryschool.ac.tz',
-      path: '/accountant',
-      icon: DollarSign,
-      color: 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100',
-    },
-    {
-      roleTitle: 'School Secretary',
-      category: 'Registry & Digital Files',
-      identifier: 'secretary@primaryschool.ac.tz',
-      path: '/secretary',
-      icon: FolderArchive,
-      color: 'bg-indigo-50 text-indigo-900 border-indigo-300 hover:bg-indigo-100',
-    },
-  ];
-
   // 1. Staff Login Handler
   const handleStaffLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,33 +135,6 @@ export default function PrimaryPortalHomePage() {
     }, 350);
   };
 
-  // 2. Staff Demo Click Handler
-  const handleStaffDemoClick = (acc: typeof staffAccounts[0]) => {
-    const all = getStoredAccounts();
-    const cleanId = acc.identifier.replace(/\s+/g, '').toLowerCase();
-
-    const target = all.find(
-      (u) =>
-        (u.email && u.email.toLowerCase() === cleanId) ||
-        u.identifier.replace(/\s+/g, '').toLowerCase() === cleanId
-    );
-
-    if (target) {
-      setCurrentSession(target);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', `demo_token_${target.id}`);
-        localStorage.setItem('tenant_id', 'inst-001');
-        localStorage.setItem('user_roles', JSON.stringify([target.role]));
-      }
-      setIsStaffLoggingIn(true);
-      setTimeout(() => {
-        router.push(acc.path);
-      }, 250);
-    } else {
-      router.push(acc.path);
-    }
-  };
-
   // 3. Parent Login Handler
   const handleParentLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,28 +174,7 @@ export default function PrimaryPortalHomePage() {
     }, 350);
   };
 
-  // 4. Parent Demo Click Handler
-  const handleParentDemoClick = () => {
-    const all = getStoredAccounts();
-    const target = all.find((u) => u.role === 'PARENT');
-
-    if (target) {
-      setCurrentSession(target);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', `demo_token_${target.id}`);
-        localStorage.setItem('tenant_id', 'inst-001');
-        localStorage.setItem('user_roles', JSON.stringify([target.role]));
-      }
-      setIsParentLoggingIn(true);
-      setTimeout(() => {
-        router.push('/parent');
-      }, 250);
-    } else {
-      router.push('/parent');
-    }
-  };
-
-  // 5. Parent Registration Handler
+  // 4. Parent Registration Handler
   const handleParentRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setRegisterError(null);
@@ -641,19 +541,7 @@ export default function PrimaryPortalHomePage() {
                   </button>
                 </form>
 
-                {/* Quick Parent Demo Login */}
-                <div className="pt-3 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={handleParentDemoClick}
-                    className="w-full py-2 px-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <Heart className="w-3.5 h-3.5 text-purple-700" />
-                    <span>Quick Parent Demo Login</span>
-                  </button>
-                </div>
-
-                <div className="text-center pt-1">
+                <div className="text-center pt-3 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => setParentMode('REGISTER')}
@@ -915,29 +803,6 @@ export default function PrimaryPortalHomePage() {
                   )}
                 </button>
               </form>
-
-              {/* Quick Staff Demo Access */}
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                  Quick Staff Access:
-                </span>
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
-                  {staffAccounts.map((acc, idx) => {
-                    const Icon = acc.icon;
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleStaffDemoClick(acc)}
-                        className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 text-left transition-all flex items-center gap-1.5 text-slate-800 cursor-pointer"
-                      >
-                        <Icon className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
-                        <span className="font-bold text-[11px] truncate">{acc.roleTitle}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
           </div>
         )}

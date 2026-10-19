@@ -70,172 +70,24 @@ export interface UserAccount {
   joinedDate: string;
 }
 
-// Complete Faculty Roster: Every teacher has their assigned classes and subjects
+// System Accounts Registry: Initial default Administrator account
 export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
   {
-    id: 'USR-001',
-    fullName: 'Mwl. Augustine Mrosso',
-    role: 'HEADTEACHER',
+    id: 'ADMIN-001',
+    fullName: 'Msimamizi Mkuu (Admin)',
+    role: 'ADMIN',
     leadershipRole: 'HEADTEACHER',
-    identifier: 'HT-2026-001',
-    email: 'headteacher@primaryschool.ac.tz',
-    phone: '+255 754 112 233',
-    assignedClass: 'Senior Standards (Std 6 & 7)',
-    assignedClasses: ['Standard 7 (Grade 7)', 'Standard 6 (Grade 6)'],
-    subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Social Studies (Maarifa ya Jamii)'],
-    teachingAssignments: [
-      { class: 'Standard 7 (Grade 7)', subject: 'Civic & Moral Education (Uraia na Maadili)' },
-      { class: 'Standard 6 (Grade 6)', subject: 'Social Studies (Maarifa ya Jamii)' },
-    ],
+    identifier: 'admin@school.ac.tz',
+    email: 'admin@school.ac.tz',
+    phone: '+255 700 000 000',
     status: 'ACTIVE',
-    joinedDate: '2026-01-15',
-  },
-  {
-    id: 'USR-002',
-    fullName: 'Mwl. Beatrice Kimaro',
-    role: 'ACADEMIC',
-    leadershipRole: 'ACADEMIC',
-    identifier: 'ACAD-2026-001',
-    email: 'academic@primaryschool.ac.tz',
-    phone: '+255 765 223 344',
-    assignedClass: 'Standard 7 (Grade 7)',
-    assignedClasses: ['Standard 7 (Grade 7)', 'Standard 4 (Grade 4)'],
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology (Sayansi)'],
-    isHomeroomMaster: true,
-    status: 'ACTIVE',
-    joinedDate: '2026-01-20',
-  },
-  {
-    id: 'USR-003',
-    fullName: 'Mwl. Sarah Mollel',
-    role: 'TEACHER',
-    leadershipRole: 'CLASS_TEACHER',
-    identifier: 'TCH-2026-012',
-    email: 'sarah.mollel@primaryschool.ac.tz',
-    phone: '+255 712 445 566',
-    assignedClass: 'Standard 6 (Grade 6)',
-    assignedClasses: ['Standard 6 (Grade 6)'],
-    subjects: ['English Language', 'Kiswahili'],
-    isHomeroomMaster: true,
-    status: 'ACTIVE',
-    joinedDate: '2026-02-15',
-  },
-  {
-    id: 'USR-004',
-    fullName: 'Mwl. Emmanuel Lyimo',
-    role: 'TEACHER',
-    leadershipRole: 'CLASS_TEACHER',
-    identifier: 'TCH-2026-014',
-    email: 'emmanuel.lyimo@primaryschool.ac.tz',
-    phone: '+255 765 223 345',
-    assignedClass: 'Standard 5 (Grade 5)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['Mathematics (Hisabati)', 'Science & Technology (Sayansi)'],
-    isHomeroomMaster: true,
-    status: 'ACTIVE',
-    joinedDate: '2026-01-22',
-  },
-  {
-    id: 'USR-005',
-    fullName: 'Mwl. Emmanuel Swai',
-    role: 'TEACHER',
-    leadershipRole: 'CLASS_TEACHER',
-    identifier: 'TCH-2026-015',
-    email: 'emmanuel.swai@primaryschool.ac.tz',
-    phone: '+255 767 556 677',
-    assignedClass: 'Standard 4 (Grade 4)',
-    assignedClasses: ['Standard 4 (Grade 4)', 'Standard 3 (Grade 3)'],
-    subjects: ['Social Studies (Maarifa ya Jamii)', 'Vocational Skills'],
-    isHomeroomMaster: true,
-    status: 'ACTIVE',
-    joinedDate: '2026-02-20',
-  },
-  {
-    id: 'USR-006',
-    fullName: 'Mwl. Godfrey Makere',
-    role: 'DISCIPLINE',
-    leadershipRole: 'DISCIPLINE',
-    identifier: 'DISC-2026-001',
-    email: 'discipline@primaryschool.ac.tz',
-    phone: '+255 784 334 455',
-    assignedClass: 'Standard 5 (Grade 5)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 6 (Grade 6)'],
-    subjects: ['Civic & Moral Education (Uraia na Maadili)', 'Vocational Skills'],
-    status: 'ACTIVE',
-    joinedDate: '2026-02-01',
-  },
-  {
-    id: 'USR-007',
-    fullName: 'Mwl. Jumanne Khalfan',
-    role: 'HEADTEACHER',
-    leadershipRole: 'SECOND_MASTER',
-    identifier: 'SEC-2026-001',
-    email: 'secondmaster@primaryschool.ac.tz',
-    phone: '+255 755 889 900',
-    assignedClass: 'Standard 6 (Grade 6)',
-    assignedClasses: ['Standard 6 (Grade 6)', 'Standard 7 (Grade 7)'],
-    subjects: ['Mathematics (Hisabati)', 'English Language'],
-    teachingAssignments: [
-      { class: 'Standard 6 (Grade 6)', subject: 'Mathematics (Hisabati)' },
-      { class: 'Standard 7 (Grade 7)', subject: 'English Language' },
-    ],
-    status: 'ACTIVE',
-    joinedDate: '2026-01-18',
-  },
-  {
-    id: 'USR-008',
-    fullName: 'Mwl. Rehema Mushi',
-    role: 'ACADEMIC',
-    leadershipRole: 'ASSISTANT_ACADEMIC',
-    identifier: 'ASST-ACAD-2026-001',
-    email: 'asst.academic@primaryschool.ac.tz',
-    phone: '+255 768 112 334',
-    assignedClass: 'Standard 5 (Grade 5)',
-    assignedClasses: ['Standard 5 (Grade 5)', 'Standard 4 (Grade 4)'],
-    subjects: ['Science & Technology (Sayansi)', 'Kiswahili'],
-    teachingAssignments: [
-      { class: 'Standard 5 (Grade 5)', subject: 'Science & Technology (Sayansi)' },
-      { class: 'Standard 4 (Grade 4)', subject: 'Kiswahili' },
-    ],
-    status: 'ACTIVE',
-    joinedDate: '2026-01-25',
-  },
-  {
-    id: 'USR-SEC-001',
-    fullName: 'Bi. Salma Rashid Mwinyi',
-    role: 'SECRETARY',
-    identifier: 'SEC-2026-001',
-    email: 'secretary@primaryschool.ac.tz',
-    phone: '+255 714 556 778',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-10',
-  },
-  {
-    id: 'USR-ACC-001',
-    fullName: 'Bw. Ramadhani Athumani Tembo',
-    role: 'ACCOUNTANT',
-    identifier: 'ACC-2026-001',
-    email: 'accountant@primaryschool.ac.tz',
-    phone: '+255 754 112 233',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-05',
-  },
-  {
-    id: 'USR-PAR-001',
-    fullName: 'Mzee Bakari Juma (Mzazi)',
-    role: 'PARENT',
-    identifier: '+255755123456',
-    email: 'bakari.parent@gmail.com',
-    phone: '+255 755 123 456',
-    status: 'ACTIVE',
-    joinedDate: '2026-01-15',
+    joinedDate: '2026-01-01',
   },
 ];
 
-const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v7';
-const SESSION_STORAGE_KEY = 'academic_portal_active_session_v7';
+const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v8';
+const SESSION_STORAGE_KEY = 'academic_portal_active_session_v8';
 
-// Get Stored Accounts
 export function getStoredAccounts(): UserAccount[] {
   if (typeof window === 'undefined') return INITIAL_BLUEPRINT_ACCOUNTS;
   try {
@@ -304,7 +156,7 @@ export function clearCurrentSession(): void {
 export function canAccessPortal(
   user: UserAccount | null,
   portalRole: 'TEACHER' | 'ADMIN' | 'PARENT' | 'STUDENT' | 'SECRETARY' | 'ACCOUNTANT'
-): boolean {
+): user is UserAccount {
   if (!user) return false;
   if (portalRole === 'TEACHER') {
     return ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER', 'ADMIN'].includes(user.role);

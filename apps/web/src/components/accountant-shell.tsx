@@ -83,9 +83,12 @@ export default function AccountantShell({
       const defaultAccountant =
         accounts.find((a) => a.role === 'ACCOUNTANT') ||
         accounts.find((a) => a.role === 'HEADTEACHER') ||
+        accounts.find((a) => a.role === 'ADMIN') ||
         accounts[0];
-      setCurrentSession(defaultAccountant);
-      session = defaultAccountant;
+      if (defaultAccountant) {
+        setCurrentSession(defaultAccountant);
+        session = defaultAccountant;
+      }
     }
 
     if (!canAccessPortal(session, 'ACCOUNTANT')) {
