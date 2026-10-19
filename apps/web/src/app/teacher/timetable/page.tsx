@@ -784,29 +784,29 @@ export default function TimetablePage() {
             </div>
 
             {/* OFFICIAL UPLOADED ALMANAC DOCUMENT CARD */}
-            <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-emerald-700/60 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="bg-white text-slate-800 rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
               <div className="flex items-start gap-4">
-                <div className="w-13 h-13 rounded-2xl bg-amber-400 text-emerald-950 flex items-center justify-center shrink-0 shadow-sm font-black">
-                  <FileText className="w-7 h-7 text-emerald-950" />
+                <div className="w-13 h-13 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center shrink-0 border border-slate-200 font-bold">
+                  <FileText className="w-7 h-7 text-emerald-800" />
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-700/80 border border-emerald-500/50 text-emerald-200 font-black text-[10px] uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[10px] uppercase tracking-wider">
                       Hati Rasmi Iliyopakiwa (Uploaded Document)
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-mono text-[10px] font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-bold">
                       {almanacDocument.fileSize}
                     </span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-black text-white tracking-tight">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                     {almanacDocument.fileName}
                   </h3>
-                  <p className="text-xs text-emerald-200 flex flex-wrap items-center gap-2">
-                    <span>Imepakiwa na: <strong>{almanacDocument.uploadedBy}</strong></span>
-                    <span className="text-emerald-400">•</span>
+                  <p className="text-xs text-slate-600 flex flex-wrap items-center gap-2">
+                    <span>Imepakiwa na: <strong className="text-slate-900">{almanacDocument.uploadedBy}</strong></span>
+                    <span className="text-slate-300">•</span>
                     <span>Tarehe: {almanacDocument.uploadedAt}</span>
-                    <span className="text-emerald-400">•</span>
-                    <span className="font-mono text-emerald-300">Wizara ya Elimu (MoEST &amp; TAMISEMI)</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="font-mono text-slate-700">Wizara ya Elimu (MoEST &amp; TAMISEMI)</span>
                   </p>
                 </div>
               </div>
@@ -855,29 +855,29 @@ export default function TimetablePage() {
 
             {/* National Exam Highlights (SFNA & PSLE) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md space-y-2">
+              <div className="p-4 rounded-3xl bg-white border border-amber-200 text-slate-800 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full bg-black/20 text-amber-100 font-black text-[10px] uppercase">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200 font-bold text-[10px] uppercase">
                     Mtihani wa Taifa (NECTA)
                   </span>
-                  <Award className="w-5 h-5 text-amber-200" />
+                  <Award className="w-5 h-5 text-amber-600" />
                 </div>
-                <h3 className="text-lg font-black tracking-tight">PSLE 2026 — Darasa la Saba</h3>
-                <p className="text-xs text-amber-100 leading-relaxed">
-                  Tarehe ya Mtihani wa Taifa: <strong>09 – 10 Septemba 2026</strong>. Watahiniwa 95 wameandikishwa.
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">PSLE 2026 — Darasa la Saba</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Tarehe ya Mtihani wa Taifa: <strong className="text-slate-900">09 – 10 Septemba 2026</strong>. Watahiniwa 95 wameandikishwa.
                 </p>
               </div>
 
-              <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-700 to-teal-800 text-white shadow-md space-y-2">
+              <div className="p-4 rounded-3xl bg-white border border-emerald-200 text-slate-800 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full bg-black/20 text-emerald-100 font-black text-[10px] uppercase">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 font-bold text-[10px] uppercase">
                     Upimaji wa Taifa (NECTA)
                   </span>
-                  <Award className="w-5 h-5 text-emerald-200" />
+                  <Award className="w-5 h-5 text-emerald-700" />
                 </div>
-                <h3 className="text-lg font-black tracking-tight">SFNA 2026 — Darasa la Nne</h3>
-                <p className="text-xs text-emerald-100 leading-relaxed">
-                  Tarehe ya Upimaji wa Kitaifa: <strong>21 – 22 Oktoba 2026</strong>. Wanafunzi wote wa Darasa la 4.
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">SFNA 2026 — Darasa la Nne</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Tarehe ya Upimaji wa Kitaifa: <strong className="text-slate-900">21 – 22 Oktoba 2026</strong>. Wanafunzi wote wa Darasa la 4.
                 </p>
               </div>
             </div>

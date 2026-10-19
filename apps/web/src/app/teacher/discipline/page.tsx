@@ -1306,7 +1306,7 @@ export default function DisciplineAndAttendancePage() {
                     HALMASHAURI YA WILAYA • IDARA YA ELIMU YA MSINGI
                   </div>
                   <div className="text-sm font-black text-emerald-900 uppercase">
-                    SHULE YA MSINGI KUKUMBUKA
+                    PRIMARY &amp; NURSERY SCHOOL
                   </div>
                   <div className="text-[9px] text-slate-500 font-mono">
                     Kumb. Na: {viewingSummonsModal.refNo} • Tarehe: {viewingSummonsModal.date}
@@ -1328,7 +1328,7 @@ export default function DisciplineAndAttendancePage() {
                 </p>
 
                 <p>
-                  Uongozi wa Shule ya Msingi Kukumbuka kupitia Ofisi ya Mwalimu wa Nidhamu unakuarifu kuwa mwanafunzi <strong>{viewingSummonsModal.pupilName}</strong> anayesoma darasa la <strong>{viewingSummonsModal.class}</strong> amehusika katika kosa la <strong>{viewingSummonsModal.categoryLabel}</strong> tarehe {viewingSummonsModal.date}.
+                  Uongozi wa Shule kupitia Ofisi ya Mwalimu wa Nidhamu unakuarifu kuwa mwanafunzi <strong>{viewingSummonsModal.pupilName}</strong> anayesoma darasa la <strong>{viewingSummonsModal.class}</strong> amehusika katika kosa la <strong>{viewingSummonsModal.categoryLabel}</strong> tarehe {viewingSummonsModal.date}.
                 </p>
 
                 <p className="p-3 rounded-xl bg-white border border-slate-200 text-slate-700 italic font-sans text-[11px]">
@@ -1428,7 +1428,7 @@ export default function DisciplineAndAttendancePage() {
                   </label>
                   <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-300 font-mono text-[11px] text-slate-800 leading-relaxed space-y-2">
                     <p>
-                      <strong>SHULE YA MSINGI KUKUMBUKA - TAARIFA YA NIDHAMU</strong>
+                      <strong>PRIMARY &amp; NURSERY SCHOOL - TAARIFA YA NIDHAMU</strong>
                     </p>
                     <p>
                       Habari Ndugu {viewingWhatsAppModal.parentName}, mwanafunzi {viewingWhatsAppModal.pupilName} ({viewingWhatsAppModal.class}) amerekodiwa kosa la: <strong>{viewingWhatsAppModal.categoryLabel}</strong> tarehe {viewingWhatsAppModal.date}.
@@ -1437,7 +1437,7 @@ export default function DisciplineAndAttendancePage() {
                       Hatua iliyochukuliwa: {viewingWhatsAppModal.actionTaken}.
                     </p>
                     <p>
-                      Tafadhali wasiliana na shule au kagua Portal ya Mzazi kwa maelezo zaidi. Simu ya Ofisi: 0754 000 111.
+                      Tafadhali wasiliana na shule au kagua Portal ya Mzazi kwa maelezo zaidi. Simu ya Ofisi: 0779304500.
                     </p>
                   </div>
                 </div>
@@ -1457,7 +1457,7 @@ export default function DisciplineAndAttendancePage() {
                   onClick={() => {
                     const cleanPhone = viewingWhatsAppModal.parentPhone.replace(/[^0-9]/g, '');
                     const message = encodeURIComponent(
-                      `SHULE YA MSINGI KUKUMBUKA - TAARIFA YA NIDHAMU\n\nHabari Ndugu ${viewingWhatsAppModal.parentName}, mwanao ${viewingWhatsAppModal.pupilName} (${viewingWhatsAppModal.class}) amerekodiwa kosa la: ${viewingWhatsAppModal.categoryLabel}.\n\nHatua: ${viewingWhatsAppModal.actionTaken}.\n\nTafadhali wasiliana na shule kwa ufafanuzi zaidi.`
+                      `PRIMARY & NURSERY SCHOOL - TAARIFA YA NIDHAMU\n\nHabari Ndugu ${viewingWhatsAppModal.parentName}, mwanao ${viewingWhatsAppModal.pupilName} (${viewingWhatsAppModal.class}) amerekodiwa kosa la: ${viewingWhatsAppModal.categoryLabel}.\n\nHatua: ${viewingWhatsAppModal.actionTaken}.\n\nTafadhali wasiliana na shule kwa ufafanuzi zaidi.`
                     );
                     const whatsappUrl = `https://wa.me/${cleanPhone.startsWith('0') ? '255' + cleanPhone.slice(1) : cleanPhone}?text=${message}`;
                     window.open(whatsappUrl, '_blank');

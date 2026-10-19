@@ -29,6 +29,9 @@ import {
   UserCheck,
   UserX,
   GraduationCap,
+  Lock,
+  Calendar,
+  X,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { notifyUser } from '@/lib/notifications';
@@ -338,6 +341,14 @@ export default function AcademicBroadsheetHubPage() {
   // Submissions state to localStorage
   const [submissionsState, setSubmissionsState] = useState<Record<string, { isSubmitted: boolean; timestamp: string }>>({});
 
+  // Headteacher / Academic Master Official Seal & Release Scheduling state
+  const [approvalMap, setApprovalMap] = useState<Record<string, any>>({});
+  const [showApprovalModal, setShowApprovalModal] = useState<boolean>(false);
+  const [modalPublishingMode, setModalPublishingMode] = useState<'SCHEDULED' | 'IMMEDIATE'>('SCHEDULED');
+  const [modalReleaseDate, setModalReleaseDate] = useState<string>('2026-03-27');
+  const [modalReleaseTime, setModalReleaseTime] = useState<string>('08:00');
+  const [isConfirmChecked, setIsConfirmChecked] = useState<boolean>(false);
+
   // Active Class Object
   const currentClassInfo = useMemo(() => {
     return ALL_SCHOOL_CLASSES.find((c) => c.id === selectedClassId) || ALL_SCHOOL_CLASSES[7];
@@ -400,17 +411,23 @@ export default function AcademicBroadsheetHubPage() {
     };
   }, [activeRoster, activeCurriculum]);
 
-  // Load saved submissions from LocalStorage
+  // Load saved submissions & approval map from LocalStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('academic_submissions_to_headmaster_v1');
-      if (saved) {
-        setSubmissionsState(JSON.parse(saved));
+      const savedSubmissions = localStorage.getItem('academic_submissions_to_headmaster_v1');
+      if (savedSubmissions) {
+        setSubmissionsState(JSON.parse(savedSubmissions));
+      }
+
+      const savedApprovals = localStorage.getItem('headteacher_results_approval_map_v2');
+      if (savedApprovals) {
+        setApprovalMap(JSON.parse(savedApprovals));
       }
     } catch {}
   }, []);
 
   const isClassSubmitted = Boolean(submissionsState[currentClassInfo.name]?.isSubmitted);
+  const currentClassSeal = approvalMap[currentClassInfo.id] || approvalMap['ALL'];
 
   // Handle Academic Master Submitting to Headteacher
   const handleAcademicMasterSubmit = () => {
@@ -445,8 +462,30 @@ export default function AcademicBroadsheetHubPage() {
     setActiveNotice(`Broadsheet ya ${currentClassInfo.name} imewasilishwa kwa Mwalimu Mkuu (${timestamp}).`);
   };
 
-  // Delegated Publishing by Academic Master (when Headteacher is busy/delegated)
-  const handleDelegatedPublish = () => {
+  // Open Approval & Release Scheduling Modal
+  const openApprovalModal = () => {
+    if (currentClassSeal) {
+      setModalPublishingMode(currentClassSeal.publishingMode || 'SCHEDULED');
+      setModalReleaseDate(currentClassSeal.resultsReleaseDate || '2026-03-27');
+      setModalReleaseTime(currentClassSeal.resultsReleaseTime || '08:00');
+    } else {
+      setModalPublishingMode('SCHEDULED');
+      setModalReleaseDate('2026-03-27');
+      setModalReleaseTime('08:00');
+    }
+    setIsConfirmChecked(false);
+    setShowApprovalModal(true);
+  };
+
+  // Confirm Approval & Save Release Schedule
+  const handleConfirmApprovalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isConfirmChecked) {
+      notifyUser('warning', 'Tafadhali Thibitisha Utayari', 'Lazima uweke tiki kuthibitisha kuwa upo tayari kuidhinisha matokeo haya kabla ya kuendelea.');
+      return;
+    }
+
     const timestamp = new Date().toLocaleString('sw-TZ', {
       day: '2-digit',
       month: 'long',
@@ -455,49 +494,120 @@ export default function AcademicBroadsheetHubPage() {
       minute: '2-digit',
     });
 
-    const updatedSubmissions = {
-      ...submissionsState,
-      [currentClassInfo.name]: {
-        isSubmitted: true,
-        timestamp,
-        className: currentClassInfo.name,
-        academicMaster: currentUser?.fullName || 'Mwl. Beatrice Kimaro',
-      },
+    const isImmediate = modalPublishingMode === 'IMMEDIATE';
+    const classId = currentClassInfo.id;
+    const certNumber = currentClassSeal?.sealCertNumber || `VER-2026-HT-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const newSealEntry = {
+      hasApproved: true,
+      approvalTimestamp: timestamp,
+      sealCertNumber: certNumber,
+      publishingMode: modalPublishingMode,
+      resultsReleaseDate: modalReleaseDate,
+      resultsReleaseTime: modalReleaseTime,
+      isPublishedToUsers: isImmediate,
+      publishedTimestamp: isImmediate ? timestamp : undefined,
+      delegatedTo: isHeadteacher ? undefined : (currentUser?.fullName || 'Mwl. Beatrice Kimaro (Taaluma)'),
     };
+
+    const newApprovalMap = {
+      ...approvalMap,
+      [classId]: newSealEntry,
+    };
+
     try {
+      localStorage.setItem('headteacher_results_approval_map_v2', JSON.stringify(newApprovalMap));
+      setApprovalMap(newApprovalMap);
+
+      // Also record in school records archive
+      const existingRecords = localStorage.getItem('school_records_documents_v1');
+      let recList = existingRecords ? JSON.parse(existingRecords) : [];
+      const newDoc = {
+        id: `doc-sealed-${classId}-2026`,
+        title: `Broadsheet Rasmi ya Matokeo: ${currentClassInfo.name} (Yaliyowekwa Muhuri na Mkuu wa Shule)`,
+        category: 'Taaluma & Mitihani',
+        fileName: `Matokeo_Rasmi_${currentClassInfo.name.replace(/\s+/g, '_')}_SEALED.pdf`,
+        fileSize: '3.4 MB',
+        version: 'v1.0 (Muhuri Rasmi & Saini ya Mkuu)',
+        uploadDate: new Date().toISOString().split('T')[0],
+        uploadedBy: currentUser?.fullName || 'Mwalimu Mkuu / Taaluma',
+        accessLevel: 'PUBLIC',
+        status: 'IMETHIBITISHWA_NA_MUHURI',
+        referenceNumber: certNumber,
+        releaseDate: isImmediate ? 'Tayari Yamechapishwa' : `${modalReleaseDate} saa ${modalReleaseTime}`,
+      };
+      recList = [newDoc, ...recList.filter((d: any) => d.id !== newDoc.id)];
+      localStorage.setItem('school_records_documents_v1', JSON.stringify(recList));
+
+      // Also mark submissions
+      const updatedSubmissions = {
+        ...submissionsState,
+        [currentClassInfo.name]: {
+          isSubmitted: true,
+          timestamp,
+          className: currentClassInfo.name,
+          academicMaster: currentUser?.fullName || 'Taaluma',
+        },
+      };
       localStorage.setItem('academic_submissions_to_headmaster_v1', JSON.stringify(updatedSubmissions));
       setSubmissionsState(updatedSubmissions);
-    } catch {}
-
-    try {
-      const storageKey = 'headteacher_results_approval_map_v2';
-      const raw = localStorage.getItem(storageKey);
-      let map = raw ? JSON.parse(raw) : {};
-
-      const classId = currentClassInfo.id;
-      map[classId] = {
-        hasApproved: true,
-        approvalTimestamp: timestamp,
-        sealCertNumber: `VER-2026-ACAD-DELEGATE-${Math.floor(10000 + Math.random() * 90000)}`,
-        publishingMode: 'IMMEDIATE',
-        resultsReleaseDate: new Date().toISOString().split('T')[0],
-        resultsReleaseTime: '08:00',
-        isPublishedToUsers: true,
-        publishedTimestamp: timestamp,
-        delegatedTo: currentUser?.fullName || 'Mwl. Beatrice Kimaro (Taaluma)',
-      };
-
-      localStorage.setItem(storageKey, JSON.stringify(map));
     } catch (e) {
       console.error(e);
     }
 
+    setShowApprovalModal(false);
+
+    if (isImmediate) {
+      notifyUser(
+        'success',
+        'Matokeo Yameidhinishwa & Yametangazwa kwa Wazazi!',
+        `Matokeo ya ${currentClassInfo.name} yamepigiwa Muhuri Rasmi na sasa yanaonekana rasmi kwenye Portal ya Wazazi.`
+      );
+      setActiveNotice(`Matokeo ya ${currentClassInfo.name} yamechapishwa kwa wazazi mara moja (${timestamp}).`);
+    } else {
+      notifyUser(
+        'success',
+        'Muhuri Umewekwa & Ratiba ya Matokeo Imepangwa!',
+        `Matokeo ya ${currentClassInfo.name} yamelindwa na yatafunguliwa rasmi kwa wazazi tarehe ${modalReleaseDate} saa ${modalReleaseTime}.`
+      );
+      setActiveNotice(`Matokeo ya ${currentClassInfo.name} yatafunguliwa rasmi: ${modalReleaseDate} saa ${modalReleaseTime}.`);
+    }
+  };
+
+  // Instant Publish Now for Scheduled class
+  const handleInstantPublish = () => {
+    const timestamp = new Date().toLocaleString('sw-TZ', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const classId = currentClassInfo.id;
+    const existing = currentClassSeal || {};
+    const updated = {
+      ...existing,
+      isPublishedToUsers: true,
+      publishedTimestamp: timestamp,
+    };
+
+    const newApprovalMap = {
+      ...approvalMap,
+      [classId]: updated,
+    };
+
+    try {
+      localStorage.setItem('headteacher_results_approval_map_v2', JSON.stringify(newApprovalMap));
+      setApprovalMap(newApprovalMap);
+    } catch {}
+
     notifyUser(
       'success',
-      'Matokeo Yameidhinishwa & Kuchapishwa kwa Wazazi!',
-      `Kwa idhini maalum ya Mkuu wa Shule aliyeko kwenye majukumu mengine, matokeo ya ${currentClassInfo.name} yamepigiwa Muhuri Rasmi na sasa yanaonekana rasmi kwenye Portal ya Wazazi.`
+      'Matokeo Yamefunguliwa Sasa Hivi!',
+      `Matokeo ya ${currentClassInfo.name} sasa yamefunguliwa na yanaonekana kwenye portal ya wazazi.`
     );
-    setActiveNotice(`Matokeo ya ${currentClassInfo.name} yamechapishwa kwa wazazi (Idhini Maalum ya Uongozi - ${timestamp}).`);
+    setActiveNotice(`Matokeo ya ${currentClassInfo.name} yamefunguliwa kwa wazazi (${timestamp}).`);
   };
 
   // Download Broadsheet CSV / Excel
@@ -809,19 +919,63 @@ export default function AcademicBroadsheetHubPage() {
                 <span>Pakua Broadsheet (Excel)</span>
               </button>
 
-              {/* ROLE CHECK: If logged in as Headteacher vs Academic Master */}
-              {isHeadteacher ? (
-                // HEADTEACHER: Give direct link to approvals/stamp, DO NOT say "Peleka kwa Mwalimu Mkuu"!
-                <Link
-                  href="/teacher/approvals"
-                  className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-black shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
-                >
-                  <Award className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Ofisi ya Mkuu: Weka Muhuri Rasmi wa Shule</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
-                </Link>
+              {/* CURRENT CLASS SEAL & APPROVAL STATUS / ACTIONS */}
+              {currentClassSeal?.hasApproved ? (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {currentClassSeal.isPublishedToUsers || currentClassSeal.publishingMode === 'IMMEDIATE' ? (
+                    <span className="px-3.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-950 text-xs font-black border border-emerald-300 flex items-center gap-1.5 shadow-2xs">
+                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                      <span>✓ Yameidhinishwa &amp; Yametangazwa kwa Wazazi</span>
+                    </span>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-3.5 py-1.5 rounded-xl bg-amber-100 text-amber-950 text-xs font-black border border-amber-300 flex items-center gap-1.5 shadow-2xs">
+                        <Lock className="w-4 h-4 text-amber-800" />
+                        <span>🔒 Yameidhinishwa • Kufunguliwa: {currentClassSeal.resultsReleaseDate} ({currentClassSeal.resultsReleaseTime})</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleInstantPublish}
+                        className="px-3 py-1.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold shadow-xs transition-colors flex items-center gap-1"
+                        title="Fungua matokeo sasa hivi bila kusubiri tarehe ya ratiba"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Toa Matokeo Sasa</span>
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={openApprovalModal}
+                    className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-300 flex items-center gap-1 transition-colors"
+                    title="Badilisha tarehe ya kutoa matokeo au idhinisha upya"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-slate-600" />
+                    <span>Badilisha Ratiba / Muhuri</span>
+                  </button>
+                </div>
+              ) : isHeadteacher ? (
+                // HEADTEACHER: Quick Action or Link to Approvals
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={openApprovalModal}
+                    className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-black shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                  >
+                    <Award className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Idhinisha &amp; Panga Siku ya Matokeo</span>
+                  </button>
+                  <Link
+                    href="/teacher/approvals"
+                    className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-300 flex items-center gap-1"
+                  >
+                    <span>Masijala ya Idhini</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
+                  </Link>
+                </div>
               ) : (
-                // ACADEMIC MASTER: Show submission to Headteacher PLUS Delegated Publish Button
+                // ACADEMIC MASTER: Show submission to Headteacher PLUS Approval & Scheduling Modal Button
                 <div className="flex items-center gap-2 flex-wrap">
                   {!isClassSubmitted ? (
                     <button
@@ -840,15 +994,15 @@ export default function AcademicBroadsheetHubPage() {
                     </span>
                   )}
 
-                  {/* DELEGATED PUBLISH BUTTON: When Headteacher is busy/delegated */}
+                  {/* APPROVAL & SCHEDULING BUTTON */}
                   <button
                     type="button"
-                    onClick={handleDelegatedPublish}
+                    onClick={openApprovalModal}
                     className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-black shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
-                    title="Mkuu wa Shule akiwa na majukumu mengine au hayupo, idhinisha na toa matokeo moja kwa moja kwa wazazi"
+                    title="Idhinisha na weka siku rasmi ya matokeo kuonekana kwa wazazi"
                   >
                     <Award className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Idhinisha &amp; Chapisha (Kwa Idhini ya Mkuu)</span>
+                    <span>Idhinisha &amp; Panga Siku ya Matokeo</span>
                   </button>
                 </div>
               )}
@@ -1194,6 +1348,196 @@ export default function AcademicBroadsheetHubPage() {
                   Sawa, Nimekagua
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================== */}
+        {/* MODAL: IDHINI YA MATOKEO & RATIBU SIKU YA KUWA RELEASED */}
+        {/* ===================================================================== */}
+        {showApprovalModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-3xl max-w-xl w-full border border-emerald-200 shadow-2xl p-6 sm:p-7 space-y-4 max-h-[92vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-emerald-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center shadow-xs">
+                    <Award className="w-5 h-5 text-amber-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">
+                      Idhini &amp; Ratiba ya Kutoa Matokeo: {currentClassInfo.name}
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      Panga siku ya ufunguzi kwa wazazi na gonga Muhuri Rasmi wa Shule
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowApprovalModal(false)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleConfirmApprovalSubmit} className="space-y-4 text-xs">
+                {/* 1. SWALI LA UTAYARI (READINESS CHECK) */}
+                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-300 space-y-2">
+                  <div className="flex items-center gap-2 text-amber-950 font-black">
+                    <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>❓ JE, UPO TAYARI KUIDHINISHA MATOKEO YA DARASA HILI?</span>
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-relaxed">
+                    Tafadhali kagua muhtasari kabla ya kuidhinisha. Baada ya kuidhinishwa, matokeo yatalindwa na kuonekana kulingana na tarehe utakayopanga:
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-center font-bold">
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Wanafunzi</span>
+                      <span className="text-slate-900 text-sm font-black">{currentClassInfo.totalStudents}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Wastani</span>
+                      <span className="text-emerald-800 text-sm font-black">{classSummary.classAvg}%</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Masomo</span>
+                      <span className="text-slate-900 text-sm font-black">6 / 6 Yamekamilika</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Daraja I</span>
+                      <span className="text-emerald-700 text-sm font-black">{classSummary.div1} Wanafunzi</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. SIKU NA SAA YA KUWA RELEASED */}
+                <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
+                  <label className="block text-[10px] font-black text-emerald-950 uppercase tracking-wider">
+                    Siku na Saa ya Matokeo Kuwa Released (Ratiba ya Wazazi):
+                  </label>
+
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-emerald-200 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="broadsheetPublishingMode"
+                        checked={modalPublishingMode === 'SCHEDULED'}
+                        onChange={() => setModalPublishingMode('SCHEDULED')}
+                        className="w-4 h-4 text-emerald-700 focus:ring-emerald-500 mt-0.5"
+                      />
+                      <div>
+                        <strong className="text-slate-900 block font-bold">
+                          Ratibu Siku na Saa Maalum ya Ufunguzi (Inashauriwa)
+                        </strong>
+                        <span className="text-[11px] text-slate-500 leading-relaxed block">
+                          Mfano: Siku ya Kufunga Shule au Mkutano wa Wazazi. Matokeo yatafungwa kwa kufuli 🔒 na wazazi wataona taarifa ya tarehe rasmi.
+                        </span>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-emerald-200 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="broadsheetPublishingMode"
+                        checked={modalPublishingMode === 'IMMEDIATE'}
+                        onChange={() => setModalPublishingMode('IMMEDIATE')}
+                        className="w-4 h-4 text-emerald-700 focus:ring-emerald-500 mt-0.5"
+                      />
+                      <div>
+                        <strong className="text-slate-900 block font-bold">
+                          Toa Matokeo Mara Moja Sasa Hivi (Immediate Release)
+                        </strong>
+                        <span className="text-[11px] text-slate-500 leading-relaxed block">
+                          Matokeo yataonekana mara moja kwenye portal ya wazazi mara baada ya kubonyeza OK.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+
+                  {modalPublishingMode === 'SCHEDULED' && (
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
+                          Tarehe ya Kutoa Matokeo:
+                        </span>
+                        <input
+                          type="date"
+                          required
+                          value={modalReleaseDate}
+                          onChange={(e) => setModalReleaseDate(e.target.value)}
+                          className="w-full p-2.5 rounded-xl bg-white border border-emerald-300 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
+                          Saa ya Kutoa Matokeo:
+                        </span>
+                        <input
+                          type="time"
+                          required
+                          value={modalReleaseTime}
+                          onChange={(e) => setModalReleaseTime(e.target.value)}
+                          className="w-full p-2.5 rounded-xl bg-white border border-emerald-300 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. MAMLAKA YA IDHINI */}
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Mamlaka ya Idhini:</span>
+                    <strong className="text-slate-900 font-bold">
+                      {currentUser?.fullName || (isHeadteacher ? 'Mwl. Augustine Mrosso' : 'Mwl. Beatrice Kimaro')}
+                    </strong>
+                    <span className="text-[10px] text-emerald-800 block">
+                      {isHeadteacher ? 'Mwalimu Mkuu (Headteacher)' : 'Mwalimu wa Taaluma (Academic Master)'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {currentClassSeal?.sealCertNumber || 'VER-2026-SEAL-88219'}
+                  </span>
+                </div>
+
+                {/* 4. RIDHAA YA UTAYARI (MANDATORY CONFIRMATION CHECKBOX) */}
+                <label className="flex items-start gap-2.5 p-3 rounded-2xl bg-amber-50/60 border border-amber-300/80 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isConfirmChecked}
+                    onChange={(e) => setIsConfirmChecked(e.target.checked)}
+                    className="w-4 h-4 text-emerald-700 rounded-sm focus:ring-emerald-500 mt-0.5"
+                  />
+                  <span className="text-[11px] text-slate-800 leading-snug">
+                    <strong>Ndio, nipo tayari:</strong> Nimethibitisha kuwa matokeo ya {currentClassInfo.name} ni sahihi na nimeridhika na ratiba iliyowekwa ya kutoa matokeo haya.
+                  </span>
+                </label>
+
+                {/* 5. BUTTONS: GHAIRI & NDIO, IDHINISHA (OK) */}
+                <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowApprovalModal(false)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+                  >
+                    Ghairi
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={!isConfirmChecked}
+                    className={`px-5 py-2.5 rounded-xl font-black text-xs shadow-md flex items-center gap-2 transition-all ${
+                      isConfirmChecked
+                        ? 'bg-emerald-800 hover:bg-emerald-900 text-white shadow-emerald-950/20 hover:scale-[1.02]'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                    }`}
+                  >
+                    <Award className={`w-4 h-4 ${isConfirmChecked ? 'text-amber-300' : 'text-slate-400'}`} />
+                    <span>Ndio, Idhinisha &amp; Weka Ratiba (OK)</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

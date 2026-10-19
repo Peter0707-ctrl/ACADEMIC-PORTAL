@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   User,
@@ -25,6 +25,10 @@ import { notifyUser } from '@/lib/notifications';
 export default function TeacherDashboardPage() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(INITIAL_BLUEPRINT_ACCOUNTS[0] || null);
 
+  // Profile Photo — persisted to localStorage
+  const [teacherProfilePhoto, setTeacherProfilePhoto] = useState<string | null>(null);
+  const [showTeacherProfileModal, setShowTeacherProfileModal] = useState(false);
+
   // Teaching Assignments (Pair of Class + Subject)
   const [teachingAssignments, setTeachingAssignments] = useState<TeachingLoad[]>([
     { class: 'Standard 7 (Grade 7)', subject: 'Civic & Moral Education (Uraia na Maadili)' },
@@ -38,6 +42,11 @@ export default function TeacherDashboardPage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    try {
+      const storedPhoto = localStorage.getItem('teacher_profile_photo');
+      if (storedPhoto) setTeacherProfilePhoto(storedPhoto);
+    } catch {}
+
     const session = getCurrentSession();
     if (session) {
       setCurrentUser(session);
@@ -199,10 +208,24 @@ export default function TeacherDashboardPage() {
 
           {/* Chini yake: Picha kubwa bila frame + Jina lake kubwa kimstari */}
           <div className="flex items-center justify-center gap-3 sm:gap-4 pt-1">
-            {/* Picha kubwa (NO frame, NO border) */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-950/15">
-              <User className="w-9 h-9 sm:w-11 sm:h-11 text-emerald-200" />
-            </div>
+            {/* Clickable Profile Photo */}
+            <button
+              type="button"
+              onClick={() => setShowTeacherProfileModal(true)}
+              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shrink-0 shadow-lg shadow-emerald-950/15 ring-2 ring-emerald-400/40 hover:ring-emerald-500 transition-all group"
+              title="Bonyeza kubadilisha picha ya wasifu"
+            >
+              {teacherProfilePhoto ? (
+                <img src={teacherProfilePhoto} alt="Picha ya Mwalimu" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-emerald-800 text-emerald-100 flex items-center justify-center">
+                  <User className="w-9 h-9 sm:w-11 sm:h-11 text-emerald-200" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold">Pakia Picha</span>
+              </div>
+            </button>
 
             {/* Jina lake kubwa */}
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
@@ -351,6 +374,71 @@ export default function TeacherDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* ============================================================= */}
+      {/* MODAL: PAKIA PICHA YA WASIFU (TEACHER PROFILE PHOTO) */}
+      {/* ============================================================= */}
+      {showTeacherProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-sm w-full border border-emerald-200 shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-slate-900">Pakia Picha ya Wasifu</h3>
+              <button
+                type="button"
+                onClick={() => setShowTeacherProfileModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Preview */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-emerald-400 shadow-lg">
+                {teacherProfilePhoto ? (
+                  <img src={teacherProfilePhoto} alt="Picha ya sasa" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-emerald-800 text-emerald-200 flex items-center justify-center">
+                    <User className="w-10 h-10" />
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 text-center">
+                {teacherProfilePhoto ? 'Picha iliyopakiwa. Bonyeza hapa chini kubadilisha.' : 'Bonyeza kuchagua picha yako ya wasifu.'}
+              </p>
+            </div>
+
+            {/* Upload label — direct, no programmatic click needed */}
+            <label className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer transition-colors">
+              <User className="w-4 h-4" />
+              <span>Chagua Picha (jpg, png, webp)</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const dataUrl = ev.target?.result as string;
+                    setTeacherProfilePhoto(dataUrl);
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('teacher_profile_photo', dataUrl);
+                    }
+                    setShowTeacherProfileModal(false);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </label>
+
+            <p className="text-[10px] text-slate-400 text-center">
+              Picha inabaki kwenye kifaa chako tu. Inahifadhiwa hata ukifungua upya ukurasa.
+            </p>
+          </div>
+        </div>
+      )}
     </TeacherShell>
   );
 }

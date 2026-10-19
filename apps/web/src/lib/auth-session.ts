@@ -9,6 +9,7 @@ export type UserRole =
   | 'DISCIPLINE'
   | 'TEACHER'
   | 'ACCOUNTANT'
+  | 'SECRETARY'
   | 'PARENT'
   | 'STUDENT'
   | 'CANDIDATE'
@@ -199,10 +200,40 @@ export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
     status: 'ACTIVE',
     joinedDate: '2026-01-25',
   },
+  {
+    id: 'USR-SEC-001',
+    fullName: 'Bi. Salma Rashid Mwinyi',
+    role: 'SECRETARY',
+    identifier: 'SEC-2026-001',
+    email: 'secretary@primaryschool.ac.tz',
+    phone: '+255 714 556 778',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-10',
+  },
+  {
+    id: 'USR-ACC-001',
+    fullName: 'Bw. Ramadhani Athumani Tembo',
+    role: 'ACCOUNTANT',
+    identifier: 'ACC-2026-001',
+    email: 'accountant@primaryschool.ac.tz',
+    phone: '+255 754 112 233',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-05',
+  },
+  {
+    id: 'USR-PAR-001',
+    fullName: 'Mzee Bakari Juma (Mzazi)',
+    role: 'PARENT',
+    identifier: '+255755123456',
+    email: 'bakari.parent@gmail.com',
+    phone: '+255 755 123 456',
+    status: 'ACTIVE',
+    joinedDate: '2026-01-15',
+  },
 ];
 
-const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v6';
-const SESSION_STORAGE_KEY = 'academic_portal_active_session_v6';
+const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v7';
+const SESSION_STORAGE_KEY = 'academic_portal_active_session_v7';
 
 // Get Stored Accounts
 export function getStoredAccounts(): UserAccount[] {
@@ -272,11 +303,17 @@ export function clearCurrentSession(): void {
 
 export function canAccessPortal(
   user: UserAccount | null,
-  portalRole: 'TEACHER' | 'ADMIN' | 'PARENT' | 'STUDENT'
+  portalRole: 'TEACHER' | 'ADMIN' | 'PARENT' | 'STUDENT' | 'SECRETARY' | 'ACCOUNTANT'
 ): boolean {
   if (!user) return false;
   if (portalRole === 'TEACHER') {
     return ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER', 'ADMIN'].includes(user.role);
+  }
+  if (portalRole === 'SECRETARY') {
+    return user.role === 'SECRETARY' || user.role === 'HEADTEACHER' || user.role === 'ADMIN';
+  }
+  if (portalRole === 'ACCOUNTANT') {
+    return user.role === 'ACCOUNTANT' || user.role === 'HEADTEACHER' || user.role === 'ADMIN';
   }
   if (portalRole === 'ADMIN') {
     return user.role === 'ADMIN' || user.role === 'HEADTEACHER';

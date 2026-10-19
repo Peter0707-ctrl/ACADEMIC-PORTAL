@@ -27,6 +27,7 @@ import {
   ArrowRight,
   Sparkles,
   Layers,
+  LogOut,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession, PRIMARY_CLASSES_LIST, UserAccount } from '@/lib/auth-session';
@@ -41,6 +42,12 @@ import {
   INITIAL_PUPILS,
   StudentMark,
 } from '@/lib/teacher-data';
+import {
+  transferStudentOut,
+  runStudentProgressionCycle,
+  getAllTransferredStudents,
+  ProgressionReportItem,
+} from '@/lib/allocation-progression';
 import { notifyUser } from '@/lib/notifications';
 
 export default function StudentEnrollmentMasterPage() {
@@ -55,6 +62,24 @@ export default function StudentEnrollmentMasterPage() {
   const [showManualModal, setShowManualModal] = useState(false);
   const [showExcelUploadModal, setShowExcelUploadModal] = useState(false);
   const [selectedAdmissionSlip, setSelectedAdmissionSlip] = useState<EnrolledStudent | null>(null);
+
+  // Transfer Out State (Kuhama Shule - Preserves record for Secretary)
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [pupilToTransfer, setPupilToTransfer] = useState<EnrolledStudent | null>(null);
+  const [destinationSchool, setDestinationSchool] = useState('');
+  const [transferReason, setTransferReason] = useState('Uhamisho wa Kikazi wa Wazazi');
+  const [transferNotes, setTransferNotes] = useState('');
+
+  // Annual Progression State (Upandishaji wa Madarasa wa Mwaka Mpya)
+  const [showProgressionModal, setShowProgressionModal] = useState(false);
+  const [progressionBenchmark, setProgressionBenchmark] = useState(50);
+  const [newAcademicYear, setNewAcademicYear] = useState('2027');
+  const [progressionReport, setProgressionReport] = useState<{
+    promotedCount: number;
+    retainedCount: number;
+    graduatedCount: number;
+    report: ProgressionReportItem[];
+  } | null>(null);
 
   // Manual Form
   const [admissionForm, setAdmissionForm] = useState({
@@ -159,6 +184,47 @@ export default function StudentEnrollmentMasterPage() {
     }
     refreshRecords();
   }, []);
+
+  const handleConfirmTransfer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pupilToTransfer) return;
+    if (!destinationSchool.trim()) {
+      notifyUser('error', 'Kosa', 'Tafadhali ingiza jina la shule anayohamia mwanafunzi.');
+      return;
+    }
+
+    const result = transferStudentOut({
+      pupilId: pupilToTransfer.admNo,
+      destinationSchool: destinationSchool.trim(),
+      reason: transferReason,
+      authorizedBy: currentUser?.fullName || 'Mwalimu wa Taaluma / Mkuu wa Shule',
+      notes: transferNotes,
+    });
+
+    if (result.success) {
+      notifyUser(
+        'success',
+        'Mwanafunzi Amehamishwa Shule',
+        `Mwanafunzi ${pupilToTransfer.name} amehamishiwa ${destinationSchool}. Rekodi yake ya kihistoria imehifadhiwa salama kwa Katibu wa Shule (School Secretary).`
+      );
+      setShowTransferModal(false);
+      setPupilToTransfer(null);
+      refreshRecords();
+    } else {
+      notifyUser('error', 'Kosa', result.message);
+    }
+  };
+
+  const handleExecuteProgression = () => {
+    const result = runStudentProgressionCycle(progressionBenchmark, newAcademicYear);
+    setProgressionReport(result);
+    refreshRecords();
+    notifyUser(
+      'success',
+      `Mwaka Mpya wa Masomo ${newAcademicYear}: Upandishaji Umekamilika!`,
+      `${result.promotedCount} Wanafunzi wamefaulu na kupanda, ${result.retainedCount} wanarudia darasa, na ${result.graduatedCount} wamehitimu Darasa la Saba (Alumni). Madarasa na masomo ya walimu yamefunguliwa wajaze upya kwa mwaka huu mpya.`
+    );
+  };
 
   // Stats calculation
   const totalEnrolled = enrolledRecords.length;
@@ -519,6 +585,19 @@ export default function StudentEnrollmentMasterPage() {
 
               <button
                 type="button"
+                onClick={() => {
+                  setProgressionReport(null);
+                  setShowProgressionModal(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-purple-800 hover:bg-purple-900 text-white text-xs font-black shadow-sm flex items-center gap-1.5 transition-all"
+                title="Upandishaji wa madarasa wa wanafunzi kwa mwaka mpya kulingana na ufaulu"
+              >
+                <Sparkles className="w-4 h-4 text-purple-200" />
+                <span>Upandishaji wa Mwaka Mpya</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setShowManualModal(true)}
                 className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-black shadow-md shadow-emerald-950/20 flex items-center gap-1.5 transition-all"
               >
@@ -665,16 +744,33 @@ export default function StudentEnrollmentMasterPage() {
                       </td>
                       <td className="py-3 px-4 font-mono text-emerald-900 font-semibold">{pupil.parentPhone}</td>
                       <td className="py-3 px-4 text-slate-500 text-[11px]">{pupil.enrolledAt || '12 Jan 2026'}</td>
-                      <td className="py-3 px-4 text-center">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedAdmissionSlip(pupil)}
-                          className="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
-                          title="Fungua na uchapishe hati rasmi ya udahili"
-                        >
-                          <FileBadge2 className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>Hati</span>
-                        </button>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedAdmissionSlip(pupil)}
+                            className="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
+                            title="Fungua na uchapishe hati rasmi ya udahili"
+                          >
+                            <FileBadge2 className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>Hati</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPupilToTransfer(pupil);
+                              setDestinationSchool('');
+                              setTransferReason('Uhamisho wa Kikazi wa Wazazi');
+                              setTransferNotes('');
+                              setShowTransferModal(true);
+                            }}
+                            className="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
+                            title="Hamisha mwanafunzi kwenda shule nyingine (Rekodi itabaki kwa Katibu)"
+                          >
+                            <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                            <span>Hama Shule</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -1205,6 +1301,284 @@ export default function StudentEnrollmentMasterPage() {
                   <span>Chapisha Hati (Print)</span>
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================== */}
+        {/* MODAL 4: KUHAMA SHULE (TRANSFER OUT) */}
+        {/* ===================================================================== */}
+        {showTransferModal && pupilToTransfer && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-rose-200 animate-scale-up space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center">
+                    <LogOut className="w-5 h-5 text-rose-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">Uhamisho wa Mwanafunzi (Transfer Out)</h3>
+                    <p className="text-xs text-slate-500">Mwanafunzi anapohamia shule nyingine</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTransferModal(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Informative Rule Box */}
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-1">
+                <span className="font-bold flex items-center gap-1.5 text-amber-900">
+                  <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                  Kanuni ya Uhifadhi wa Kumbukumbu:
+                </span>
+                <p className="text-[11px] leading-relaxed text-amber-900/90">
+                  Mwanafunzi huyu ataondolewa kwenye madarasa ya walimu na kwenye portal ya wazazi ili asisumbue mahudhurio na uwekaji alama. <strong>Hati na rekodi yake yote ya kihistoria itabaki salama kwa Katibu wa Shule (Secretary Registry)</strong> kwa ajili ya uthibitisho wa baadaye.
+                </p>
+              </div>
+
+              <form onSubmit={handleConfirmTransfer} className="space-y-3 text-xs">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Mwanafunzi Anayehama:</span>
+                  <div className="text-sm font-black text-slate-900">{pupilToTransfer.name}</div>
+                  <div className="text-[11px] text-emerald-800 font-medium font-mono">
+                    {pupilToTransfer.admNo} &bull; {pupilToTransfer.assignedClass}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Shule Anayokwenda / Anayohamia *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Mfano: Shule ya Msingi Mlimani, Dar es Salaam"
+                    value={destinationSchool}
+                    onChange={(e) => setDestinationSchool(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-emerald-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Sababu ya Kuhama *
+                  </label>
+                  <select
+                    value={transferReason}
+                    onChange={(e) => setTransferReason(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 font-medium focus:outline-emerald-800 bg-white"
+                  >
+                    <option value="Uhamisho wa Kikazi wa Wazazi">Uhamisho wa Kikazi wa Wazazi</option>
+                    <option value="Kubadilisha Makazi ya Familia">Kubadilisha Makazi ya Familia</option>
+                    <option value="Sababu za Kiafya za Mwanafunzi">Sababu za Kiafya za Mwanafunzi</option>
+                    <option value="Kujiunga na Shule ya Bweni">Kujiunga na Shule ya Bweni</option>
+                    <option value="Sababu Nyingine za Kifamilia">Sababu Nyingine za Kifamilia</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Maelezo ya Ziada / Namba ya Barua ya Uhamisho</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Namba ya kibali cha afisa elimu au maelezo ya jalada..."
+                    value={transferNotes}
+                    onChange={(e) => setTransferNotes(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-emerald-800"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowTransferModal(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+                  >
+                    Ghairi
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-black shadow-md flex items-center gap-1.5"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Thibitisha Uhamisho (Hamisha)</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================== */}
+        {/* MODAL 5: UPANDISHAJI WA MADARASA WA MWAKA MPYA (ANNUAL PROGRESSION) */}
+        {/* ===================================================================== */}
+        {showProgressionModal && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-purple-200 animate-scale-up space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-purple-700" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">
+                      Upandishaji wa Madarasa wa Mwaka Mpya (Annual Student Progression)
+                    </h3>
+                    <p className="text-xs text-purple-800 font-semibold">
+                      Mwalimu Mkuu &bull; Mwalimu wa Taaluma &bull; TAMISEMI
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowProgressionModal(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {!progressionReport ? (
+                <div className="space-y-4 text-xs">
+                  <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 space-y-2">
+                    <span className="font-bold flex items-center gap-1.5 text-purple-900 text-sm">
+                      <ShieldCheck className="w-4 h-4 text-purple-700 shrink-0" />
+                      Kanuni ya Kiotomatiki ya Upandishaji wa Madarasa:
+                    </span>
+                    <ul className="space-y-1 list-disc list-inside text-[11px] text-purple-900/90 leading-relaxed">
+                      <li>Wanafunzi wenye wastani uliofikia au kuvuka kiwango cha ufaulu watapandishwa kwenda darasa linalofuata (mf. La 1 &rarr; La 2 &rarr; La 3 ... La 7 &rarr; Alumni).</li>
+                      <li>Wanafunzi wasiofikisha wastani <strong>hawapandi darasa (wanarudia)</strong> na wazazi wao wanapewa taarifa rasmi.</li>
+                      <li>Madarasa na masomo ya walimu <strong>yatafunguliwa na kufutwa kiotomatiki</strong> ili kila mwalimu ajaze upya masomo anayofundisha kwa mwaka huu mpya.</li>
+                    </ul>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        Kiwango cha Kufaulu (Passing Benchmark %) *
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={30}
+                          max={75}
+                          value={progressionBenchmark}
+                          onChange={(e) => setProgressionBenchmark(Number(e.target.value))}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 font-black text-sm text-purple-950 focus:outline-purple-800"
+                        />
+                        <span className="font-bold text-slate-500">%</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">
+                        Wastani wa chini wa kupanda darasa (Chaguomsingi: 50%)
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        Mwaka Mpya wa Masomo *
+                      </label>
+                      <input
+                        type="text"
+                        value={newAcademicYear}
+                        onChange={(e) => setNewAcademicYear(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 font-black text-sm text-purple-950 focus:outline-purple-800"
+                      />
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">
+                        Mwaka unaofuata wa masomo (mfano: 2027)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setShowProgressionModal(false)}
+                      className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+                    >
+                      Ghairi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleExecuteProgression}
+                      className="px-6 py-2 rounded-xl bg-purple-800 hover:bg-purple-900 text-white font-black shadow-md flex items-center gap-2"
+                    >
+                      <Sparkles className="w-4 h-4 text-purple-200" />
+                      <span>Tekeleza Upandishaji Sasa</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Report View */
+                <div className="space-y-4 text-xs">
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                      <span className="text-[10px] font-bold uppercase text-emerald-800 block">Wamepanda Darasa</span>
+                      <span className="text-2xl font-black text-emerald-950">{progressionReport.promotedCount}</span>
+                    </div>
+                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl">
+                      <span className="text-[10px] font-bold uppercase text-rose-800 block">Wanarudia Darasa</span>
+                      <span className="text-2xl font-black text-rose-950">{progressionReport.retainedCount}</span>
+                    </div>
+                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-2xl">
+                      <span className="text-[10px] font-bold uppercase text-purple-800 block">Wamehitimu (Alumni)</span>
+                      <span className="text-2xl font-black text-purple-950">{progressionReport.graduatedCount}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-teal-950 text-[11px]">
+                    <strong>Mabadiliko Yamekamilika:</strong> Wanafunzi wote wamepata madarasa yao mapya ya mwaka {newAcademicYear}. Madarasa na masomo ya walimu yamefunguliwa ili wajaze upya.
+                  </div>
+
+                  <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-xl">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-100 font-bold sticky top-0">
+                        <tr>
+                          <th className="p-2">Jina la Mwanafunzi</th>
+                          <th className="p-2">Darasa la Awali</th>
+                          <th className="p-2">Darasa Jipya</th>
+                          <th className="p-2">Wastani</th>
+                          <th className="p-2">Hali</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {progressionReport.report.slice(0, 20).map((r, i) => (
+                          <tr key={i}>
+                            <td className="p-2 font-bold text-slate-800">{r.name}</td>
+                            <td className="p-2 text-slate-500">{r.previousClass}</td>
+                            <td className="p-2 font-bold text-purple-900">{r.promotedClass}</td>
+                            <td className="p-2 font-mono font-bold">{r.averageScore}%</td>
+                            <td className="p-2">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                r.status === 'PROMOTED'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : r.status === 'GRADUATED_ALUMNI'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-rose-100 text-rose-800'
+                              }`}>
+                                {r.status === 'PROMOTED' ? 'Amepanda' : r.status === 'GRADUATED_ALUMNI' ? 'Amehitimu' : 'Anarudia'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex justify-end pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setShowProgressionModal(false)}
+                      className="px-5 py-2 rounded-xl bg-purple-800 hover:bg-purple-900 text-white font-bold"
+                    >
+                      Kamilisha na Funga
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

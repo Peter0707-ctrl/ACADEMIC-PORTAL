@@ -14,6 +14,9 @@
     "build:api": "npm --workspace=@academic/api run build",
     "build:web": "npm --workspace=@academic/web run build",
     "build": "npm run build:packages && npm run build:api && npm run build:web",
+    "start:api": "npm --workspace=@academic/api run start:prod",
+    "start:web": "npm --workspace=@academic/web run start",
+    "prisma:deploy": "npm --workspace=@academic/api run prisma:generate && npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma",
     "test": "npm --workspace=@academic/shared run test && npm --workspace=@academic/api run test",
     "test:e2e": "npm --workspace=@academic/api run test:e2e"
   },

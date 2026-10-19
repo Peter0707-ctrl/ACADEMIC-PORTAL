@@ -911,7 +911,7 @@ export default function SubjectMarksPage() {
                   onClick={() => setSelectedClass(cls)}
                   className={`p-2.5 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1.5 cursor-pointer ${
                     isSelected
-                      ? 'bg-gradient-to-br from-emerald-800 via-emerald-900 to-emerald-950 text-white border-emerald-950 shadow-md shadow-emerald-950/20 ring-2 ring-emerald-500/30'
+                      ? 'bg-emerald-800 text-white border-emerald-900 shadow-sm ring-2 ring-emerald-600/30'
                       : 'bg-white hover:bg-emerald-50/80 text-slate-800 border-emerald-200/90 shadow-2xs'
                   }`}
                 >

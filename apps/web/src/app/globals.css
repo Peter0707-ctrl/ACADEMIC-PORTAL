@@ -36,6 +36,15 @@ body {
   50% { opacity: 1; transform: scale(1.03); }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -46,6 +55,36 @@ body {
 
 .animate-pulse-soft {
   animation: pulseSoft 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Circular ripple waves spreading from center */
+@keyframes rippleWave {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.animate-ripple-1 {
+  animation: rippleWave 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.animate-ripple-2 {
+  animation: rippleWave 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  animation-delay: 0.8s;
+}
+
+.animate-ripple-3 {
+  animation: rippleWave 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  animation-delay: 1.6s;
 }
 
 /* Custom soft scrollbar */

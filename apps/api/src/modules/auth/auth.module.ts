@@ -12,12 +12,23 @@ import { PrismaService } from '../../database/prisma.service';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'dev-secret-key-change-in-production',
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRATION') || '24h',
-        },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+        const secret = configService.get<string>('JWT_SECRET');
+
+        if (isProduction && (!secret || secret === 'dev-secret-key-change-in-production')) {
+          throw new Error(
+            'FATAL SECURITY EXCEPTION: JWT_SECRET must be configured with a cryptographically secure random string in production!',
+          );
+        }
+
+        return {
+          secret: secret || 'dev-secret-key-change-in-production',
+          signOptions: {
+            expiresIn: configService.get<string>('JWT_EXPIRATION') || '24h',
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],

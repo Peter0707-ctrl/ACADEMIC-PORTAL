@@ -30,6 +30,8 @@ import {
   UserCheck,
   Menu,
   X,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { getCurrentSession } from '@/lib/auth-session';
 
@@ -122,7 +124,7 @@ export default function StudentPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans flex flex-col">
       {/* Primary School Clarification Notice */}
       <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 shadow-xs z-50">
         <div className="flex items-center gap-2">
@@ -792,12 +794,15 @@ export default function StudentPortal() {
           {/* ================================================================= */}
           {activeTab === 'FINANCE' && (
             <div className="space-y-6 animate-fade-in">
-              <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-4">
-                <h3 className="text-sm font-black text-slate-900">Taarifa ya Ada na Namba ya Malipo</h3>
-                <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-800 to-teal-800 text-white space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-emerald-200">Namba ya Malipo ya Serikali (GePG)</span>
-                  <div className="text-2xl sm:text-3xl font-mono font-black">{student.controlNumber}</div>
-                  <p className="text-xs text-emerald-100">Bao lililosalia: Tsh {student.feeBalance.toLocaleString()}</p>
+              <div className="p-6 rounded-3xl bg-white/95 border border-slate-200 shadow-xs space-y-4">
+                <h3 className="text-sm font-bold text-slate-900">Taarifa ya Ada na Namba ya Malipo ya Shule</h3>
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 space-y-2">
+                  <span className="text-[10px] uppercase font-bold text-slate-600 block">Namba ya Malipo ya Shule (Control Number)</span>
+                  <div className="text-2xl sm:text-3xl font-mono font-bold text-slate-900">{student.controlNumber}</div>
+                  <p className="text-xs text-slate-600">Bao lililosalia: <span className="font-bold text-slate-900">Tsh {student.feeBalance.toLocaleString()}</span></p>
+                  <p className="text-[11px] text-slate-500 pt-2 border-t border-slate-200">
+                    Akaunti ya Shule: NMB Bank (20110023456) / CRDB Bank (0150244556600) — PRIMARY &amp; NURSERY SCHOOL
+                  </p>
                 </div>
               </div>
             </div>

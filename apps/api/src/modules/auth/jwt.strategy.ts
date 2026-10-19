@@ -11,10 +11,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
+    const isProduction = configService.get<string>('NODE_ENV') === 'production';
+    const secret = configService.get<string>('JWT_SECRET');
+
+    if (isProduction && (!secret || secret === 'dev-secret-key-change-in-production')) {
+      throw new Error(
+        'FATAL SECURITY EXCEPTION: JWT_SECRET must be configured with a cryptographically secure random string in production!',
+      );
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'dev-secret-key-change-in-production',
+      secretOrKey: secret || 'dev-secret-key-change-in-production',
     });
   }
 

@@ -64,6 +64,9 @@ model Institution {
   feeStructures   FeeStructure[]
   invoices        Invoice[]
   auditLogs       AuditLog[]
+  documents       SchoolDocument[]
+  correspondence  Correspondence[]
+  meetings        SchoolMeeting[]
 
   @@map("institutions")
 }
@@ -675,3 +678,339 @@ model AuditLog {
   @@index([userId, createdAt])
   @@map("audit_logs")
 }
+
+// ==============================================================================
+// 8. PRIMARY SCHOOL SECRETARY & DIGITAL RECORDS REGISTRY MODULE
+// ==============================================================================
+
+enum DocumentCategory {
+  SCHOOL_ADMINISTRATION
+  STUDENT_RECORDS
+  STAFF_RECORDS
+  ACADEMIC_RECORDS
+  FINANCIAL_DOCUMENTS
+  MEETINGS_AND_CORRESPONDENCE
+}
+
+enum ConfidentialityLevel {
+  PUBLIC
+  INTERNAL
+  RESTRICTED
+  CONFIDENTIAL
+  HIGHLY_CONFIDENTIAL
+}
+
+enum DocumentStatus {
+  ACTIVE
+  ARCHIVED
+  PENDING_REVIEW
+  INCOMPLETE
+}
+
+model SchoolDocument {
+  id                    String                @id @default(uuid())
+  institutionId         String
+  title                 String
+  category              DocumentCategory
+  documentType          String
+  description           String?
+  referenceNumber       String                @unique
+  academicYear          String
+  term                  String
+  documentDate          DateTime
+  uploadDate            DateTime              @default(now())
+  uploadedBy            String
+  relatedStudentId      String?               // Admission No / Student ID
+  relatedStudentName    String?
+  relatedStaffId        String?               // Staff ID
+  relatedStaffName      String?
+  relatedClass          String?
+  relatedSchool         String
+  confidentialityLevel  ConfidentialityLevel  @default(INTERNAL)
+  status                DocumentStatus        @default(ACTIVE)
+  version               String                @default("1.0")
+  fileType              String                // PDF, DOC, DOCX, XLS, XLSX, JPG, PNG
+  fileSize              String
+  storageLocation       String
+  isArchived            Boolean               @default(false)
+  archivedAt            DateTime?
+  archivedBy            String?
+  tags                  String[]              @default([])
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  institution           Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  versions              DocumentVersion[]
+
+  @@index([institutionId, category])
+  @@index([relatedStudentId])
+  @@index([relatedStaffId])
+  @@index([referenceNumber])
+  @@map("school_documents")
+}
+
+model DocumentVersion {
+  id                String          @id @default(uuid())
+  documentId        String
+  versionNumber     String
+  uploadedBy        String
+  uploadDate        DateTime        @default(now())
+  changeDescription String
+  fileType          String
+  fileSize          String
+  storageLocation   String
+  isCurrent         Boolean         @default(false)
+
+  document          SchoolDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("document_versions")
+}
+
+model DocumentChecklist {
+  id            String    @id @default(uuid())
+  institutionId String
+  targetType    String    // STUDENT or STAFF
+  title         String
+  category      String
+  isRequired    Boolean   @default(true)
+  description   String?
+  createdAt     DateTime  @default(now())
+
+  @@map("document_checklists")
+}
+
+enum CorrespondenceType {
+  INCOMING
+  OUTGOING
+}
+
+enum CorrespondenceStatus {
+  PENDING
+  IN_PROGRESS
+  DISPATCHED
+  FILED
+}
+
+model Correspondence {
+  id                          String                @id @default(uuid())
+  institutionId               String
+  type                        CorrespondenceType
+  referenceNumber             String                @unique
+  senderOrRecipient           String
+  subject                     String
+  dateReceivedOrSent          DateTime
+  receivedOrPreparedBy        String
+  assignedPersonOrApprovedBy  String
+  category                    String
+  status                      CorrespondenceStatus  @default(PENDING)
+  notes                       String?
+  documentId                  String?
+  documentTitle               String?
+  createdAt                   DateTime              @default(now())
+
+  institution                 Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId, type])
+  @@map("correspondence_records")
+}
+
+enum MeetingType {
+  STAFF_MEETING
+  PARENT_TEACHER
+  SCHOOL_MANAGEMENT
+  DISCIPLINARY_COMMITTEE
+}
+
+enum MeetingFollowUpStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model SchoolMeeting {
+  id                    String                @id @default(uuid())
+  institutionId         String
+  title                 String
+  meetingDate           DateTime
+  meetingType           MeetingType
+  meetingTypeLabel      String
+  participantsCount     Int                   @default(1)
+  participantsSummary   String
+  agendaItems           String[]              @default([])
+  minutesSummary        String
+  decisionsAndActions   String[]              @default([])
+  followUpStatus        MeetingFollowUpStatus @default(PENDING)
+  secretaryNotes        String?
+  documentId            String?
+  createdAt             DateTime              @default(now())
+
+  institution           Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId, meetingType])
+  @@map("school_meetings")
+}
+
+model ClassSubjectAllocationLock {
+  id                String    @id @default(uuid())
+  institutionId     String
+  classIdentifier   String
+  subjectIdentifier String
+  teacherId         String
+  teacherName       String
+  teacherStaffId    String
+  academicYear      String
+  allocatedAt       DateTime  @default(now())
+
+  @@unique([institutionId, classIdentifier, subjectIdentifier, academicYear])
+  @@map("class_subject_allocation_locks")
+}
+
+model TransferredStudentArchive {
+  id                        String    @id @default(uuid())
+  institutionId             String
+  admNo                     String    @unique
+  fullName                  String
+  gender                    String
+  lastClass                 String
+  destinationSchool         String
+  reasonForTransfer         String
+  transferDate              DateTime  @default(now())
+  authorizedBy              String
+  transferCertificateNo     String    @unique
+  parentName                String
+  parentPhone               String
+  academicAverage           Float
+  digitalStudentFileArchived Boolean  @default(true)
+  notes                     String?
+
+  @@index([institutionId])
+  @@map("transferred_student_archives")
+}
+
+// ==============================================================================
+// 12. PRIMARY SCHOOL FINANCIAL MANAGEMENT & ACCOUNTING (SECTION 10-18)
+// ==============================================================================
+
+enum ExpenseStatus {
+  DRAFT
+  PENDING_REVIEW
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum CashbookMovementType {
+  CASH_IN
+  CASH_OUT
+}
+
+enum ReconciliationStatus {
+  BALANCED
+  DISCREPANCY
+}
+
+model SchoolExpense {
+  id                      String        @id @default(uuid())
+  institutionId           String
+  expenseNumber           String        @unique // e.g. "EXP-2026-088"
+  category                String
+  categoryLabel           String
+  description             String
+  amount                  Float
+  date                    DateTime      @default(now())
+  payee                   String
+  paymentMethod           String        // CASH, BANK, MOBILE_MONEY
+  referenceNumber         String
+  bankAccountId           String?
+  supportingDocumentName  String?
+  requestedBy             String
+  reviewerAccountant      String?
+  approvedBy              String?
+  status                  ExpenseStatus @default(PENDING_APPROVAL)
+  rejectionReason         String?
+  paidAt                  DateTime?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  @@index([institutionId, status])
+  @@map("school_expenses")
+}
+
+model SchoolCashbookEntry {
+  id             String               @id @default(uuid())
+  institutionId  String
+  date           DateTime             @default(now())
+  type           CashbookMovementType
+  sourceOrPayee  String
+  description    String
+  amount         Float
+  runningBalance Float
+  paymentMethod  String               @default("CASH")
+  reference      String
+  relatedId      String?
+  createdAt      DateTime             @default(now())
+
+  @@index([institutionId, date])
+  @@map("school_cashbook_entries")
+}
+
+model SchoolBankAccount {
+  id             String   @id @default(uuid())
+  institutionId  String
+  accountName    String
+  bankName       String   // CRDB Bank, NMB Bank, etc.
+  accountNumber  String   @unique
+  openingBalance Float    @default(0.0)
+  currentBalance Float    @default(0.0)
+  currency       String   @default("TZS")
+  branch         String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([institutionId])
+  @@map("school_bank_accounts")
+}
+
+model BankReconciliation {
+  id                   String               @id @default(uuid())
+  institutionId        String
+  bankAccountId        String
+  bankAccountName      String
+  reconciliationDate   DateTime             @default(now())
+  systemBalance        Float
+  bankStatementBalance Float
+  difference           Float
+  status               ReconciliationStatus @default(BALANCED)
+  notes                String?
+  reconciledBy         String
+  createdAt            DateTime             @default(now())
+
+  @@index([institutionId, bankAccountId])
+  @@map("bank_reconciliations")
+}
+
+model OfficialReceipt {
+  id               String   @id @default(uuid())
+  institutionId    String
+  receiptNumber    String   @unique // e.g. "REC-2026-0428"
+  paymentId        String?
+  studentId        String   // Admission Number
+  studentName      String
+  standard         String
+  invoiceNumber    String
+  amountPaid       Float
+  paymentMethod    String
+  referenceNumber  String
+  paymentDate      DateTime @default(now())
+  previousBalance  Float
+  remainingBalance Float
+  receivedBy       String
+  issuedAt         DateTime @default(now())
+
+  @@index([institutionId, studentId])
+  @@index([institutionId, receiptNumber])
+  @@map("official_receipts")
+}
+

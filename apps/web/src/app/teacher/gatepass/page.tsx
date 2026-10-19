@@ -838,7 +838,7 @@ export default function StudentGatePassPage() {
                   </span>
                 </div>
                 <h2 className="text-base font-black text-emerald-950 uppercase tracking-tight">
-                  SHULE YA MSINGI KUKUMBUKA PRIMARY
+                  PRIMARY &amp; NURSERY SCHOOL
                 </h2>
                 <div className="inline-block px-3 py-1 rounded-full bg-emerald-900 text-white text-[10px] font-black uppercase tracking-wider">
                   HATI RASMI YA KIBALI CHA KUTOKA NJE YA SHULE (OFFICIAL GATE PASS)

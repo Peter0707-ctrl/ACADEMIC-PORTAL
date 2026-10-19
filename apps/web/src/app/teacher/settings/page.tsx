@@ -202,13 +202,10 @@ export default function TeacherSettingsPage() {
         {/* 1. TOP PROFILE HERO CARD */}
         {/* ===================================================================== */}
         <div className="p-6 sm:p-8 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-sm relative overflow-hidden">
-          {/* Background Decorative Accent */}
-          <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-emerald-100/40 via-emerald-50/20 to-transparent pointer-events-none" />
-
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
             {/* Avatar with Camera badge */}
             <div className="relative group shrink-0">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white flex items-center justify-center font-black text-2xl sm:text-3xl shadow-xl shadow-emerald-950/25 ring-4 ring-emerald-500/20">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-emerald-800 text-white flex items-center justify-center font-black text-2xl sm:text-3xl shadow-md ring-4 ring-emerald-500/20">
                 {getInitials(currentUser?.fullName)}
               </div>
               <button

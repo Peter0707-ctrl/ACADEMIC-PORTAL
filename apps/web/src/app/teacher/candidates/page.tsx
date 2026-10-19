@@ -86,7 +86,7 @@ export default function CandidatesPage() {
         assignedClass: 'Standard 7 (Grade 7)',
         status: 'VERIFIED ACTIVE',
         registrationDate: '15 Jan 2026',
-        centerCode: '0204128 - KUKUMBUKA PRIMARY',
+        centerCode: '0204128 - PRIMARY SCHOOL CENTER',
       });
     });
 
@@ -104,7 +104,7 @@ export default function CandidatesPage() {
         assignedClass: 'Standard 4 (Grade 4)',
         status: 'VERIFIED ACTIVE',
         registrationDate: '18 Jan 2026',
-        centerCode: '0204128 - KUKUMBUKA PRIMARY',
+        centerCode: '0204128 - PRIMARY SCHOOL CENTER',
       });
     });
 
@@ -164,7 +164,7 @@ export default function CandidatesPage() {
         assignedClass: 'Standard 7 (Grade 7)',
         status: 'VERIFIED ACTIVE',
         registrationDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        centerCode: '0204128 - KUKUMBUKA PRIMARY',
+        centerCode: '0204128 - PRIMARY SCHOOL CENTER',
       });
     });
 
@@ -180,7 +180,7 @@ export default function CandidatesPage() {
         assignedClass: 'Standard 4 (Grade 4)',
         status: 'VERIFIED ACTIVE',
         registrationDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        centerCode: '0204128 - KUKUMBUKA PRIMARY',
+        centerCode: '0204128 - PRIMARY SCHOOL CENTER',
       });
     });
 
@@ -214,7 +214,7 @@ export default function CandidatesPage() {
       assignedClass: manualForm.assignedClass,
       status: 'VERIFIED ACTIVE',
       registrationDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      centerCode: '0204128 - KUKUMBUKA PRIMARY',
+      centerCode: '0204128 - PRIMARY SCHOOL CENTER',
     };
 
     const updated = [newCand, ...candidates];
@@ -299,7 +299,7 @@ export default function CandidatesPage() {
             assignedClass: cls,
             status: 'VERIFIED ACTIVE',
             registrationDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            centerCode: '0204128 - KUKUMBUKA PRIMARY',
+            centerCode: '0204128 - PRIMARY SCHOOL CENTER',
           };
         });
 
@@ -432,7 +432,7 @@ export default function CandidatesPage() {
           <div className="bg-white/95 rounded-2xl border border-emerald-200/80 p-4 shadow-xs">
             <span className="text-xs text-slate-500 block">Kituo cha Mtihani (Center)</span>
             <span className="text-base font-black text-emerald-800 block mt-1">PS0204128</span>
-            <span className="text-[11px] text-slate-500 font-semibold truncate block">Kukumbuka Primary Center</span>
+            <span className="text-[11px] text-slate-500 font-semibold truncate block">Primary School Examination Center</span>
           </div>
         </div>
 

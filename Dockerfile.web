@@ -1,0 +1,60 @@
+# ==============================================================================
+# PRODUCTION DOCKERFILE: Academic Portal Next.js Frontend
+# ==============================================================================
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+RUN apk add --no-cache libc6-compat
+
+# Copy workspace package definitions
+COPY package*.json ./
+COPY packages/shared/package*.json ./packages/shared/
+COPY apps/api/package*.json ./apps/api/
+COPY apps/web/package*.json ./apps/web/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source files
+COPY packages/shared ./packages/shared
+COPY apps/web ./apps/web
+
+# Build shared library
+RUN npm run build:packages
+
+# Build Next.js application
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build:web
+
+# ==============================================================================
+# RUNNER STAGE
+# ==============================================================================
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+RUN apk add --no-cache dumb-init
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+
+# Security: Non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/shared/package*.json ./packages/shared/
+COPY --from=builder /app/apps/web/package*.json ./apps/web/
+COPY --from=builder /app/apps/web/next.config.js ./apps/web/
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+
+USER nextjs
+
+EXPOSE 3000
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["npm", "run", "start:web"]

@@ -10,7 +10,9 @@ import { AcademicsModule } from './modules/academics/academics.module';
 import { PeopleModule } from './modules/people/people.module';
 import { ExaminationsModule } from './modules/examinations/examinations.module';
 import { ResultsModule } from './modules/results/results.module';
+import { HealthModule } from './modules/health/health.module';
 
+import { AppController } from './app.controller';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
@@ -30,6 +32,7 @@ import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filte
     ExaminationsModule,
     ResultsModule,
   ],
+  controllers: [AppController],
   providers: [
     PrismaService,
     {

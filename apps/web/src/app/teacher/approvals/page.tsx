@@ -26,6 +26,7 @@ import {
   MessageSquare,
   Globe,
   Share2,
+  AlertTriangle,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession } from '@/lib/auth-session';
@@ -186,6 +187,12 @@ export default function HeadteacherApprovalsPage() {
   const [modalPublishingMode, setModalPublishingMode] = useState<'IMMEDIATE' | 'SCHEDULED'>('SCHEDULED');
   const [modalReleaseDate, setModalReleaseDate] = useState<string>('2026-03-27');
   const [modalReleaseTime, setModalReleaseTime] = useState<string>('08:00');
+  const [isApprovalConfirmChecked, setIsApprovalConfirmChecked] = useState<boolean>(false);
+
+  // Target class object in modal
+  const modalTargetClassObj = useMemo(() => {
+    return APPROVAL_TARGET_CLASSES.find((c) => c.id === modalTargetClassId) || APPROVAL_TARGET_CLASSES[1];
+  }, [modalTargetClassId]);
 
   // Load from local storage
   useEffect(() => {
@@ -254,6 +261,15 @@ export default function HeadteacherApprovalsPage() {
   // EXECUTE APPROVAL AND SEAL
   const handleConfirmApprovalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isApprovalConfirmChecked) {
+      notifyUser(
+        'warning',
+        'Tafadhali Thibitisha Utayari',
+        'Lazima uweke tiki kuthibitisha kuwa upo tayari kuidhinisha matokeo ya darasa hili na kupiga Muhuri Rasmi kabla ya kuendelea.'
+      );
+      return;
+    }
 
     const stampTime = new Date().toLocaleString('sw-TZ', {
       day: '2-digit',
@@ -490,6 +506,7 @@ export default function HeadteacherApprovalsPage() {
                   type="button"
                   onClick={() => {
                     setModalTargetClassId(selectedClassId);
+                    setIsApprovalConfirmChecked(false);
                     setShowApprovalModal(true);
                   }}
                   className="px-5 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-black text-xs shadow-md shadow-emerald-950/20 transition-all flex items-center gap-2 hover:scale-[1.02]"
@@ -539,7 +556,7 @@ export default function HeadteacherApprovalsPage() {
           {/* ================================================================= */}
           {/* VISUAL RUBBER STAMP GRAPHIC: CLEARLY SHOWS TARGET CLASS */}
           {/* ================================================================= */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/60 border-2 border-emerald-200/90 shadow-sm relative overflow-hidden">
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border-2 border-emerald-200/90 shadow-sm relative overflow-hidden">
             {/* Watermark Security Line */}
             <div className="absolute top-2 right-4 text-[9px] font-mono text-emerald-800/30 uppercase tracking-widest select-none">
               SECURITY WATERMARK • OFFICIAL DIGITAL SEAL • {currentClass.shortName}
@@ -573,7 +590,7 @@ export default function HeadteacherApprovalsPage() {
                   {/* Center Stamp Core */}
                   <div className="relative z-10 my-1 py-1 px-2 border-y border-emerald-700/70 w-full">
                     <div className="text-[10px] font-black uppercase text-emerald-950 tracking-tight">
-                      KUKUMBUKA PRIMARY
+                      PRIMARY &amp; NURSERY
                     </div>
                     <div className="text-[7.5px] font-extrabold uppercase text-emerald-900 tracking-wider">
                       OFISI YA MWALIMU MKUU
@@ -852,10 +869,39 @@ export default function HeadteacherApprovalsPage() {
                   </select>
                 </div>
 
-                {/* 2. Publishing Policy to Users */}
+                {/* 2. SWALI LA UTAYARI (READINESS CHECK PROMPT) */}
+                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-300 space-y-2">
+                  <div className="flex items-center gap-2 text-amber-950 font-black">
+                    <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>❓ JE, UPO TAYARI KUIDHINISHA MATOKEO YA DARASA HILI?</span>
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-relaxed">
+                    Kama Mkuu wa Shule, unathibitisha kuwa walimu wote wa masomo wamekamilisha uwekaji wa alama, broadsheet imehakikiwa na Mwalimu wa Taaluma, na hakuna hitilafu yoyote kabla ya kupiga Muhuri Rasmi:
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-center font-bold">
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Darasa</span>
+                      <span className="text-slate-900 text-xs font-black">{modalTargetClassObj.shortName}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Wanafunzi</span>
+                      <span className="text-slate-900 text-xs font-black">{modalTargetClassObj.totalStudents}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Wastani</span>
+                      <span className="text-emerald-800 text-xs font-black">{modalTargetClassObj.average}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-amber-200">
+                      <span className="text-[9px] uppercase text-slate-500 block">Masomo</span>
+                      <span className="text-slate-900 text-xs font-black">6 / 6 Yamekamilika</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Publishing Policy to Users */}
                 <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
                   <label className="block text-[10px] font-black text-emerald-950 uppercase tracking-wider">
-                    2. Matokeo Yataonekana Lini kwa Wazazi &amp; Wanafunzi? (Publishing Policy)
+                    3. Matokeo Yataonekana Lini kwa Wazazi &amp; Wanafunzi? (Publishing Policy)
                   </label>
 
                   <div className="space-y-2">
@@ -928,7 +974,7 @@ export default function HeadteacherApprovalsPage() {
                   )}
                 </div>
 
-                {/* 3. Headteacher Authority */}
+                {/* 4. Headteacher Authority */}
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase block">Mamlaka ya Idhini:</span>
@@ -937,6 +983,19 @@ export default function HeadteacherApprovalsPage() {
                   </div>
                   <span className="text-[10px] font-mono text-slate-400">HT-2026-001</span>
                 </div>
+
+                {/* 5. RIDHAA YA UTAYARI (MANDATORY CONFIRMATION CHECKBOX) */}
+                <label className="flex items-start gap-2.5 p-3 rounded-2xl bg-amber-50/60 border border-amber-300/80 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isApprovalConfirmChecked}
+                    onChange={(e) => setIsApprovalConfirmChecked(e.target.checked)}
+                    className="w-4 h-4 text-emerald-700 rounded-sm focus:ring-emerald-500 mt-0.5"
+                  />
+                  <span className="text-[11px] text-slate-800 leading-snug">
+                    <strong>Ndio, nipo tayari:</strong> Nimethibitisha usahihi wa matokeo ya <strong>{modalTargetClassObj.name}</strong> na niko tayari kuweka Muhuri Rasmi na ratiba ya kutoa matokeo kwa wazazi.
+                  </span>
+                </label>
 
                 {/* Buttons */}
                 <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
@@ -950,10 +1009,15 @@ export default function HeadteacherApprovalsPage() {
 
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold shadow-md shadow-emerald-950/20 flex items-center gap-2"
+                    disabled={!isApprovalConfirmChecked}
+                    className={`px-5 py-2.5 rounded-xl font-black text-xs shadow-md flex items-center gap-2 transition-all ${
+                      isApprovalConfirmChecked
+                        ? 'bg-emerald-800 hover:bg-emerald-900 text-white shadow-emerald-950/20 hover:scale-[1.02]'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                    }`}
                   >
-                    <Award className="w-4 h-4 text-amber-300" />
-                    <span>Piga Muhuri Rasmi &amp; Idhinisha</span>
+                    <Award className={`w-4 h-4 ${isApprovalConfirmChecked ? 'text-amber-300' : 'text-slate-400'}`} />
+                    <span>Ndio, Weka Muhuri &amp; Idhinisha (OK)</span>
                   </button>
                 </div>
               </form>
@@ -991,7 +1055,7 @@ export default function HeadteacherApprovalsPage() {
               <div className="space-y-3 text-xs">
                 <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 font-mono text-[11px] text-slate-800 leading-relaxed space-y-2">
                   <p>
-                    <strong>SHULE YA MSINGI KUKUMBUKA - TAARIFA RASMI YA MATOKEO</strong>
+                    <strong>PRIMARY &amp; NURSERY SCHOOL - TAARIFA RASMI YA MATOKEO</strong>
                   </p>
                   <p>
                     Ndugu Wazazi na Walezi wa <strong>{currentClass.name}</strong>,
@@ -1020,7 +1084,7 @@ export default function HeadteacherApprovalsPage() {
                   type="button"
                   onClick={() => {
                     const message = encodeURIComponent(
-                      `SHULE YA MSINGI KUKUMBUKA - TAARIFA RASMI YA MATOKEO\n\nNdugu Wazazi wa ${currentClass.name},\nMatokeo ya Muhula wa 1 yamekaguliwa na kuwekwa Muhuri Rasmi wa Mkuu wa Shule (Ref: ${currentSeal.sealCertNumber}).\n\nRipoti sasa zipo tayari kwenye Portal ya Wazazi. Tafadhali tembelea portal ya shule kuona matokeo ya mwanao.`
+                      `PRIMARY & NURSERY SCHOOL - TAARIFA RASMI YA MATOKEO\n\nNdugu Wazazi wa ${currentClass.name},\nMatokeo ya Muhula wa 1 yamekaguliwa na kuwekwa Muhuri Rasmi wa Mkuu wa Shule (Ref: ${currentSeal.sealCertNumber}).\n\nRipoti sasa zipo tayari kwenye Portal ya Wazazi. Tafadhali tembelea portal ya shule kuona matokeo ya mwanao.`
                     );
                     window.open(`https://wa.me/?text=${message}`, '_blank');
                     setShowWhatsAppBroadcastModal(false);

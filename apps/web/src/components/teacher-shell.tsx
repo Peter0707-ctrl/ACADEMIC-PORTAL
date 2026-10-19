@@ -32,6 +32,8 @@ import {
   BarChart3,
   Calendar,
   ClipboardList,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -71,19 +73,7 @@ export default function TeacherShell({
     []
   );
 
-  // Security: Protect against accidental tab closure or loss of unsaved school work
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = 'Kikao cha mfumo wa shule kinalindwa. Je, una uhakika unataka kufunga au kuondoka kwenye ukurasa huu?';
-      return e.returnValue;
-    };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
 
   // 1. Session & Access Verification
   useEffect(() => {
@@ -174,20 +164,20 @@ export default function TeacherShell({
 
   if (isAuthorized === false) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm rounded-2xl bg-gradient-to-b from-[#0F2942] to-[#0A1B2D] text-white p-6 shadow-2xl border border-rose-500/30 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-400/30 flex items-center justify-center mx-auto text-rose-400">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm rounded-2xl bg-white text-slate-800 p-6 shadow-md border border-slate-200 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center mx-auto text-rose-600">
             <AlertCircle className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-base font-bold">Eneo Lililozuiliwa</h2>
-            <p className="text-xs text-blue-100/90 leading-relaxed">
+            <h2 className="text-base font-bold text-slate-900">Eneo Lililozuiliwa</h2>
+            <p className="text-xs text-slate-500 leading-relaxed">
               Huna ruhusa ya kufikia ukurasa huu au nafasi yako haina idhini inayotakiwa.
             </p>
           </div>
           <Link
             href="/"
-            className="inline-block w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors shadow-md"
+            className="inline-block w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-colors shadow-xs"
           >
             Rudi Ukurasa Mkuu
           </Link>
@@ -207,7 +197,7 @@ export default function TeacherShell({
   const userInitials = getInitials(currentUser?.fullName);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F5FAF6] via-[#EDF7F0] to-[#E3F2E8] text-slate-800 font-sans flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans flex flex-col lg:flex-row">
       {/* ===================================================================== */}
       {/* 2. LEFT SIDEBAR: PURE LIGHT-GREEN THEME & LOGICAL HEADTEACHER ROLES */}
       {/* ===================================================================== */}
@@ -686,14 +676,7 @@ export default function TeacherShell({
 
           {/* Right Controls: Security Badge + User Profile Chip + Prominent Logout */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Security Indicator */}
-            <div
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800"
-              title="Kikao chako kinalindwa dhidi ya kufunga tab kwa bahati mbaya"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Kikao Kinalindwa 🔒</span>
-            </div>
+
 
             {/* User Profile Chip (Avatar + Full Name + Role) */}
             <Link
@@ -732,6 +715,26 @@ export default function TeacherShell({
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
           {children}
         </main>
+
+        {/* Footer */}
+        <footer className="mt-auto border-t border-emerald-200/80 bg-white/90 backdrop-blur-xs py-4 px-4 sm:px-8">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <p className="font-medium">
+              &copy; {new Date().getFullYear()} PRIMARY &amp; NURSERY SCHOOL. All rights reserved.
+            </p>
+            <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-600 font-medium">
+              <span className="flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5 text-emerald-700" />
+                <span>0779304500</span>
+              </span>
+              <span>&bull;</span>
+              <span className="flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-emerald-700" />
+                <span>pj0040280@gmail.com</span>
+              </span>
+            </div>
+          </div>
+        </footer>
       </div>
 
       {/* ===================================================================== */}

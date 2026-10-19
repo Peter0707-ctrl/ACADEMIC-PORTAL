@@ -1020,7 +1020,7 @@ export default function SchoolPrefectsCouncilPage() {
                     </span>
                   </div>
                   <h2 className="text-lg font-black text-purple-950 uppercase tracking-tight">
-                    SHULE YA MSINGI KUKUMBUKA PRIMARY
+                    PRIMARY &amp; NURSERY SCHOOL
                   </h2>
                   <div className="inline-block px-4 py-1 rounded-full bg-purple-900 text-white text-[11px] font-black uppercase tracking-widest">
                     HATI RASMI YA UTEUZI WA KIRANJA WA SHULE

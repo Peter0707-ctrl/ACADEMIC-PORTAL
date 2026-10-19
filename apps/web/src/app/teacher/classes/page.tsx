@@ -237,7 +237,7 @@ export default function MyClassesPage() {
         {/* ================================================================= */}
         <div className="space-y-6">
             {/* Automatic Synchronization Banner */}
-            <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-white p-4 rounded-3xl border border-emerald-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="bg-white p-4 rounded-3xl border border-emerald-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-emerald-200 flex items-center justify-center shrink-0 shadow-xs">
                   <ShieldCheck className="w-5 h-5 text-emerald-300" />
@@ -550,7 +550,7 @@ export default function MyClassesPage() {
             <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-emerald-200 animate-scale-up space-y-4">
               <div className="flex items-start justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-800 text-amber-300 flex items-center justify-center font-black text-lg shadow-md">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center font-black text-lg shadow-sm">
                     {selectedPupil.name.charAt(0)}
                   </div>
                   <div>
