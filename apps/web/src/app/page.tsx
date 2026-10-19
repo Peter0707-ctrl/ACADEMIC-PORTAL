@@ -5,8 +5,12 @@ import { useRouter } from 'next/navigation';
 import {
   getStoredAccounts,
   saveStoredAccounts,
+  setStoredAccounts,
   setCurrentSession,
   UserAccount,
+  UserRole,
+  PRIMARY_CLASSES_LIST,
+  PRIMARY_SUBJECTS_LIST,
 } from '@/lib/auth-session';
 import {
   School,
@@ -28,6 +32,8 @@ import {
   FolderArchive,
   GraduationCap,
   Sparkles,
+  Check,
+  UserPlus,
 } from 'lucide-react';
 
 export default function PrimaryPortalHomePage() {
@@ -60,12 +66,30 @@ export default function PrimaryPortalHomePage() {
   // Parent Mode: 'LOGIN' | 'REGISTER'
   const [parentMode, setParentMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
+  // Staff Mode: 'LOGIN' | 'REGISTER'
+  const [staffMode, setStaffMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+
   // Staff Login Form States
   const [staffIdentifier, setStaffIdentifier] = useState('');
   const [staffPassword, setStaffPassword] = useState('');
   const [showStaffPassword, setShowStaffPassword] = useState(false);
   const [isStaffLoggingIn, setIsStaffLoggingIn] = useState(false);
   const [staffError, setStaffError] = useState<string | null>(null);
+
+  // Staff Registration Form States
+  const [staffFullName, setStaffFullName] = useState('');
+  const [staffRole, setStaffRole] = useState<UserRole>('TEACHER');
+  const [staffRegId, setStaffRegId] = useState('');
+  const [staffPhone, setStaffPhone] = useState('');
+  const [staffEmail, setStaffEmail] = useState('');
+  const [staffAssignedClass, setStaffAssignedClass] = useState(PRIMARY_CLASSES_LIST[3]);
+  const [staffSubjects, setStaffSubjects] = useState<string[]>([PRIMARY_SUBJECTS_LIST[0]]);
+  const [staffRegPassword, setStaffRegPassword] = useState('');
+  const [staffConfirmPassword, setStaffConfirmPassword] = useState('');
+  const [showStaffRegPassword, setShowStaffRegPassword] = useState(false);
+  const [isStaffRegistering, setIsStaffRegistering] = useState(false);
+  const [staffRegisterSuccess, setStaffRegisterSuccess] = useState<string | null>(null);
+  const [staffRegisterError, setStaffRegisterError] = useState<string | null>(null);
 
   // Parent Login Form States
   const [parentLoginPhone, setParentLoginPhone] = useState('');
@@ -139,6 +163,85 @@ export default function PrimaryPortalHomePage() {
         setStaffError('Staff account not found. Please verify your Staff ID or Email.');
       }
     }, 350);
+  };
+
+  // 2. Staff Registration Handler
+  const handleStaffRegisterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStaffRegisterError(null);
+    setStaffRegisterSuccess(null);
+
+    if (!staffFullName.trim() || !staffRegId.trim()) {
+      setStaffRegisterError('Please enter your Full Name and Staff ID / TSC Number.');
+      return;
+    }
+
+    if (staffRegPassword.length < 6) {
+      setStaffRegisterError('Password must contain at least 6 characters.');
+      return;
+    }
+
+    if (staffRegPassword !== staffConfirmPassword) {
+      setStaffRegisterError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    setIsStaffRegistering(true);
+
+    setTimeout(() => {
+      setIsStaffRegistering(false);
+      const accounts = getStoredAccounts();
+
+      const exists = accounts.some(
+        (a) =>
+          a.identifier.toLowerCase() === staffRegId.trim().toLowerCase() ||
+          (a.email && staffEmail.trim() && a.email.toLowerCase() === staffEmail.trim().toLowerCase())
+      );
+      if (exists) {
+        setStaffRegisterError('An account with this Staff ID or Email already exists.');
+        return;
+      }
+
+      const newAccount: UserAccount = {
+        id: `STF-${Date.now().toString().slice(-4)}`,
+        fullName: staffFullName.trim(),
+        role: staffRole,
+        identifier: staffRegId.trim(),
+        email: staffEmail.trim() || undefined,
+        phone: staffPhone.trim() || undefined,
+        assignedClass: ['TEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(staffRole)
+          ? staffAssignedClass
+          : undefined,
+        subjects: ['TEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(staffRole)
+          ? staffSubjects
+          : undefined,
+        status: 'ACTIVE',
+        joinedDate: new Date().toISOString().split('T')[0],
+      };
+
+      const updated = [newAccount, ...accounts];
+      setStoredAccounts(updated);
+
+      // Auto login & establish session
+      setCurrentSession(newAccount);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', `token_${newAccount.id}`);
+        localStorage.setItem('tenant_id', 'inst-001');
+        localStorage.setItem('user_roles', JSON.stringify([newAccount.role]));
+      }
+
+      setStaffRegisterSuccess('Staff account created successfully! Redirecting to workspace...');
+
+      setTimeout(() => {
+        if (newAccount.role === 'ACCOUNTANT') {
+          router.push('/accountant');
+        } else if (newAccount.role === 'SECRETARY') {
+          router.push('/secretary');
+        } else {
+          router.push('/teacher');
+        }
+      }, 700);
+    }, 400);
   };
 
   // 3. Parent Login Handler
@@ -416,7 +519,9 @@ export default function PrimaryPortalHomePage() {
               <div
                 onClick={() => {
                   setPortalView('TEACHER');
+                  setStaffMode('LOGIN');
                   setStaffError(null);
+                  setStaffRegisterError(null);
                 }}
                 className="group p-6 rounded-3xl bg-white/95 border-2 border-emerald-200/90 hover:border-emerald-600 hover:shadow-xl hover:shadow-emerald-950/10 transition-all cursor-pointer flex flex-col justify-between space-y-5"
               >
@@ -756,79 +861,285 @@ export default function PrimaryPortalHomePage() {
               </span>
             </div>
 
-            <div className="w-full bg-white/95 rounded-2xl border border-emerald-200/80 shadow-lg shadow-emerald-950/5 p-6 space-y-4">
-              <div className="text-center space-y-1">
-                <h2 className="text-lg font-black text-slate-900">Teacher &amp; Staff Sign In</h2>
-                <p className="text-xs text-slate-500">
-                  Enter your Staff ID or school email to access your workspace
-                </p>
-              </div>
-
-              {staffError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-                  <span>{staffError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleStaffLogin} className="space-y-3.5 text-xs">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Staff ID or School Email
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. HT-2026-001 or teacher@primaryschool.ac.tz"
-                    value={staffIdentifier}
-                    onChange={(e) => setStaffIdentifier(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
-                  />
+            {/* Form A: Teacher & Staff Login */}
+            {staffMode === 'LOGIN' && (
+              <div className="w-full bg-white/95 rounded-2xl border border-emerald-200/80 shadow-lg shadow-emerald-950/5 p-6 space-y-4">
+                <div className="text-center space-y-1">
+                  <h2 className="text-lg font-black text-slate-900">Teacher &amp; Staff Sign In</h2>
+                  <p className="text-xs text-slate-500">
+                    Enter your Staff ID or school email to access your workspace
+                  </p>
                 </div>
 
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      Password
+                {staffError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                    <span>{staffError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleStaffLogin} className="space-y-3.5 text-xs">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Staff ID or School Email
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowStaffPassword(!showStaffPassword)}
-                      className="text-[11px] text-emerald-700 hover:underline flex items-center gap-1"
-                    >
-                      {showStaffPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      <span>{showStaffPassword ? 'Hide' : 'Show'}</span>
-                    </button>
-                  </div>
-                  <div className="relative">
                     <input
-                      type={showStaffPassword ? 'text' : 'password'}
+                      type="text"
                       required
-                      placeholder="Enter your account password"
-                      value={staffPassword}
-                      onChange={(e) => setStaffPassword(e.target.value)}
-                      className="w-full pl-3.5 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                      placeholder="e.g. HT-2026-001 or teacher@primaryschool.ac.tz"
+                      value={staffIdentifier}
+                      onChange={(e) => setStaffIdentifier(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
                     />
-                    <Lock className="w-4 h-4 text-slate-400 absolute right-3 top-2.5" />
                   </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-semibold text-slate-700">
+                        Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowStaffPassword(!showStaffPassword)}
+                        className="text-[11px] text-emerald-700 hover:underline flex items-center gap-1"
+                      >
+                        {showStaffPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        <span>{showStaffPassword ? 'Hide' : 'Show'}</span>
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showStaffPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Enter your account password"
+                        value={staffPassword}
+                        onChange={(e) => setStaffPassword(e.target.value)}
+                        className="w-full pl-3.5 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                      />
+                      <Lock className="w-4 h-4 text-slate-400 absolute right-3 top-2.5" />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isStaffLoggingIn}
+                    className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-950/10 transition-all flex items-center justify-center gap-2"
+                  >
+                    {isStaffLoggingIn ? (
+                      <span>Signing In...</span>
+                    ) : (
+                      <>
+                        <span>Sign In to Staff Portal</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="text-center pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStaffMode('REGISTER');
+                      setStaffRegisterError(null);
+                      setStaffRegisterSuccess(null);
+                    }}
+                    className="text-xs font-semibold text-teal-800 hover:underline"
+                  >
+                    New Staff or Teacher? Register Account Here
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Form B: Teacher & Staff Registration */}
+            {staffMode === 'REGISTER' && (
+              <div className="w-full bg-white/95 rounded-2xl border border-emerald-200/80 shadow-lg shadow-emerald-950/5 p-6 space-y-4">
+                <div className="text-center space-y-1">
+                  <h2 className="text-lg font-black text-slate-900">Staff &amp; Teacher Registration</h2>
+                  <p className="text-xs text-slate-500">
+                    Create your teacher or administrative staff account
+                  </p>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isStaffLoggingIn}
-                  className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-950/10 transition-all flex items-center justify-center gap-2"
-                >
-                  {isStaffLoggingIn ? (
-                    <span>Signing In...</span>
-                  ) : (
-                    <>
-                      <span>Sign In to Staff Portal</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
+                {staffRegisterError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                    <span>{staffRegisterError}</span>
+                  </div>
+                )}
+
+                {staffRegisterSuccess && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+                    <span>{staffRegisterSuccess}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleStaffRegisterSubmit} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Staff Role / Title *
+                    </label>
+                    <select
+                      value={staffRole}
+                      onChange={(e) => setStaffRole(e.target.value as UserRole)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900 font-semibold"
+                    >
+                      <option value="TEACHER">Mwalimu wa Darasa (Class Teacher)</option>
+                      <option value="HEADTEACHER">Mkuu wa Shule (Headteacher)</option>
+                      <option value="ACADEMIC">Mwalimu wa Taaluma (Academic Master)</option>
+                      <option value="DISCIPLINE">Mwalimu wa Nidhamu (Discipline Master)</option>
+                      <option value="ACCOUNTANT">Mhasibu wa Shule (Bursar / Accountant)</option>
+                      <option value="SECRETARY">Katibu wa Shule (Secretary / Registrar)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Full Name (Jina Kamili) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Mwl. Kelvin Mrosso"
+                      value={staffFullName}
+                      onChange={(e) => setStaffFullName(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Staff ID / TSC No *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. TCH-2026-001"
+                        value={staffRegId}
+                        onChange={(e) => setStaffRegId(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono uppercase focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Phone Number *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="+255 7..."
+                        value={staffPhone}
+                        onChange={(e) => setStaffPhone(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Official School Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="teacher@primaryschool.ac.tz"
+                      value={staffEmail}
+                      onChange={(e) => setStaffEmail(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                    />
+                  </div>
+
+                  {/* Assigned Class for teachers */}
+                  {['TEACHER', 'ACADEMIC', 'DISCIPLINE'].includes(staffRole) && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Assigned Class (Darasa Analohusika)
+                      </label>
+                      <select
+                        value={staffAssignedClass}
+                        onChange={(e) => setStaffAssignedClass(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                      >
+                        {PRIMARY_CLASSES_LIST.map((cls) => (
+                          <option key={cls} value={cls}>
+                            {cls}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   )}
-                </button>
-              </form>
-            </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Password *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowStaffRegPassword(!showStaffRegPassword)}
+                          className="text-[10px] text-emerald-700 hover:underline"
+                        >
+                          {showStaffRegPassword ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+                      <input
+                        type={showStaffRegPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Min. 6 chars"
+                        value={staffRegPassword}
+                        onChange={(e) => setStaffRegPassword(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Confirm Password *
+                      </label>
+                      <input
+                        type={showStaffRegPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Re-enter password"
+                        value={staffConfirmPassword}
+                        onChange={(e) => setStaffConfirmPassword(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isStaffRegistering}
+                    className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-950/10 transition-all flex items-center justify-center gap-2 mt-2"
+                  >
+                    {isStaffRegistering ? (
+                      <span>Creating Account...</span>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        <span>Create Staff Account</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="text-center pt-1 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStaffMode('LOGIN');
+                      setStaffError(null);
+                    }}
+                    className="text-xs font-semibold text-emerald-800 hover:underline"
+                  >
+                    Already have a staff account? Sign In Here
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
