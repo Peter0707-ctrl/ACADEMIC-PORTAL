@@ -508,64 +508,7 @@ export default function SubjectMarksPage() {
     reader.readAsText(file);
   };
 
-  // Handler: 1-Click Sample Student Roster
-  const handleRegisterSampleRoster = () => {
-    const sampleNames = [
-      { name: 'Barakael Frank Minja', gender: 'M' as const },
-      { name: 'Catherine Joseph Shirima', gender: 'F' as const },
-      { name: 'Denis Innocent Mushi', gender: 'M' as const },
-      { name: 'Ester Martin Massawe', gender: 'F' as const },
-      { name: 'Geoffrey Ally Mkude', gender: 'M' as const },
-      { name: 'Happy Richard Kweka', gender: 'F' as const },
-      { name: 'Ibrahim Saidi Swai', gender: 'M' as const },
-      { name: 'Jackline Michael Temu', gender: 'F' as const },
-      { name: 'Kelvin David Kimaro', gender: 'M' as const },
-      { name: 'Lilian Peter Lyimo', gender: 'F' as const },
-      { name: 'Moses Gabriel Mlay', gender: 'M' as const },
-      { name: 'Nuru Charles Moshi', gender: 'F' as const },
-      { name: 'Oscar Lucas Tarimo', gender: 'M' as const },
-      { name: 'Patricia Anthony Shayo', gender: 'F' as const },
-      { name: 'Rashidi Juma Hassan', gender: 'M' as const },
-      { name: 'Salma Kassim Bakari', gender: 'F' as const },
-      { name: 'Tumaini Nelson Mallya', gender: 'M' as const },
-      { name: 'Upendo Wilson Maro', gender: 'F' as const },
-      { name: 'Victor Godson Lyatuu', gender: 'M' as const },
-      { name: 'Zainabu Zuberi Mkazi', gender: 'F' as const },
-    ];
-
-    const prefix = selectedClass.includes('7') ? 'PSLE-2026' : selectedClass.includes('4') ? 'SFNA-2026' : 'PUP-2026';
-    const startNum = 501;
-
-    const generated: PupilWithMonthlyMarks[] = sampleNames.map((item, idx) => ({
-      id: `reg-${Date.now()}-${idx}`,
-      admNo: `${prefix}-${String(startNum + idx).padStart(4, '0')}`,
-      name: item.name,
-      gender: item.gender,
-      monthlyTest1: 0,
-      monthlyTest2: 0,
-      monthlyAvg: 0,
-      midtermExam: 0,
-      terminalExam: 0,
-      mark: 0,
-      grade: 'F',
-      remarks: 'Inasubiri Mtihani',
-      attendance: 'PRESENT',
-      monthlyScores: {},
-    }));
-
-    setPupilsData((prev) => ({
-      ...prev,
-      [selectedClass]: generated,
-    }));
-
-    setShowRegisterModal(false);
-
-    notifyUser(
-      'success',
-      'Wanafunzi wa Majaribio Wamesajiliwa!',
-      `Wanafunzi ${generated.length} wamesajiliwa kwa mafanikio katika ${selectedClass}.`
-    );
-  };
+  // Dynamic student registry is loaded from uploaded/enrolled students
 
   // Download Excel / CSV Template specifically for the selected month
   const handleDownloadTemplate = () => {
@@ -1287,7 +1230,18 @@ export default function SubjectMarksPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-100 text-slate-800">
-                {classPupils.map((pupil, idx) => {
+                {classPupils.length === 0 ? (
+                  <tr>
+                    <td colSpan={22} className="py-12 text-center text-slate-500">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Users className="w-8 h-8 text-slate-300" />
+                        <p className="font-bold text-slate-700">Hakuna wanafunzi waliosajiliwa kwenye darasa hili bado.</p>
+                        <p className="text-xs text-slate-500">Pakia faili la wanafunzi (Excel/CSV) au sajili mwanafunzi mpya kuanza.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  classPupils.map((pupil, idx) => {
                   const isAdjusted = Boolean(adjustedStudentIds[`${pupil.id}_${activeMonth.id}`]);
 
                   return (
@@ -1407,7 +1361,7 @@ export default function SubjectMarksPage() {
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>
@@ -1580,14 +1534,7 @@ export default function SubjectMarksPage() {
                   <span>Chagua &amp; Pakia Faili la Wanafunzi (.xlsx au .csv)</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleRegisterSampleRoster}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span>Sajili Wanafunzi 20 wa Majaribio (1-Click Test Roster)</span>
-                </button>
+                
               </div>
 
               <div className="flex items-center justify-end pt-2 border-t border-slate-100">

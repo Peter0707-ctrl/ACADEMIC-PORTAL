@@ -73,59 +73,8 @@ const PRIMARY_CLASSES = [
   'Pre-Unit / Kindergarten',
 ];
 
-// Sample default curriculum slots for Standard 7
-const DEFAULT_STD7_TIMETABLE: Record<string, Record<string, TimetableSlot>> = {
-  MON: {
-    P1: { subject: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P2: { subject: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P3: { subject: 'Science & Technology (Sayansi)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P4: { subject: 'Civic & Moral (Uraia na Maadili)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P5: { subject: 'English Language', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P6: { subject: 'Kiswahili', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P7: { subject: 'Social Studies (Maarifa ya Jamii)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P8: { subject: 'Vocational Skills (Stadi za Kazi)', teacher: 'Mwl. Godfrey Makere', room: 'Darasa 7A' },
-  },
-  TUE: {
-    P1: { subject: 'English Language', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P2: { subject: 'English Language', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P3: { subject: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P4: { subject: 'Social Studies (Maarifa ya Jamii)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P5: { subject: 'Science & Technology (Sayansi)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P6: { subject: 'Kiswahili', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P7: { subject: 'Civic & Moral (Uraia na Maadili)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P8: { subject: 'ICT / Computer Studies (Tehama)', teacher: 'Mwl. Emmanuel Lyimo', room: 'Lab ya Kompyuta' },
-  },
-  WED: {
-    P1: { subject: 'Science & Technology (Sayansi)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P2: { subject: 'Science & Technology (Sayansi)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P3: { subject: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P4: { subject: 'Kiswahili', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P5: { subject: 'Civic & Moral (Uraia na Maadili)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P6: { subject: 'English Language', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P7: { subject: 'Social Studies (Maarifa ya Jamii)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P8: { subject: 'Religious Studies (Elimu ya Dini)', teacher: 'Mwl. Emmanuel Swai', room: 'Darasa 7A' },
-  },
-  THU: {
-    P1: { subject: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P2: { subject: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P3: { subject: 'Kiswahili', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P4: { subject: 'English Language', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P5: { subject: 'Science & Technology (Sayansi)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P6: { subject: 'Social Studies (Maarifa ya Jamii)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P7: { subject: 'Civic & Moral (Uraia na Maadili)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P8: { subject: 'Michezo na Mazoezi ya Viungo', teacher: 'Mwl. Godfrey Makere', room: 'Uwanja wa Shule' },
-  },
-  FRI: {
-    P1: { subject: 'Kiswahili', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P2: { subject: 'English Language', teacher: 'Mwl. Sarah Mollel', room: 'Darasa 7A' },
-    P3: { subject: 'Social Studies (Maarifa ya Jamii)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P4: { subject: 'Science & Technology (Sayansi)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P5: { subject: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', room: 'Darasa 7A' },
-    P6: { subject: 'Civic & Moral (Uraia na Maadili)', teacher: 'Mwl. Augustine Mrosso', room: 'Darasa 7A' },
-    P7: { subject: 'Klabu za Masomo & Majaribio', teacher: 'Walimu Wote', room: 'Ukumbi / Madarasa' },
-    P8: { subject: 'Usafi na Mkutano wa Shule', teacher: 'Mwl. Mkuu & Makamu', room: 'Mkusanyiko' },
-  },
-};
+// Clean state: Timetable slots configured per school/class
+const DEFAULT_STD7_TIMETABLE: Record<string, Record<string, TimetableSlot>> = {};
 
 // Official School Almanac 2026 Events (Tanzania Primary Calendar)
 interface AlmanacEvent {
@@ -279,7 +228,7 @@ const DEFAULT_ALMANAC_EVENTS: AlmanacEvent[] = [
 ];
 
 export default function TimetablePage() {
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(INITIAL_BLUEPRINT_ACCOUNTS[0] || null);
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
 
   // Active Main Tab: TIMETABLE vs ALMANAC
   const [activeMainTab, setActiveMainTab] = useState<'TIMETABLE' | 'ALMANAC'>('TIMETABLE');
@@ -296,7 +245,7 @@ export default function TimetablePage() {
   const [uploadInfo, setUploadInfo] = useState({
     academicYear: '2026',
     title: 'RATIBA KUU YA MASOMO YA MWAKA MZIMA 2026',
-    uploadedBy: 'Mwl. Beatrice Kimaro (Mwalimu wa Taaluma)',
+    uploadedBy: 'Ofisi ya Taaluma',
     lastUpdated: '15 Januari 2026',
     referenceNumber: 'SCH-ACAD-TIMETABLE-2026',
     status: 'OFFICIAL_APPROVED',
@@ -306,7 +255,7 @@ export default function TimetablePage() {
   const [almanacInfo, setAlmanacInfo] = useState({
     academicYear: '2026',
     title: 'ALMANAC & KALENDA KUU YA MATUKIO YA SHULE 2026',
-    uploadedBy: 'Mwl. Beatrice Kimaro (Mwalimu wa Taaluma) & Mwl. Augustine Mrosso (Mkuu wa Shule)',
+    uploadedBy: 'Ofisi ya Taaluma & Uongozi wa Shule',
     lastUpdated: '10 Januari 2026',
     referenceNumber: 'SCH-ALMANAC-2026-MOEST',
   });
@@ -323,7 +272,7 @@ export default function TimetablePage() {
     fileName: 'ALMANAC_KUU_YA_MWAKA_2026_TAMISEMI_APPROVED.pdf',
     fileSize: '2.4 MB',
     uploadedAt: '10 Januari 2026',
-    uploadedBy: 'Mwl. Beatrice Kimaro (Mwalimu wa Taaluma)',
+    uploadedBy: 'Ofisi ya Taaluma',
     fileType: 'application/pdf',
   });
   const [showDocPreviewModal, setShowDocPreviewModal] = useState(false);

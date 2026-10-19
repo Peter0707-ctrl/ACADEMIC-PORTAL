@@ -588,7 +588,7 @@ export const PARENT_TRANSLATIONS: Record<Language, ParentDictionary> = {
     copetraAiParentAdviceTitle: 'Mpango Kazi na Ushauri kwa Mzazi Nyumbani',
     copetraAiChatTitle: 'Uliza Copetra AI Chochote Kuhusu Mwanafunzi',
     copetraAiChatSubtitle: 'Pata majibu ya papo hapo yaliyochambuliwa kutoka kwenye alama, mahudhurio, na mwenendo wake',
-    copetraAiChatPlaceholder: 'Andika swali lako hapa... (Mfn: Je, Kelvin anahitaji tution ya somo gani?)',
+    copetraAiChatPlaceholder: 'Andika swali lako hapa... (Mfn: Je, mwanangu anahitaji tuition ya somo gani?)',
     copetraAiSendPrompt: 'Tuma Swali',
     copetraAiQuickQuestions: 'Maswali ya Haraka:',
     copetraAiPrintReportBtn: 'Pakua Ripoti ya Copetra AI (PDF)',

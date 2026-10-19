@@ -36,12 +36,7 @@ export default function AcademicApproverPortal() {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [publishDate, setPublishDate] = useState('');
 
-  const [students, setStudents] = useState<StudentResultReview[]>([
-    { id: '1', studentNumber: 'STU-2026-0002', name: 'Massawe, Neema', rawMark: 94 },
-    { id: '2', studentNumber: 'STU-2026-0001', name: 'Shirima, Kelvin', rawMark: 88 },
-    { id: '3', studentNumber: 'STU-2026-0004', name: 'Hassan, Fatma', rawMark: 88 },
-    { id: '4', studentNumber: 'STU-2026-0003', name: 'Bakari, Juma', rawMark: 72 },
-  ]);
+  const [students, setStudents] = useState<StudentResultReview[]>([]);
 
   const handleApprove = async () => {
     setLoading(true);
@@ -49,15 +44,6 @@ export default function AcademicApproverPortal() {
 
     try {
       await api.results.approve(scheduleId, 'APPROVED', 'Approved by Headmaster / Academic Master');
-
-      // Simulate client-side calculation engine response for interactive view
-      setStudents([
-        { id: '1', studentNumber: 'STU-2026-0002', name: 'Massawe, Neema', rawMark: 94, grade: 'A', gradePoints: 5.0, position: 1 },
-        { id: '2', studentNumber: 'STU-2026-0001', name: 'Shirima, Kelvin', rawMark: 88, grade: 'A', gradePoints: 5.0, position: 2 },
-        { id: '3', studentNumber: 'STU-2026-0004', name: 'Hassan, Fatma', rawMark: 88, grade: 'A', gradePoints: 5.0, position: 2 },
-        { id: '4', studentNumber: 'STU-2026-0003', name: 'Bakari, Juma', rawMark: 72, grade: 'B', gradePoints: 4.0, position: 4 },
-      ]);
-
       setStatus('APPROVED');
       setApprovalMessage('Results approved! Grading and Standard Competition Ranking (1, 2, 2, 4) computed.');
     } catch (err: any) {
@@ -220,33 +206,45 @@ export default function AcademicApproverPortal() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {students.map((s) => (
-                  <tr key={s.studentNumber} className="hover:bg-slate-50">
-                    <td className="px-6 py-3 font-mono font-medium text-slate-900">{s.studentNumber}</td>
-                    <td className="px-6 py-3 text-slate-800">{s.name}</td>
-                    <td className="px-6 py-3 font-bold text-slate-900">{s.rawMark}</td>
-                    <td className="px-6 py-3">
-                      {s.grade ? (
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${s.grade === 'A' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                          {s.grade}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs">Pending Approval</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-3 text-slate-600 font-semibold">{s.gradePoints ? s.gradePoints.toFixed(1) : '—'}</td>
-                    <td className="px-6 py-3">
-                      {s.position ? (
-                        <span className="font-bold text-slate-900 flex items-center">
-                          {s.position === 1 && <Award className="w-4 h-4 text-amber-500 mr-1" />}
-                          #{s.position} / 4
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs">Pending</span>
-                      )}
+                {students.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Award className="w-8 h-8 text-slate-300" />
+                        <p className="font-bold text-slate-700">No pending student results for approval.</p>
+                        <p className="text-xs text-slate-400">Results submitted by teachers will appear here for verification and approval.</p>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  students.map((s) => (
+                    <tr key={s.studentNumber} className="hover:bg-slate-50">
+                      <td className="px-6 py-3 font-mono font-medium text-slate-900">{s.studentNumber}</td>
+                      <td className="px-6 py-3 text-slate-800">{s.name}</td>
+                      <td className="px-6 py-3 font-bold text-slate-900">{s.rawMark}</td>
+                      <td className="px-6 py-3">
+                        {s.grade ? (
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold ${s.grade === 'A' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                            {s.grade}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">Pending Approval</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-3 text-slate-600 font-semibold">{s.gradePoints ? s.gradePoints.toFixed(1) : '—'}</td>
+                      <td className="px-6 py-3">
+                        {s.position ? (
+                          <span className="font-bold text-slate-900 flex items-center">
+                            {s.position === 1 && <Award className="w-4 h-4 text-amber-500 mr-1" />}
+                            #{s.position}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">Pending</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

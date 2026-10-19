@@ -68,68 +68,21 @@ export default function CandidatesPage() {
   const [parsedCandidates, setParsedCandidates] = useState<NectaCandidate[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Initial candidate seed generator from Standard 7 and Standard 4
-  const generateInitialCandidates = (): NectaCandidate[] => {
-    const list: NectaCandidate[] = [];
-
-    // 1. Standard 7 - PSLE (Primary School Leaving Examination)
-    const std7Pupils = INITIAL_PUPILS['Standard 7 (Grade 7)'] || [];
-    std7Pupils.forEach((p, idx) => {
-      const seq = idx + 1 < 10 ? `000${idx + 1}` : `00${idx + 1}`;
-      list.push({
-        id: `cand-psle-${p.id || idx}`,
-        fullName: p.name.replace(/\s*\(Candidate\)/i, '').trim(),
-        identifier: p.admNo || `PSLE-2026-0428/${seq}`,
-        examIndexNo: `PSLE-2026-0428/${seq}`,
-        candidateType: 'PSLE',
-        gender: p.gender,
-        assignedClass: 'Standard 7 (Grade 7)',
-        status: 'VERIFIED ACTIVE',
-        registrationDate: '15 Jan 2026',
-        centerCode: '0204128 - PRIMARY SCHOOL CENTER',
-      });
-    });
-
-    // 2. Standard 4 - SFNA (Standard Four National Assessment)
-    const std4Pupils = INITIAL_PUPILS['Standard 4 (Grade 4)'] || [];
-    std4Pupils.forEach((p, idx) => {
-      const seq = idx + 1 < 10 ? `000${idx + 1}` : `00${idx + 1}`;
-      list.push({
-        id: `cand-sfna-${p.id || idx}`,
-        fullName: p.name.replace(/\s*\(Candidate\)/i, '').trim(),
-        identifier: p.admNo || `SFNA-2026-0112/${seq}`,
-        examIndexNo: `SFNA-2026-0112/${seq}`,
-        candidateType: 'SFNA',
-        gender: p.gender,
-        assignedClass: 'Standard 4 (Grade 4)',
-        status: 'VERIFIED ACTIVE',
-        registrationDate: '18 Jan 2026',
-        centerCode: '0204128 - PRIMARY SCHOOL CENTER',
-      });
-    });
-
-    return list;
-  };
-
-  // Load candidates on mount
+  // Load candidates on mount (starts empty; populated when user clicks "Vuta Kutoka Madarasani" or uploads CSV)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const raw = localStorage.getItem(STORAGE_CANDIDATES_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           setCandidates(parsed);
           return;
         }
       }
-      // If empty, generate and store
-      const initial = generateInitialCandidates();
-      localStorage.setItem(STORAGE_CANDIDATES_KEY, JSON.stringify(initial));
-      setCandidates(initial);
+      setCandidates([]);
     } catch {
-      const initial = generateInitialCandidates();
-      setCandidates(initial);
+      setCandidates([]);
     }
   }, []);
 

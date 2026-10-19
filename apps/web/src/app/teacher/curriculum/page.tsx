@@ -71,129 +71,9 @@ interface StaffSubmittedLessonPlan {
   methodology: string;
 }
 
-const INITIAL_PERSONAL_PLANS: PersonalLessonPlan[] = [
-  {
-    id: 'my-plan-01',
-    className: 'Standard 7 (Grade 7)',
-    subject: 'Civic & Moral Education (Uraia na Maadili)',
-    topic: 'Utawala Bora na Demokrasia',
-    subtopic: 'Haki na Wajibu wa Raia katika Jamii',
-    period: 'Kipindi cha 4 (10:20 - 11:00)',
-    date: '2026-03-30',
-    objectives: 'Kufikia mwisho wa somo, kila mwanafunzi aweze kueleza maana ya utawala bora na kutaja misingi 4 ya demokrasia nchini Tanzania.',
-    teachingAids: 'Katiba ya Jamhuri ya Muungano, chati ya haki za binadamu, kadi za maswali.',
-    teacherActivities: 'Kuelekeza wanafunzi katika majadiliano ya vikundi na kufafanua dhana ya uwazi na uwajibikaji.',
-    pupilActivities: 'Kujadili mifano ya haki za msingi za raia na kuandika muhtasari kwenye madaftari yao.',
-    evaluation: 'Maswali ya mdomo na zoezi la uandishi la maswali 3.',
-    status: 'READY',
-    isInspectedByLeader: true,
-    inspectorRemarks: 'Mpango umeratibiwa vizuri sana, mbinu shirikishi zimezingatiwa ipasavyo.',
-    inspectorName: 'Mwl. Beatrice Kimaro (Mwl. Taaluma)',
-  },
-  {
-    id: 'my-plan-02',
-    className: 'Standard 6 (Grade 6)',
-    subject: 'Social Studies (Maarifa ya Jamii)',
-    topic: 'Mazingira Yetu na Rasilimali',
-    subtopic: 'Utunzaji wa Vyanzo vya Maji na Misitu',
-    period: 'Kipindi cha 2 (08:40 - 09:20)',
-    date: '2026-03-31',
-    objectives: 'Kufikia mwisho wa somo, mwanafunzi aweze kubainisha vyanzo vya maji na njia 3 za kuzuia ukataji ovyo wa miti.',
-    teachingAids: 'Picha za misitu ya asili, ramani ya vyanzo vya mito ya Tanzania.',
-    teacherActivities: 'Kuonyesha picha na kueleza madhara ya uharibifu wa mazingira na mmomonyoko wa ardhi.',
-    pupilActivities: 'Kuchora mchoro unaoonyesha upandaji miti na utunzaji wa vyanzo vya maji.',
-    evaluation: 'Kusahihisha michoro ya wanafunzi na kutoa tathmini ya madaftari.',
-    status: 'READY',
-    isInspectedByLeader: false,
-  },
-];
+const INITIAL_PERSONAL_PLANS: PersonalLessonPlan[] = [];
 
-const INITIAL_STAFF_SUBMISSIONS: StaffSubmittedLessonPlan[] = [
-  {
-    id: 'sub-01',
-    teacherName: 'Mwl. Sarah Mollel',
-    teacherRole: 'Class Teacher Std 6',
-    className: 'Standard 6 (Grade 6)',
-    subject: 'English Language',
-    topic: 'Tenses and Grammar Structure',
-    subtopic: 'Active and Passive Voice in Simple Past',
-    weekNumber: 11,
-    dateSubmitted: '2026-03-27',
-    status: 'APPROVED',
-    inspectedBy: 'Mwl. Augustine Mrosso (Mkuu)',
-    inspectedAt: '2026-03-27 14:30',
-    inspectorComments: 'Maandalio mazuri. Hakikisha wanafunzi wote wanashirikishwa kwenye mifano ya ubaoni.',
-    objectives: 'Pupils will be able to convert active sentences into passive voice accurately.',
-    teachingAids: 'Flashcards, Grammar sentence charts, Oxford Primary English Book 6.',
-    methodology: 'Participatory role play, pair sentence transformation exercises.',
-  },
-  {
-    id: 'sub-02',
-    teacherName: 'Mwl. Emmanuel Swai',
-    teacherRole: 'Class Teacher Std 7',
-    className: 'Standard 7 (Grade 7)',
-    subject: 'Mathematics (Hisabati)',
-    topic: 'Maumbo ya Jiometria na Mzingo',
-    subtopic: 'Kutafuta Mzingo na Eneo la Duara',
-    weekNumber: 11,
-    dateSubmitted: '2026-03-28',
-    status: 'PENDING_REVIEW',
-    objectives: 'Kukokotoa eneo na mzingo wa duara kwa kutumia fomula sahihi ya Pi (22/7 au 3.14).',
-    teachingAids: 'Vifaa vya duara, rula, dira ya ubaoni, maumbo halisi ya kijiometria.',
-    methodology: 'Ufafanuzi wa kihesabu ubaoni, mazoezi ya kibinafsi na maswali ya utatuzi.',
-  },
-  {
-    id: 'sub-03',
-    teacherName: 'Mwl. Godfrey Makere',
-    teacherRole: 'Subject Teacher',
-    className: 'Standard 4 (Grade 4)',
-    subject: 'Social Studies (Maarifa ya Jamii)',
-    topic: 'Hali ya Hewa na Misimu ya Mwaka',
-    subtopic: 'Athari za Mvua za Masika kwenye Kilimo',
-    weekNumber: 11,
-    dateSubmitted: '2026-03-26',
-    status: 'APPROVED',
-    inspectedBy: 'Mwl. Beatrice Kimaro (Taaluma)',
-    inspectedAt: '2026-03-26 11:15',
-    inspectorComments: 'Maudhui yamekidhi kiwango cha SFNA. Mwalimu endelea na ratiba hii.',
-    objectives: 'Kutaja misimu minne ya mwaka Tanzania na kueleza umuhimu wa msimu wa kilimo.',
-    teachingAids: 'Kalenda ya misimu, picha za mavuno na mazingira ya shamba.',
-    methodology: 'Masimulizi, maswali na majibu, majadiliano ya pamoja darasani.',
-  },
-  {
-    id: 'sub-04',
-    teacherName: 'Mwl. Emmanuel Lyimo',
-    teacherRole: 'Discipline Master & Teacher',
-    className: 'Standard 5 (Grade 5)',
-    subject: 'Kiswahili',
-    topic: 'Uandishi wa Insha na Barua Rasmi',
-    subtopic: 'Muundo wa Barua ya Kikazi ya Kuomba Ruhusa',
-    weekNumber: 11,
-    dateSubmitted: '2026-03-28',
-    status: 'PENDING_REVIEW',
-    objectives: 'Mwanafunzi aweze kuandika anwani mbili na kichwa cha habari cha barua rasmi.',
-    teachingAids: 'Mifano ya barua rasmi zilizochapishwa, ubao wa maelekezo.',
-    methodology: 'Uchambuzi wa kielelezo cha barua, zoezi la uandishi darasani.',
-  },
-  {
-    id: 'sub-05',
-    teacherName: 'Mwl. Beatrice Kimaro',
-    teacherRole: 'Academic Master & Teacher',
-    className: 'Standard 6 (Grade 6)',
-    subject: 'Science & Technology (Sayansi)',
-    topic: 'Mwili wa Binadamu na Afya',
-    subtopic: 'Mfumo wa Upumuaji na Kinga ya Mwili',
-    weekNumber: 11,
-    dateSubmitted: '2026-03-25',
-    status: 'APPROVED',
-    inspectedBy: 'Mwl. Augustine Mrosso (Mkuu)',
-    inspectedAt: '2026-03-25 16:00',
-    inspectorComments: 'Somo limeandaliwa kiufasaha, maabara ndogo itumike kwa mifano ya hewa.',
-    objectives: 'Kutambua viungo vya mfumo wa upumuaji na kueleza njia za kuzuia magonjwa ya kifua.',
-    teachingAids: 'Mchoro wa mapafu, puto na mrija wa kuonyesha upanukaji wa pafu.',
-    methodology: 'Uonyeshaji wa zana halisi, maswali elekezi na muhtasari wa maelezo.',
-  },
-];
+const INITIAL_STAFF_SUBMISSIONS: StaffSubmittedLessonPlan[] = [];
 
 export default function CurriculumOversightPage() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
@@ -463,92 +343,97 @@ export default function CurriculumOversightPage() {
                 </span>
               </div>
 
-              {personalPlans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-4 hover:border-emerald-400 transition-all"
-                >
-                  {/* Top Bar of Plan */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase">
-                        {plan.className}
-                      </span>
-                      <span className="text-xs font-bold text-slate-700">• {plan.subject}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{plan.period}</span>
-                      </span>
-                      <span className="text-[11px] font-mono text-slate-500">• {plan.date}</span>
-                    </div>
-                  </div>
-
-                  {/* Topic & Subtopic */}
-                  <div>
-                    <h4 className="text-base font-black text-slate-900 leading-snug">
-                      Mada Kuu: {plan.topic}
-                    </h4>
-                    <p className="text-xs font-semibold text-emerald-800 mt-0.5">
-                      Mada Ndogo: {plan.subtopic}
-                    </p>
-                  </div>
-
-                  {/* MoEST Standard Structure Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Malengo ya Somo</span>
-                      <p className="text-slate-800 text-[11px] leading-relaxed">{plan.objectives}</p>
-                    </div>
-
-                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Zana za Ufundishaji</span>
-                      <p className="text-slate-800 text-[11px] leading-relaxed">{plan.teachingAids}</p>
-                    </div>
-
-                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Vitendo vya Mwalimu na Wanafunzi</span>
-                      <p className="text-slate-800 text-[11px] leading-relaxed">{plan.teacherActivities}</p>
-                    </div>
-
-                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Tathmini ya Somo</span>
-                      <p className="text-slate-800 text-[11px] leading-relaxed">{plan.evaluation}</p>
-                    </div>
-                  </div>
-
-                  {/* Leadership Inspection Feedback on this plan */}
-                  <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2">
-                      {plan.isInspectedByLeader ? (
-                        <div className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                          <span>Imekaguliwa &amp; Kusainiwa na: {plan.inspectorName}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-amber-800 font-bold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                          <Clock className="w-4 h-4 text-amber-600" />
-                          <span>Ipo Tayari Kufundishia (Tayari kwa Ukaguzi)</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPlanForPrint(plan);
-                        setTimeout(() => window.print(), 300);
-                      }}
-                      className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-                    >
-                      <Printer className="w-3.5 h-3.5" />
-                      <span>Chapisha (Print Lesson Plan)</span>
-                    </button>
-                  </div>
+              {personalPlans.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-3xl border border-emerald-200 shadow-xs space-y-2">
+                  <BookOpen className="w-10 h-10 text-slate-300 mx-auto" />
+                  <h4 className="text-sm font-bold text-slate-800">Bado Hujaandaa Mpango wa Somo (Lesson Plan)</h4>
+                  <p className="text-xs text-slate-500">
+                    Bonyeza &quot;+ Andaa Lesson Plan Mpya&quot; kuandaa somo la leo kulingana na muundo rasmi wa Wizara ya Elimu (MoEST).
+                  </p>
                 </div>
-              ))}
+              ) : (
+                personalPlans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-4 hover:border-emerald-400 transition-all"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase">
+                          {plan.className}
+                        </span>
+                        <span className="text-xs font-bold text-slate-700">• {plan.subject}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{plan.period}</span>
+                        </span>
+                        <span className="text-[11px] font-mono text-slate-500">• {plan.date}</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-base font-black text-slate-900 leading-snug">
+                        Mada Kuu: {plan.topic}
+                      </h4>
+                      <p className="text-xs font-semibold text-emerald-800 mt-0.5">
+                        Mada Ndogo: {plan.subtopic}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                      <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Malengo ya Somo</span>
+                        <p className="text-slate-800 text-[11px] leading-relaxed">{plan.objectives}</p>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Zana za Ufundishaji</span>
+                        <p className="text-slate-800 text-[11px] leading-relaxed">{plan.teachingAids}</p>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Vitendo vya Mwalimu na Wanafunzi</span>
+                        <p className="text-slate-800 text-[11px] leading-relaxed">{plan.teacherActivities}</p>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Tathmini ya Somo</span>
+                        <p className="text-slate-800 text-[11px] leading-relaxed">{plan.evaluation}</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2">
+                        {plan.isInspectedByLeader ? (
+                          <div className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                            <span>Imekaguliwa &amp; Kusainiwa na: {plan.inspectorName}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-amber-800 font-bold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                            <Clock className="w-4 h-4 text-amber-600" />
+                            <span>Ipo Tayari Kufundishia (Tayari kwa Ukaguzi)</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPlanForPrint(plan);
+                        }}
+                        className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span>Chapisha (Print Lesson Plan)</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -635,66 +520,81 @@ export default function CurriculumOversightPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                    {filteredStaffSubmissions.map((sub) => (
-                      <tr key={sub.id} className="hover:bg-emerald-50/40 transition-colors">
-                        <td className="py-3 px-3 font-bold text-slate-900">
-                          <div>
-                            <span>{sub.teacherName}</span>
-                            <span className="text-[10px] text-slate-400 block font-normal">{sub.teacherRole}</span>
+                    {filteredStaffSubmissions.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-12 text-center text-slate-500">
+                          <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-2">
+                            <ShieldCheck className="w-10 h-10 text-slate-300 stroke-1" />
+                            <p className="font-bold text-slate-700 text-sm">Hakuna maandalio ya masomo yaliyowasilishwa</p>
+                            <p className="text-xs text-slate-500">
+                              Walimu wakishawasilisha maandalio yao ya masomo (lesson plans), yataonekana hapa kwa ajili ya ukaguzi na saini ya Mkuu wa Shule.
+                            </p>
                           </div>
                         </td>
-                        <td className="py-3 px-3">
-                          <span className="font-bold text-emerald-900 block">{sub.className}</span>
-                          <span className="text-[11px] text-slate-600 block">{sub.subject}</span>
-                        </td>
-                        <td className="py-3 px-3 max-w-[200px]">
-                          <span className="font-bold text-slate-800 block truncate">{sub.topic}</span>
-                          <span className="text-[11px] text-slate-500 block truncate">{sub.subtopic}</span>
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono text-[11px]">
-                          <span className="font-bold block">Wiki ya {sub.weekNumber}</span>
-                          <span className="text-slate-400 text-[10px]">{sub.dateSubmitted}</span>
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                              sub.status === 'APPROVED'
-                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                : sub.status === 'NEEDS_REVISION'
-                                ? 'bg-rose-100 text-rose-800 border border-rose-300'
-                                : 'bg-amber-100 text-amber-800 border border-amber-300'
-                            }`}
-                          >
-                            {sub.status === 'APPROVED'
-                              ? 'Imekaguliwa & Kusainiwa'
-                              : sub.status === 'NEEDS_REVISION'
-                              ? 'Inahitaji Marekebisho'
-                              : 'Inasubiri Ukaguzi'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 max-w-[180px] text-[11px] text-slate-600">
-                          {sub.inspectorComments ? (
-                            <div>
-                              <p className="truncate italic">&quot;{sub.inspectorComments}&quot;</p>
-                              <span className="text-[10px] font-semibold text-emerald-800 block mt-0.5">
-                                {sub.inspectedBy}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 italic">Bado haijakaguliwa</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => openReviewModal(sub)}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-2xs transition-all cursor-pointer whitespace-nowrap"
-                          >
-                            Kagua &amp; Saini &rarr;
-                          </button>
-                        </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredStaffSubmissions.map((sub) => (
+                        <tr key={sub.id} className="hover:bg-emerald-50/40 transition-colors">
+                          <td className="py-3 px-3 font-bold text-slate-900">
+                            <div>
+                              <span>{sub.teacherName}</span>
+                              <span className="text-[10px] text-slate-400 block font-normal">{sub.teacherRole}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="font-bold text-emerald-900 block">{sub.className}</span>
+                            <span className="text-[11px] text-slate-600 block">{sub.subject}</span>
+                          </td>
+                          <td className="py-3 px-3 max-w-[200px]">
+                            <span className="font-bold text-slate-900 block truncate">{sub.topic}</span>
+                            <span className="text-[11px] text-slate-500 block truncate">{sub.subtopic}</span>
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <span className="font-bold text-slate-800 block">Wiki ya {sub.weekNumber}</span>
+                            <span className="text-[10px] text-slate-400 block">{sub.dateSubmitted}</span>
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                                sub.status === 'APPROVED'
+                                  ? 'bg-emerald-100 text-emerald-950 border border-emerald-300'
+                                  : sub.status === 'NEEDS_REVISION'
+                                  ? 'bg-rose-100 text-rose-950 border border-rose-300'
+                                  : 'bg-amber-100 text-amber-950 border border-amber-300'
+                              }`}
+                            >
+                              {sub.status === 'APPROVED'
+                                ? 'Imeidhinishwa'
+                                : sub.status === 'NEEDS_REVISION'
+                                ? 'Inahitaji Marekebisho'
+                                : 'Inasubiri Ukaguzi'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-xs text-slate-600 max-w-[220px]">
+                            {sub.inspectorComments ? (
+                              <p className="line-clamp-2 text-[11px] italic text-slate-700 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+                                &quot;{sub.inspectorComments}&quot;
+                              </p>
+                            ) : (
+                              <span className="text-slate-400 italic text-[11px]">Bado haijatolewa maoni</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedSubmissionForReview(sub);
+                                setReviewVerdict(sub.status === 'NEEDS_REVISION' ? 'NEEDS_REVISION' : 'APPROVED');
+                                setReviewCommentInput(sub.inspectorComments || '');
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                            >
+                              Kagua &amp; Saini
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -724,40 +624,52 @@ export default function CurriculumOversightPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white font-medium">
-                    {syllabusList.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50">
-                        <td className="py-3 px-4 font-bold text-slate-900">{item.grade}</td>
-                        <td className="py-3 px-4 font-bold text-emerald-800">{item.subject}</td>
-                        <td className="py-3 px-4 text-slate-700">{item.teacher}</td>
-                        <td className="py-3 px-4 text-center font-mono">
-                          {item.lessonPlansSubmitted} / {item.lessonPlansTotal} wiki
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-28 bg-slate-200 rounded-full h-2 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${
-                                  item.completion >= 80 ? 'bg-emerald-600' : 'bg-blue-600'
+                    {syllabusList.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="py-8 text-center text-slate-400">
+                            Hakuna muhtasari wa mitaala uliosajiliwa bado.
+                          </td>
+                        </tr>
+                      ) : (
+                        syllabusList.map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-50">
+                            <td className="py-3 px-4 font-bold text-slate-900">{item.grade}</td>
+                            <td className="py-3 px-4 font-bold text-emerald-800">{item.subject}</td>
+                            <td className="py-3 px-4 text-slate-700">{item.teacher}</td>
+                            <td className="py-3 px-4 text-center font-mono">
+                              {item.lessonPlansSubmitted} / {item.lessonPlansTotal} wiki
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-28 bg-slate-200 rounded-full h-2 overflow-hidden">
+                                  <div
+                                    className="bg-emerald-700 h-full rounded-full transition-all"
+                                    style={{ width: `${item.completion}%` }}
+                                  />
+                                </div>
+                                <span className="font-bold text-slate-900 text-xs">{item.completion}%</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                                  item.status === 'AHEAD'
+                                    ? 'bg-emerald-100 text-emerald-900'
+                                    : item.status === 'BEHIND'
+                                    ? 'bg-rose-100 text-rose-900'
+                                    : 'bg-amber-100 text-amber-900'
                                 }`}
-                                style={{ width: `${item.completion}%` }}
-                              />
-                            </div>
-                            <span className="font-bold text-[11px]">{item.completion}%</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              item.status === 'ON_TRACK'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-amber-100 text-amber-800'
-                            }`}
-                          >
-                            {item.status === 'ON_TRACK' ? 'On Track' : 'Inahitaji Kasi'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                              >
+                                {item.status === 'AHEAD'
+                                  ? 'Imekamilika'
+                                  : item.status === 'BEHIND'
+                                  ? 'Imechelewa'
+                                  : 'Inaendelea'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                   </tbody>
                 </table>
               </div>

@@ -22,6 +22,7 @@ import {
   Lock,
   Share2,
   Check,
+  Megaphone,
 } from 'lucide-react';
 import TeacherShell from '@/components/teacher-shell';
 import { getCurrentSession, INITIAL_BLUEPRINT_ACCOUNTS, UserAccount } from '@/lib/auth-session';
@@ -61,90 +62,14 @@ interface SentBroadcast {
   recipientCount: number;
 }
 
-const INITIAL_ANNOUNCEMENTS: SchoolAnnouncement[] = [
-  {
-    id: 'ann-01',
-    title: 'Mwisho wa Kuwasilisha Alama za Majaribio ya Mwezi wa Machi',
-    author: 'Mwl. Beatrice Kimaro',
-    role: 'Mwalimu wa Taaluma (Academic Master)',
-    date: '2026-03-27',
-    priority: 'HIGH',
-    category: 'ACADEMIC',
-    content: 'Walimu wote wa masomo ya Standard 1 hadi 7 mnakumbushwa kuwa tarehe ya mwisho ya kuwasilisha alama za mwezi wa Machi ni Ijumaa saa 10:00 jioni kupitia mfumo. Broadsheet itatolewa mara baada ya idhini ya Mwalimu Mkuu.',
-    read: true,
-  },
-  {
-    id: 'ann-02',
-    title: 'Kikao cha Wafanyakazi Wote (Staff Meeting)',
-    author: 'Mwl. Augustine Mrosso',
-    role: 'Mwalimu Mkuu (Head Teacher)',
-    date: '2026-03-26',
-    priority: 'URGENT',
-    category: 'STAFF',
-    content: 'Kutakuwa na kikao cha wafanyakazi wote siku ya Jumatatu saa 8:00 mchana katika ukumbi wa mikutano wa shule kujadili maandalizi ya mitihani ya Nusu Muhula na ufuatiliaji wa maazimio ya kazi.',
-    read: true,
-  },
-  {
-    id: 'ann-03',
-    title: 'Mwongozo Mpya wa Mtaala wa Elimu ya Awali na Msingi (MoEST)',
-    author: 'Wizara ya Elimu (MoEST)',
-    role: 'Afisa Elimu Wilaya',
-    date: '2026-03-20',
-    priority: 'NORMAL',
-    category: 'MINISTRY',
-    content: 'Walimu wote wanahimizwa kupitia muhtasari wa stadi za TEHAMA na Sayansi kulingana na mtaala ulioboreshwa wa mwaka 2024/2026.',
-    read: false,
-  },
-];
+const INITIAL_ANNOUNCEMENTS: SchoolAnnouncement[] = [];
 
-const INITIAL_MESSAGES: DirectMessage[] = [
-  {
-    id: 'msg-01',
-    sender: 'Mwl. Beatrice Kimaro (Academic)',
-    senderRole: 'Academic Master',
-    receiver: 'Me',
-    timestamp: 'Leo, 09:30 AM',
-    message: 'Habari Mwalimu, nimepokea alama za Hisabati za Std 6. Kazi nzuri sana kwa wastani wa 82%.',
-    isSelf: false,
-  },
-  {
-    id: 'msg-02',
-    sender: 'Me',
-    senderRole: 'Teacher',
-    receiver: 'Mwl. Beatrice Kimaro (Academic)',
-    timestamp: 'Leo, 09:35 AM',
-    message: 'Asante sana Mwl. Taaluma. Nimeshaanza pia maandalizi ya masomo ya ziada kwa wanafunzi 4 wanaohitaji uangalizi.',
-    isSelf: true,
-  },
-];
+const INITIAL_MESSAGES: DirectMessage[] = [];
 
-const INITIAL_SENT_BROADCASTS: SentBroadcast[] = [
-  {
-    id: 'bcast-01',
-    channel: 'WHATSAPP',
-    category: 'MATOKEO',
-    recipientGroup: 'Standard 7 (Grade 7) — Wazazi 95',
-    senderName: 'Mwl. Beatrice Kimaro',
-    senderRole: 'Mwalimu wa Taaluma',
-    message: '*SHULE YA MSINGI PRIMARY & NURSERY*\n*TAARIFA YA MATOKEO YA NUSU MUHULA (MID-TERM 2026)*\n\nMpendwa Mzazi/Mlezi wa Standard 7,\nTunapenda kukutaarifu kuwa matokeo ya mitihani ya Nusu Muhula wa 1 (2026) yametangazwa rasmi leo. Unaweza kuangalia ripoti ya mwanao kwa kiungo kilicho hapa chini.\n\n🌐 Kiungo cha Matokeo: https://primaryschool.ac.tz/results\n\nImetolewa na: Ofisi ya Taaluma & Mkuu wa Shule.',
-    sentAt: '27 Machi 2026, 14:30',
-    recipientCount: 95,
-  },
-  {
-    id: 'bcast-02',
-    channel: 'WHATSAPP',
-    category: 'LIKIZO',
-    recipientGroup: 'Shule Nzima (Wazazi Wote 190)',
-    senderName: 'Mwl. Augustine Mrosso',
-    senderRole: 'Mwalimu Mkuu',
-    message: '*SHULE YA MSINGI PRIMARY & NURSERY*\n*TAARIFA YA KUFUNGA SHULE KWA LIKIZO FUPI*\n\nMpendwa Mzazi/Mlezi,\nShule itafungwa rasmi tarehe 28 Machi 2026 kwa likizo fupi ya nusu muhula na itafunguliwa tarehe 07 Aprili 2026 saa 1:30 asubuhi.\n\nWanafunzi wamepewa mazoezi ya likizo kwenye madaftari yao. Tunawatakia likizo njema na salama.',
-    sentAt: '26 Machi 2026, 10:00',
-    recipientCount: 190,
-  },
-];
+const INITIAL_SENT_BROADCASTS: SentBroadcast[] = [];
 
 export default function CommunicationPage() {
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(INITIAL_BLUEPRINT_ACCOUNTS[0] || null);
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const [activeTab, setActiveTab] = useState<'PARENT_BROADCAST' | 'ANNOUNCEMENTS' | 'MESSAGES'>('PARENT_BROADCAST');
 
   const [announcements, setAnnouncements] = useState<SchoolAnnouncement[]>(INITIAL_ANNOUNCEMENTS);
@@ -153,7 +78,7 @@ export default function CommunicationPage() {
   const [replyText, setReplyText] = useState('');
 
   // Parent WhatsApp / SMS Form State
-  const [recipientGroup, setRecipientGroup] = useState('Standard 7 (Grade 7) — Wazazi 95');
+  const [recipientGroup, setRecipientGroup] = useState('Wazazi Wote');
   const [selectedChannel, setSelectedChannel] = useState<'WHATSAPP' | 'SMS'>('WHATSAPP');
   const [broadcastCategory, setBroadcastCategory] = useState<'MATOKEO' | 'LIKIZO' | 'MKUTANO' | 'ADA' | 'DHARURA'>('MATOKEO');
 
@@ -586,25 +511,31 @@ export default function CommunicationPage() {
                     </h3>
 
                     <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                      {sentBroadcasts.map((bcast) => (
-                        <div key={bcast.id} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
-                          <div className="flex items-center justify-between">
-                            <span className="px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-900 font-black text-[9px] uppercase">
-                              {bcast.channel}
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-mono">{bcast.sentAt}</span>
-                          </div>
-                          <span className="font-bold text-slate-900 block text-[11px] truncate">
-                            {bcast.recipientGroup}
-                          </span>
-                          <p className="text-[10px] text-slate-500 line-clamp-2">
-                            {bcast.message}
-                          </p>
-                          <div className="text-[9px] font-semibold text-emerald-700 pt-0.5">
-                            Imetumwa na: {bcast.senderName} ({bcast.senderRole})
-                          </div>
+                      {sentBroadcasts.length === 0 ? (
+                        <div className="p-8 text-center text-slate-400 text-xs">
+                          Bado hakuna jumbe za matangazo zilizotumwa kwa wazazi.
                         </div>
-                      ))}
+                      ) : (
+                        sentBroadcasts.map((bcast) => (
+                          <div key={bcast.id} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-900 font-black text-[9px] uppercase">
+                                {bcast.channel}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-mono">{bcast.sentAt}</span>
+                            </div>
+                            <span className="font-bold text-slate-900 block text-[11px] truncate">
+                              {bcast.recipientGroup}
+                            </span>
+                            <p className="text-[10px] text-slate-500 line-clamp-2">
+                              {bcast.message}
+                            </p>
+                            <div className="text-[9px] font-semibold text-emerald-700 pt-0.5">
+                              Imetumwa na: {bcast.senderName} ({bcast.senderRole})
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
@@ -618,53 +549,61 @@ export default function CommunicationPage() {
         {/* ================================================================= */}
         {activeTab === 'ANNOUNCEMENTS' && (
           <div className="space-y-4">
-            {announcements.map((ann) => (
-              <div
-                key={ann.id}
-                className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-3 hover:border-emerald-400 transition-all"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                        ann.priority === 'URGENT'
-                          ? 'bg-rose-100 text-rose-800 border border-rose-300'
-                          : ann.priority === 'HIGH'
-                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                          : 'bg-blue-100 text-blue-800 border border-blue-300'
-                      }`}
-                    >
-                      {ann.priority === 'URGENT' ? 'Dharura' : ann.priority === 'HIGH' ? 'Muhimu' : 'Kawaida'}
-                    </span>
-                    <h3 className="text-sm sm:text-base font-black text-slate-900">{ann.title}</h3>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{ann.date}</span>
-                  </div>
-                </div>
-
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                  {ann.content}
-                </p>
-
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px]">
-                      {ann.author.charAt(0)}
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-800 block text-[11px]">{ann.author}</span>
-                      <span className="text-[10px] text-slate-400 block">{ann.role}</span>
-                    </div>
-                  </div>
-
-                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                    Tangazo Rasmi la Shule
-                  </span>
-                </div>
+            {announcements.length === 0 ? (
+              <div className="p-12 text-center bg-white rounded-3xl border border-emerald-200 shadow-xs space-y-2">
+                <Megaphone className="w-10 h-10 text-slate-300 mx-auto" />
+                <h4 className="text-sm font-bold text-slate-800">Hakuna Matangazo ya Shule Bado</h4>
+                <p className="text-xs text-slate-500">Matangazo yote rasmi ya kiutawala na kitaaluma yataonekana hapa.</p>
               </div>
-            ))}
+            ) : (
+              announcements.map((ann) => (
+                <div
+                  key={ann.id}
+                  className="bg-white rounded-3xl border border-emerald-200 p-5 sm:p-6 shadow-xs space-y-3 hover:border-emerald-400 transition-all"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                          ann.priority === 'URGENT'
+                            ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                            : ann.priority === 'HIGH'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                            : 'bg-blue-100 text-blue-800 border border-blue-300'
+                        }`}
+                      >
+                        {ann.priority === 'URGENT' ? 'Dharura' : ann.priority === 'HIGH' ? 'Muhimu' : 'Kawaida'}
+                      </span>
+                      <h3 className="text-sm sm:text-base font-black text-slate-900">{ann.title}</h3>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{ann.date}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    {ann.content}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px]">
+                        {ann.author.charAt(0)}
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-800 block text-[11px]">{ann.author}</span>
+                        <span className="text-[10px] text-slate-400 block">{ann.role}</span>
+                      </div>
+                    </div>
+
+                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                      Tangazo Rasmi la Shule
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 
@@ -679,24 +618,31 @@ export default function CommunicationPage() {
             </div>
 
             <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`p-4 rounded-2xl max-w-xl text-xs space-y-1 ${
-                    m.isSelf
-                      ? 'ml-auto bg-emerald-800 text-white'
-                      : 'mr-auto bg-slate-100 text-slate-800'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 border-b border-white/20 pb-1">
-                    <span className="font-bold">{m.sender}</span>
-                    <span className={`text-[10px] ${m.isSelf ? 'text-emerald-200' : 'text-slate-500'}`}>
-                      {m.timestamp}
-                    </span>
-                  </div>
-                  <p className="pt-1 leading-relaxed">{m.message}</p>
+              {messages.length === 0 ? (
+                <div className="p-10 text-center text-slate-400 text-xs space-y-2">
+                  <MessageSquare className="w-8 h-8 text-slate-300 mx-auto" />
+                  <p>Hakuna mazungumzo bado. Anza ujumbe mpya hapa chini.</p>
                 </div>
-              ))}
+              ) : (
+                messages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`p-4 rounded-2xl max-w-xl text-xs space-y-1 ${
+                      m.isSelf
+                        ? 'ml-auto bg-emerald-800 text-white'
+                        : 'mr-auto bg-slate-100 text-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 border-b border-white/20 pb-1">
+                      <span className="font-bold">{m.sender}</span>
+                      <span className={`text-[10px] ${m.isSelf ? 'text-emerald-200' : 'text-slate-500'}`}>
+                        {m.timestamp}
+                      </span>
+                    </div>
+                    <p className="pt-1 leading-relaxed">{m.message}</p>
+                  </div>
+                ))
+              )}
             </div>
 
             <form onSubmit={handleSendInternalMessage} className="pt-3 border-t border-slate-100 flex gap-2">

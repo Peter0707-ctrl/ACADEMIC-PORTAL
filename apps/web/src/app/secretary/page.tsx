@@ -306,24 +306,10 @@ export default function SecretaryDashboardPage() {
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="p-3 rounded-2xl bg-rose-50/60 border border-rose-200 flex items-center justify-between">
-                <div>
-                  <strong className="block text-slate-900">Amina Salum (PUP-2026-062)</strong>
-                  <span className="text-[10px] text-slate-500">Standard 6 &bull; Missing: Cheti cha Kuzaliwa (RITA)</span>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-mono font-bold text-[10px]">
-                  66% Complete
-                </span>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-rose-50/60 border border-rose-200 flex items-center justify-between">
-                <div>
-                  <strong className="block text-slate-900">David Mwita (PUP-2026-095)</strong>
-                  <span className="text-[10px] text-slate-500">Standard 1 &bull; Missing: Fomu ya Afya &amp; Picha za Pasipoti</span>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-mono font-bold text-[10px]">
-                  50% Complete
-                </span>
+              <div className="p-4 text-center rounded-2xl bg-emerald-50/60 border border-emerald-200 text-slate-600">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
+                <span className="font-bold text-[11px] text-slate-800 block">Majalada Yote Yapo Kamili</span>
+                <span className="text-[10px] text-slate-500">Hakuna upungufu wa nyaraka za wanafunzi kwa sasa.</span>
               </div>
             </div>
           </div>
@@ -350,24 +336,10 @@ export default function SecretaryDashboardPage() {
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200 flex items-center justify-between">
-                <div>
-                  <strong className="block text-slate-900">Mwl. Sarah Mollel (TCH-2026-012)</strong>
-                  <span className="text-[10px] text-slate-500">Class Teacher Std 6 &bull; Missing: Usajili wa TSC ulioridhiwa</span>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-mono font-bold text-[10px]">
-                  83% Complete
-                </span>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200 flex items-center justify-between">
-                <div>
-                  <strong className="block text-slate-900">Mwl. Peter Temba (TCH-2026-015)</strong>
-                  <span className="text-[10px] text-slate-500">Sports Master &bull; Missing: Cheti cha Mafunzo ya Huduma ya Kwanza</span>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-mono font-bold text-[10px]">
-                  66% Complete
-                </span>
+              <div className="p-4 text-center rounded-2xl bg-emerald-50/60 border border-emerald-200 text-slate-600">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
+                <span className="font-bold text-[11px] text-slate-800 block">Majalada ya Watumishi Yapo Kamili</span>
+                <span className="text-[10px] text-slate-500">Hakuna upungufu wa nyaraka za kiutumishi kwa sasa.</span>
               </div>
             </div>
           </div>

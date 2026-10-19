@@ -73,178 +73,9 @@ export interface DailyDutyInspectionRecord {
   rating: 'BORA' | 'WASTANI' | 'INAHITAJI_MAREKEBISHO';
 }
 
-const INITIAL_PREFECTS: PrefectMember[] = [
-  {
-    id: 'pref-001',
-    fullName: 'Faraji Saidi Mkude',
-    gender: 'M',
-    assignedClass: 'Standard 7 (Grade 7)',
-    roleType: 'KIRANJA_MKUU',
-    roleTitleSwahili: 'Kiranja Mkuu wa Shule (Head Boy)',
-    badgeNumber: 'PREF-2026-001',
-    tenureYear: '2026',
-    responsibilities: [
-      'Uongozi mkuu wa baraza la viranja wote wa shule',
-      'Kusimamia gwaride na mikutano ya asubuhi (morning assembly)',
-      'Daraja kuu la mawasiliano kati ya wanafunzi na Mwalimu wa Nidhamu',
-    ],
-    performanceScore: 96,
-    appointedDate: '2026-01-12',
-    appointedBy: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    status: 'ACTIVE',
-    avatarInitials: 'FM',
-  },
-  {
-    id: 'pref-002',
-    fullName: 'Amina Salum Rashid',
-    gender: 'F',
-    assignedClass: 'Standard 7 (Grade 7)',
-    roleType: 'KIRANJA_MKUU_MSAIDIZI',
-    roleTitleSwahili: 'Kiranja Mkuu Msaidizi (Head Girl)',
-    badgeNumber: 'PREF-2026-002',
-    tenureYear: '2026',
-    responsibilities: [
-      'Mratibu mkuu wa nidhamu na ustawi wa wasichana shuleni',
-      'Kusimamia ratiba ya ukaguzi wa sare za shule na usafi wa mabweni/vyoo',
-      'Msaidizi mkuu wa Head Boy kwenye majukumu yote ya kiserikali ya wanafunzi',
-    ],
-    performanceScore: 98,
-    appointedDate: '2026-01-12',
-    appointedBy: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    status: 'ACTIVE',
-    avatarInitials: 'AS',
-  },
-  {
-    id: 'pref-003',
-    fullName: 'Baraka David Massawe',
-    gender: 'M',
-    assignedClass: 'Standard 6 (Grade 6)',
-    roleType: 'USAFI_NA_MAZINGIRA',
-    roleTitleSwahili: 'Kiranja wa Usafi na Mazingira',
-    badgeNumber: 'PREF-2026-003',
-    tenureYear: '2026',
-    responsibilities: [
-      'Kugawia maeneo ya usafi wa shule kila asubuhi',
-      'Ukaguzi wa vyoo, madarasa, bustani na viwanja vya michezo',
-      'Kutoa ripoti ya darasa safi la wiki kwa Mwalimu wa Nidhamu',
-    ],
-    performanceScore: 92,
-    appointedDate: '2026-01-15',
-    appointedBy: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    status: 'ACTIVE',
-    avatarInitials: 'BD',
-  },
-  {
-    id: 'pref-004',
-    fullName: 'Neema Josephat',
-    gender: 'F',
-    assignedClass: 'Standard 6 (Grade 6)',
-    roleType: 'MUDA_NA_KENGELE',
-    roleTitleSwahili: 'Kiranja wa Muda na Kengele (Timekeeper)',
-    badgeNumber: 'PREF-2026-004',
-    tenureYear: '2026',
-    responsibilities: [
-      'Kupiga kengele ya kuanza na kumaliza vipindi kwa usahihi wa sekunde',
-      'Kurekodi wanafunzi wanaochelewa kufika shuleni asubuhi langoni',
-      'Kusimamia utulivu wa vipindi wakati wa mabadilishano ya walimu',
-    ],
-    performanceScore: 95,
-    appointedDate: '2026-01-15',
-    appointedBy: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    status: 'ACTIVE',
-    avatarInitials: 'NJ',
-  },
-  {
-    id: 'pref-005',
-    fullName: 'Juma Bakari Mrope',
-    gender: 'M',
-    assignedClass: 'Standard 5 (Grade 5)',
-    roleType: 'AFYA_NA_HUDUMA_YA_KWANZA',
-    roleTitleSwahili: 'Kiranja wa Afya na Huduma ya Kwanza',
-    badgeNumber: 'PREF-2026-005',
-    tenureYear: '2026',
-    responsibilities: [
-      'Kusimamia chumba cha huduma ya kwanza (Sick Bay)',
-      'Kutoa msaada wa kwanza kwa wanafunzi wanaoumia michezoni au kuugua ghafla',
-      'Kutoa taarifa ya haraka kwa Mwalimu wa Zamu na Mwalimu wa Nidhamu',
-    ],
-    performanceScore: 90,
-    appointedDate: '2026-01-18',
-    appointedBy: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    status: 'ACTIVE',
-    avatarInitials: 'JB',
-  },
-  {
-    id: 'pref-006',
-    fullName: 'Kelvin Shayo',
-    gender: 'M',
-    assignedClass: 'Standard 7 (Grade 7)',
-    roleType: 'TAALUMA',
-    roleTitleSwahili: 'Kiranja wa Taaluma na Maktaba',
-    badgeNumber: 'PREF-2026-006',
-    tenureYear: '2026',
-    responsibilities: [
-      'Kusimamia utulivu wa maktaba ya shule na vipindi vya kujisomea jioni',
-      'Kuratibu mijadala ya kitaaluma (academic clubs & quizzes)',
-      'Kushirikiana na Mwalimu wa Taaluma kwenye ratiba za mitihani',
-    ],
-    performanceScore: 97,
-    appointedDate: '2026-01-12',
-    appointedBy: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    status: 'ACTIVE',
-    avatarInitials: 'KS',
-  },
-  {
-    id: 'pref-007',
-    fullName: 'Rehema Hamisi',
-    gender: 'F',
-    assignedClass: 'Standard 4 (Grade 4)',
-    roleType: 'MONITA_WA_DARASA',
-    roleTitleSwahili: 'Monita wa Darasa la Nne (Class Monitor)',
-    badgeNumber: 'PREF-2026-007',
-    tenureYear: '2026',
-    responsibilities: [
-      'Kusimamia utulivu na amani darasani mwalimu asipokuwepo',
-      'Kutunza chaki, daftari la mahudhurio, na vifaa vya darasa',
-      'Kutoa ripoti ya wanafunzi wasiofanya mazoezi ya darasani',
-    ],
-    performanceScore: 91,
-    appointedDate: '2026-01-20',
-    appointedBy: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    status: 'ACTIVE',
-    avatarInitials: 'RH',
-  },
-];
+const INITIAL_PREFECTS: PrefectMember[] = [];
 
-const INITIAL_INSPECTIONS: DailyDutyInspectionRecord[] = [
-  {
-    id: 'insp-001',
-    date: '2026-10-03',
-    dutyArea: 'Ukaguzi wa Usafi wa Maeneo ya Shule & Vyoo',
-    reportingPrefect: 'Baraka David Massawe (Kiranja wa Mazingira)',
-    verifiedByTeacher: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    observations: 'Madarasa yote kuanzia la 1 hadi la 7 yalisafishwa vizuri kabla ya saa 07:30 asubuhi. Vyoo vya wasichana na wavulana vimenyunyiziwa dawa.',
-    rating: 'BORA',
-  },
-  {
-    id: 'insp-002',
-    date: '2026-10-03',
-    dutyArea: 'Wanaochelewa Asubuhi Getini (Latecomers Log)',
-    reportingPrefect: 'Neema Josephat (Kiranja wa Muda)',
-    verifiedByTeacher: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    observations: 'Wanafunzi 4 wa Darasa la 5 na 6 walichelewa kufika baada ya kengele ya saa 07:30. Sababu kuu ni mvua ya asubuhi. Wameandikwa kwenye kitabu cha nidhamu.',
-    rating: 'WASTANI',
-  },
-  {
-    id: 'insp-003',
-    date: '2026-10-02',
-    dutyArea: 'Utulivu na Nidhamu ya Gwaride la Asubuhi',
-    reportingPrefect: 'Faraji Saidi Mkude (Head Boy)',
-    verifiedByTeacher: 'Mwl. Godfroy Makore (Mwl. Nidhamu)',
-    observations: 'Wanafunzi wote 275 walipanga mistari kulingana na urefu. Wimbo wa Taifa na Wimbo wa Shule uliimbwa kwa heshima na uchangamfu mkubwa.',
-    rating: 'BORA',
-  },
-];
+const INITIAL_INSPECTIONS: DailyDutyInspectionRecord[] = [];
 
 const STORAGE_PREFECTS_KEY = 'academic_portal_prefects_registry_v1';
 const STORAGE_INSPECTIONS_KEY = 'academic_portal_duty_inspections_v1';
@@ -290,7 +121,7 @@ export default function SchoolPrefectsCouncilPage() {
 
   // Form State: Inspection
   const [formDutyArea, setFormDutyArea] = useState('Ukaguzi wa Usafi wa Maeneo ya Shule');
-  const [formReportingPrefect, setFormReportingPrefect] = useState(INITIAL_PREFECTS[0].fullName);
+  const [formReportingPrefect, setFormReportingPrefect] = useState(INITIAL_PREFECTS[0]?.fullName || '');
   const [formObservations, setFormObservations] = useState('');
   const [formRating, setFormRating] = useState<'BORA' | 'WASTANI' | 'INAHITAJI_MAREKEBISHO'>('BORA');
 
@@ -624,8 +455,15 @@ export default function SchoolPrefectsCouncilPage() {
               </div>
 
               {/* Prefect Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPrefects.map((p) => {
+              {filteredPrefects.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-xs space-y-3">
+                  <Award className="w-10 h-10 mx-auto text-slate-300" />
+                  <p className="font-bold text-slate-700">Hakuna viranja waliosajiliwa bado.</p>
+                  <p className="text-xs text-slate-500">Bofya kitufe cha "+ Teua Kiranja Mpya" hapo juu kuanza kuteua viongozi wa wanafunzi.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredPrefects.map((p) => {
                   const isHead = p.roleType === 'KIRANJA_MKUU' || p.roleType === 'KIRANJA_MKUU_MSAIDIZI';
 
                   return (
@@ -706,6 +544,7 @@ export default function SchoolPrefectsCouncilPage() {
                   );
                 })}
               </div>
+            )}
             </div>
           )}
 
@@ -719,49 +558,57 @@ export default function SchoolPrefectsCouncilPage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {inspections.map((insp) => {
-                  const isTop = insp.rating === 'BORA';
+              {inspections.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-xs space-y-3">
+                  <ClipboardList className="w-10 h-10 mx-auto text-slate-300" />
+                  <p className="font-bold text-slate-700">Hakuna taarifa ya ukaguzi iliyorekodiwa bado.</p>
+                  <p className="text-xs text-slate-500">Bofya kitufe cha "+ Rekodi Doria ya Leo" kuanza kurekodi ukaguzi wa mazingira au nidhamu.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {inspections.map((insp) => {
+                    const isTop = insp.rating === 'BORA';
 
-                  return (
-                    <div
-                      key={insp.id}
-                      className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-emerald-200 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                    >
-                      <div className="space-y-1.5 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-950 font-bold text-[10px] border border-purple-300">
-                            {insp.date}
-                          </span>
-                          <span className="font-black text-xs text-slate-900">{insp.dutyArea}</span>
+                    return (
+                      <div
+                        key={insp.id}
+                        className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-emerald-200 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      >
+                        <div className="space-y-1.5 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-950 font-bold text-[10px] border border-purple-300">
+                              {insp.date}
+                            </span>
+                            <span className="font-black text-xs text-slate-900">{insp.dutyArea}</span>
+                          </div>
+
+                          <p className="text-xs text-slate-700 leading-relaxed">{insp.observations}</p>
+
+                          <div className="flex items-center gap-3 text-[10px] text-slate-500">
+                            <span>Ripoti kutoka: <strong>{insp.reportingPrefect}</strong></span>
+                            <span>&bull;</span>
+                            <span>Uhakiki: <strong>{insp.verifiedByTeacher}</strong></span>
+                          </div>
                         </div>
 
-                        <p className="text-xs text-slate-700 leading-relaxed">{insp.observations}</p>
-
-                        <div className="flex items-center gap-3 text-[10px] text-slate-500">
-                          <span>Ripoti kutoka: <strong>{insp.reportingPrefect}</strong></span>
-                          <span>&bull;</span>
-                          <span>Uhakiki: <strong>{insp.verifiedByTeacher}</strong></span>
+                        <div className="shrink-0 flex items-center gap-2">
+                          {isTop ? (
+                            <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-950 font-black text-[10px] border border-emerald-300 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>Kiwango Bora</span>
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-950 font-black text-[10px] border border-amber-300 flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5 text-amber-700" />
+                              <span>Wastani</span>
+                            </span>
+                          )}
                         </div>
                       </div>
-
-                      <div className="shrink-0 flex items-center gap-2">
-                        {isTop ? (
-                          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-950 font-black text-[10px] border border-emerald-300 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                            <span>Kiwango Bora</span>
-                          </span>
-                        ) : (
-                          <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-950 font-black text-[10px] border border-amber-300 flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-amber-700" />
-                            <span>Wastani</span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1047,20 +894,20 @@ export default function SchoolPrefectsCouncilPage() {
                 <div className="grid grid-cols-2 gap-8 pt-6 border-t border-slate-300 text-xs text-center">
                   <div className="space-y-1">
                     <div className="h-10 flex items-center justify-center font-serif italic text-purple-900">
-                      G. Makore
+                      Afisa Nidhamu
                     </div>
                     <div className="border-t border-slate-400 pt-1">
-                      <strong className="block text-slate-900">Mwl. Godfroy Makore</strong>
+                      <strong className="block text-slate-900">{currentUser?.fullName || 'Mwl. wa Nidhamu'}</strong>
                       <span className="text-[9px] text-slate-500 font-bold uppercase">MWALIMU WA NIDHAMU</span>
                     </div>
                   </div>
 
                   <div className="space-y-1">
                     <div className="h-10 flex items-center justify-center font-serif italic text-purple-900">
-                      A. Mkwawa
+                      Mkuu wa Shule
                     </div>
                     <div className="border-t border-slate-400 pt-1">
-                      <strong className="block text-slate-900">Mwl. Augustino Mkwawa</strong>
+                      <strong className="block text-slate-900">Uongozi wa Shule</strong>
                       <span className="text-[9px] text-slate-500 font-bold uppercase">MKUU WA SHULE (MUHURI)</span>
                     </div>
                   </div>

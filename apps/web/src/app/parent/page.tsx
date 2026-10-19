@@ -315,70 +315,11 @@ function getInitialLinkedChildren(): ChildProfile[] {
       const stored = localStorage.getItem(STORAGE_PARENT_CHILDREN_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
   }
-
-  // Fallback: build from real master pupil records in Std 7, Std 6, and Std 4
-  const std7Pupil = INITIAL_PUPILS['Standard 7 (Grade 7)']?.[0] || {
-    id: 'p7-01',
-    admNo: 'PSLE-2026-0428',
-    name: 'Kelvin Shirima',
-    gender: 'M' as const,
-    monthlyTest1: 95,
-    monthlyTest2: 97,
-    monthlyAvg: 96,
-    midtermExam: 96,
-    terminalExam: 98,
-    mark: 96,
-    grade: 'A' as const,
-    attendance: 'PRESENT' as const,
-  };
-
-  const std6Pupil = INITIAL_PUPILS['Standard 6 (Grade 6)']?.[1] || {
-    id: 'p6-02',
-    admNo: 'PUP-2026-062',
-    name: 'Amina Salum',
-    gender: 'F' as const,
-    monthlyTest1: 89,
-    monthlyTest2: 92,
-    monthlyAvg: 90,
-    midtermExam: 90,
-    terminalExam: 94,
-    mark: 91,
-    grade: 'A' as const,
-    attendance: 'PRESENT' as const,
-  };
-
-  const std4Pupil = INITIAL_PUPILS['Standard 4 (Grade 4)']?.[0] || {
-    id: 'p4-01',
-    admNo: 'SFNA-2026-0112',
-    name: 'Juma Bakari',
-    gender: 'M' as const,
-    monthlyTest1: 86,
-    monthlyTest2: 90,
-    monthlyAvg: 88,
-    midtermExam: 88,
-    terminalExam: 92,
-    mark: 89,
-    grade: 'A' as const,
-    attendance: 'PRESENT' as const,
-  };
-
-  const initialList = [
-    buildChildProfileFromPupil(std7Pupil, 'Standard 7 (Grade 7)', 'Mwl. Beatrice Kimaro'),
-    buildChildProfileFromPupil(std6Pupil, 'Standard 6 (Grade 6)', 'Mwl. Grace Minja'),
-    buildChildProfileFromPupil(std4Pupil, 'Standard 4 (Grade 4)', 'Mwl. Juma Rashidi'),
-  ];
-
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(STORAGE_PARENT_CHILDREN_KEY, JSON.stringify(initialList));
-    } catch {}
-  }
-
-  return initialList;
+  return [];
 }
 
 type ParentTab =
@@ -406,6 +347,12 @@ export default function ParentGuardianPortal() {
   // Language Switcher: 'SW' (Kiswahili) | 'EN' (English)
   const [language, setLanguage] = useState<Language>('SW');
   const t = PARENT_TRANSLATIONS[language];
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const session = getCurrentSession();
+    setCurrentUser(session);
+  }, []);
 
   // Typewriter Salutation based on time of day and selected language
   const [typedGreeting, setTypedGreeting] = useState('');
@@ -710,10 +657,10 @@ export default function ParentGuardianPortal() {
   const [appointmentTopic, setAppointmentTopic] = useState('Maandalizi ya Mitihani ya Taifa (PSLE)');
 
   const selectedChild = useMemo(() => {
-    return children.find((c) => c.id === selectedChildId) || children[0];
+    return children.find((c) => c.id === selectedChildId) || children[0] || null;
   }, [children, selectedChildId]);
 
-  const outstandingBalance = selectedChild.feeTotal - selectedChild.feePaid;
+  const outstandingBalance = selectedChild ? selectedChild.feeTotal - selectedChild.feePaid : 0;
 
   // Control Number Bills State & Management
   const [controlBills, setControlBills] = useState<Record<string, ControlNumberBill>>({});
@@ -930,6 +877,7 @@ export default function ParentGuardianPortal() {
   };
 
   const childClassKey = useMemo(() => {
+    if (!selectedChild?.class) return 'std-7';
     if (selectedChild.class.includes('7')) return 'std-7';
     if (selectedChild.class.includes('6')) return 'std-6';
     if (selectedChild.class.includes('5')) return 'std-5';
@@ -939,7 +887,7 @@ export default function ParentGuardianPortal() {
     if (selectedChild.class.includes('1')) return 'std-1';
     if (selectedChild.class.toLowerCase().includes('awali') || selectedChild.class.toLowerCase().includes('chekechea')) return 'chekechea';
     return 'std-7';
-  }, [selectedChild.class]);
+  }, [selectedChild?.class]);
 
   const classSeal = approvalMap[childClassKey] || approvalMap['ALL'];
   const isResultsPublished = useMemo(() => {
@@ -968,6 +916,7 @@ export default function ParentGuardianPortal() {
 
   // Child matched discipline incidents
   const matchedIncidents = useMemo(() => {
+    if (!selectedChild?.name) return [];
     return disciplineRegistry.filter(
       (inc) =>
         inc.pupilName?.toLowerCase().includes(selectedChild.name.toLowerCase().split(' ')[0]) ||
@@ -1065,17 +1014,19 @@ export default function ParentGuardianPortal() {
         </div>
 
         {/* Active Child Chip */}
-        <button
-          type="button"
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-100/80 border border-emerald-300 text-emerald-950 font-bold text-xs"
-          title="Badili mtoto"
-        >
-          <div className="w-5 h-5 rounded-md bg-emerald-800 text-emerald-100 flex items-center justify-center text-[10px] font-black">
-            {selectedChild.photoInitial}
-          </div>
-          <span className="text-[11px] truncate max-w-[80px]">{selectedChild.name.split(' ')[0]}</span>
-        </button>
+        {selectedChild && (
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-100/80 border border-emerald-300 text-emerald-950 font-bold text-xs"
+            title="Badili mtoto"
+          >
+            <div className="w-5 h-5 rounded-md bg-emerald-800 text-emerald-100 flex items-center justify-center text-[10px] font-black">
+              {selectedChild.photoInitial}
+            </div>
+            <span className="text-[11px] truncate max-w-[80px]">{selectedChild.name.split(' ')[0]}</span>
+          </button>
+        )}
       </div>
 
       {/* Backdrop overlay for mobile drawer */}
@@ -1252,9 +1203,11 @@ export default function ParentGuardianPortal() {
                 <BookOpen className="w-4 h-4 text-blue-600" />
                 <span>{t.navAcademic}</span>
               </div>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
-                {selectedChild.termAverage}%
-              </span>
+              {selectedChild && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
+                  {selectedChild.termAverage}%
+                </span>
+              )}
             </button>
 
             {/* 3. Attendance (Mahudhurio) */}
@@ -1271,9 +1224,11 @@ export default function ParentGuardianPortal() {
                 <Calendar className="w-4 h-4 text-emerald-600" />
                 <span>{t.navAttendance}</span>
               </div>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">
-                {selectedChild.attendanceRate}%
-              </span>
+              {selectedChild && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">
+                  {selectedChild.attendanceRate}%
+                </span>
+              )}
             </button>
 
             {/* 4. Finance */}
@@ -1411,7 +1366,7 @@ export default function ParentGuardianPortal() {
               </div>
             </button>
             <div className="min-w-0">
-              <span className="font-bold text-slate-800 block text-xs truncate">Mzee Bakari Juma</span>
+              <span className="font-bold text-slate-800 block text-xs truncate">{currentUser?.fullName || (language === 'SW' ? 'Mzazi / Mlezi' : 'Parent / Guardian')}</span>
               <span className="text-[10px] text-emerald-800 block">{t.verifiedParentBadge}</span>
             </div>
           </div>
@@ -1429,11 +1384,15 @@ export default function ParentGuardianPortal() {
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <span className="text-xs font-bold text-slate-500">{t.parentPortalBreadcrumb}</span>
-            <ChevronRight className="w-3 h-3 text-slate-300" />
-            <span className="text-xs font-black text-slate-800">{selectedChild.name}</span>
-            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
-              {selectedChild.class}
-            </span>
+            {selectedChild && (
+              <>
+                <ChevronRight className="w-3 h-3 text-slate-300" />
+                <span className="text-xs font-black text-slate-800">{selectedChild.name}</span>
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-300">
+                  {selectedChild.class}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-2.5">
@@ -1540,9 +1499,33 @@ export default function ParentGuardianPortal() {
 
         {/* Main Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
-          {/* ================================================================= */}
-          {/* TAB 1: DASHBOARD VIEW */}
-          {/* ================================================================= */}
+          {!selectedChild ? (
+            <div className="p-12 text-center bg-white rounded-3xl border border-emerald-200/90 shadow-xs max-w-xl mx-auto my-12 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto">
+                <Users className="w-8 h-8" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900">
+                {language === 'SW' ? 'Hakuna Mtoto Aliyeunganishwa Bado' : 'No Linked Child Found'}
+              </h2>
+              <p className="text-sm text-slate-600">
+                {language === 'SW'
+                  ? 'Akaunti hii ya mzazi bado haijaunganishwa na rekodi ya mwanafunzi yeyote. Bofya kitufe cha chini kuingiza Namba ya Usajili (Admission Number) ya mtoto wako.'
+                  : 'This parent account is not linked to any student record yet. Click the button below to link using your child’s Admission Number.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowLinkChildModal(true)}
+                className="px-6 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-sm shadow-md inline-flex items-center gap-2 cursor-pointer transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{language === 'SW' ? '+ Unganisha Mtoto Sasa' : '+ Link Child Now'}</span>
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* ================================================================= */}
+              {/* TAB 1: DASHBOARD VIEW */}
+              {/* ================================================================= */}
           {activeTab === 'DASHBOARD' && (
             <div className="space-y-6 animate-fade-in">
               {/* Child Profile Highlight Banner */}
@@ -2970,6 +2953,8 @@ export default function ParentGuardianPortal() {
               </div>
             </div>
           )}
+            </>
+          )}
         </main>
 
         {/* Parent Portal Footer */}
@@ -3279,7 +3264,7 @@ export default function ParentGuardianPortal() {
       {/* ===================================================================== */}
       {/* MODAL 1: TENGENEZA NAMBA MPYA YA MALIPO (GENERATE CONTROL NUMBER) */}
       {/* ===================================================================== */}
-      {showGenerateBillModal && (
+      {showGenerateBillModal && selectedChild && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full border border-emerald-200 shadow-2xl p-6 space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -3473,7 +3458,7 @@ export default function ParentGuardianPortal() {
       {/* ===================================================================== */}
       {/* MODAL 2: HATI RASMI YA BILI YA MALIPO (OFFICIAL PAYMENT BILL SLIP) */}
       {/* ===================================================================== */}
-      {showBillSlipModal && (
+      {showBillSlipModal && selectedChild && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
           <div className="bg-white rounded-3xl max-w-xl w-full border border-emerald-300 shadow-2xl p-6 space-y-4 max-h-[92vh] overflow-y-auto print:p-0 print:border-none print:shadow-none print:max-w-full">
             {/* Action Bar (Hidden when printing) */}

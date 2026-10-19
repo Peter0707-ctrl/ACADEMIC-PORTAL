@@ -29,38 +29,8 @@ interface Announcement {
   priority: 'HIGH' | 'NORMAL';
 }
 
-const INITIAL_ANNOUNCEMENTS: Announcement[] = [
-  {
-    id: 'ann-1',
-    title: 'Kikao cha Wazazi na Uongozi wa Shule (AGM) Muhula wa Kwanza',
-    targetAudience: 'Wazazi Pekee',
-    content: 'Tunapenda kuwataarifu wazazi na walezi wote kuwa kikao kikuu cha mwaka kitafanyika siku ya Jumamosi saa 3:00 Asubuhi ukumbini kwa ajili ya kujadili maendeleo ya taaluma na miundombinu ya shule.',
-    publishDate: '2026-03-01',
-    author: 'Mwl. Augustine Mrosso (Mkuu wa Shule)',
-    status: 'PUBLISHED',
-    priority: 'HIGH',
-  },
-  {
-    id: 'ann-2',
-    title: 'Utoaji wa Kazi za Likizo ya Pasaka (Easter Holiday Packages)',
-    targetAudience: 'Wote (Shule Nzima)',
-    content: 'Walimu wote wa masomo wanakumbushwa kuandaa na kupakia vifurushi vya maswali ya marudio kwa wanafunzi wote kabla ya shule kufungwa tarehe 28 Machi.',
-    publishDate: '2026-03-05',
-    author: 'Mwl. Beatrice Kimaro (Taaluma)',
-    status: 'PUBLISHED',
-    priority: 'NORMAL',
-  },
-  {
-    id: 'ann-3',
-    title: 'Kambi Maalum ya Kujisomea kwa Watahiniwa wa Darasa la 7 (PSLE)',
-    targetAudience: 'Watahiniwa NECTA',
-    content: 'Wazazi wa wanafunzi 32 wa Darasa la 7 wanataarifiwa kuwa kambi ya masomo ya asubuhi na jioni itaanza rasmi jumatatu ijayo chini ya uratibu wa walimu wa taaluma.',
-    publishDate: '2026-03-10',
-    author: 'Mwl. Augustine Mrosso (Mkuu wa Shule)',
-    status: 'PUBLISHED',
-    priority: 'HIGH',
-  },
-];
+// Clean state: Announcements are posted dynamically
+const INITIAL_ANNOUNCEMENTS: Announcement[] = [];
 
 export default function SchoolAnnouncementsPage() {
   const currentUser = getCurrentSession();
@@ -148,7 +118,16 @@ export default function SchoolAnnouncementsPage() {
 
         {/* Announcements List */}
         <div className="space-y-4">
-          {announcements.map((ann) => (
+          {announcements.length === 0 ? (
+            <div className="p-12 text-center bg-white/95 border border-emerald-200/90 rounded-3xl space-y-3">
+              <Megaphone className="w-12 h-12 text-slate-300 mx-auto" />
+              <h4 className="text-base font-bold text-slate-800">Hakuna Matangazo Yaliyochapishwa Bado</h4>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Bado hakuna matangazo rasmi yaliyochapishwa shuleni. Bonyeza &quot;+ Tunga Tangazo Jipya&quot; kutangaza taarifa rasmi.
+              </p>
+            </div>
+          ) : (
+            announcements.map((ann) => (
             <div
               key={ann.id}
               className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs space-y-3 hover:border-emerald-400 transition-colors"
@@ -188,7 +167,7 @@ export default function SchoolAnnouncementsPage() {
                 </span>
               </div>
             </div>
-          ))}
+          )))}
         </div>
 
         {/* Add Modal */}

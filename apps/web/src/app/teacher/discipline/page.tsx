@@ -159,121 +159,8 @@ const CATEGORY_MAP: Record<IncidentCategory, { label: string; defaultSeverity: I
   },
 };
 
-// Initial Seed Data for Tanzanian Primary School Incidents
-const INITIAL_DISCIPLINE_INCIDENTS: ComprehensiveDisciplineIncident[] = [
-  {
-    id: 'inc-001',
-    refNo: 'DISC-2026-081',
-    date: '2026-10-02',
-    pupilName: 'Kelvin Shirima',
-    admNo: 'PSLE-2026-0428',
-    class: 'Standard 7 (Grade 7)',
-    category: 'UGOMVI_NA_KUPIGANA',
-    categoryLabel: 'Ugomvi / Kupigana Uwanjani au Darasani',
-    severity: 'WASTANI',
-    issueDescription: 'Kupigana na mwanafunzi mwenzake wakati wa mapumziko ya saa saba uwanjani kwa ajili ya mpira wa miguu.',
-    actionTaken: 'Walipatanishwa na Mwalimu wa Nidhamu, wamefanya usafi wa bustani ya shule kwa saa 1, na kusaini ahadi ya kutopigana tena.',
-    recordedBy: 'Mwl. Emmanuel Lyimo (Mwalimu wa Nidhamu)',
-    status: 'RESOLVED',
-    parentName: 'David Shirima',
-    parentPhone: '0754 112 233',
-    parentNotified: true,
-    parentNotifiedAt: '2026-10-02 saa 13:40',
-    parentNotifiedVia: 'SMS',
-    headteacherApproved: true,
-    headteacherDecision: 'Uamuzi Umeridhiwa: Kesi imetatuliwa vizuri kwa ushauri nasaha na suluhu ya amani.',
-    resolvedAt: '2026-10-02',
-  },
-  {
-    id: 'inc-002',
-    refNo: 'DISC-2026-082',
-    date: '2026-10-03',
-    pupilName: 'Faraji Saidi Mkude',
-    admNo: 'PUP-2026-093',
-    class: 'Standard 6 (Grade 6)',
-    category: 'VITU_VILIVYOPIGWA_MARUFUKU',
-    categoryLabel: 'Vitu Vilivyopigwa Marufuku (Simu ya Mkononi)',
-    severity: 'NZITO',
-    issueDescription: 'Kupatikana na simu ya mkononi (smartphone) darasani wakati wa kipindi cha Hisabati, kinyume na kanuni ya 8 ya shule.',
-    actionTaken: 'Simu imekamatwa na kuwekwa salama katika kabati la Ofisi ya Mkuu wa Shule. Mzazi anaitwa shuleni kufafanua na kuchukua simu.',
-    recordedBy: 'Mwl. Emmanuel Lyimo (Mwalimu wa Nidhamu)',
-    status: 'HEADTEACHER_REVIEW',
-    parentName: 'Saidi Mkude',
-    parentPhone: '0713 445 566',
-    parentNotified: true,
-    parentNotifiedAt: '2026-10-03 saa 09:15',
-    parentNotifiedVia: 'WHATSAPP',
-    headteacherApproved: false,
-    headteacherNotes: 'Inasubiri kikao kifupi cha Mwalimu Mkuu na Mzazi siku ya Jumatatu asubuhi kabla ya kukabidhi simu.',
-  },
-  {
-    id: 'inc-003',
-    refNo: 'DISC-2026-083',
-    date: '2026-10-01',
-    pupilName: 'Baraka David',
-    admNo: 'PUP-2026-001',
-    class: 'Standard 5 (Grade 5)',
-    category: 'UHARIBIFU_WA_MALI',
-    categoryLabel: 'Uharibifu wa Mali ya Shule (Kioo cha Dirisha)',
-    severity: 'NZITO',
-    issueDescription: 'Kuvunja kioo cha dirisha la darasa la tano kwa kurusha jiwe akigombana na mwenzake nje ya darasa.',
-    actionTaken: 'Wito rasmi wa mzazi umetolewa. Mzazi amekubali kugharamia ukarabati na kioo kipya kimewekwa.',
-    recordedBy: 'Mwl. Emmanuel Lyimo (Mwalimu wa Nidhamu)',
-    status: 'RESOLVED',
-    parentName: 'David Massawe',
-    parentPhone: '0784 556 677',
-    parentNotified: true,
-    parentNotifiedAt: '2026-10-01 saa 11:30',
-    parentNotifiedVia: 'BARUA_RASMI',
-    headteacherApproved: true,
-    headteacherDecision: 'Mali imefidiwa na fundi ameweka kioo kipya. Mwanafunzi amepewa onyo kali la mwisho.',
-    resolvedAt: '2026-10-02',
-  },
-  {
-    id: 'inc-004',
-    refNo: 'DISC-2026-084',
-    date: '2026-10-03',
-    pupilName: 'Juma Bakari',
-    admNo: 'SFNA-2026-0112',
-    class: 'Standard 4 (Grade 4)',
-    category: 'UTORO_SUGU',
-    categoryLabel: 'Utoro wa Zaidi ya Siku 3 Mfululizo Bila Taarifa',
-    severity: 'WASTANI',
-    issueDescription: 'Hajahudhuria shule tangu Jumanne (siku 4 mfululizo) bila taarifa rasmi ya ugonjwa wala dharura kutoka kwa wazazi.',
-    actionTaken: 'Barua ya wito kwa mzazi imetumwa kupitia jirani anayeishi mtaa mmoja na mwanafunzi pamoja na SMS kwa simu ya mzazi.',
-    recordedBy: 'Mwl. Emmanuel Lyimo (Mwalimu wa Nidhamu)',
-    status: 'PARENT_SUMMONED',
-    parentName: 'Bakari Juma',
-    parentPhone: '0767 889 900',
-    parentNotified: true,
-    parentNotifiedAt: '2026-10-03 saa 08:30',
-    parentNotifiedVia: 'SMS',
-    headteacherApproved: true,
-    headteacherDecision: 'Ufuatiliaji ufanyike kwa mzazi. Ikiwa hatofika ndani ya siku 2, Ofisi ya Mtendaji wa Kata itahusishwa.',
-  },
-  {
-    id: 'inc-005',
-    refNo: 'DISC-2026-085',
-    date: '2026-09-30',
-    pupilName: 'Amina Salum',
-    admNo: 'PUP-2026-062',
-    class: 'Standard 6 (Grade 6)',
-    category: 'SARE_NA_MUONEKANO',
-    categoryLabel: 'Kutovaa Sare Rasmi / Muonekano Usiofaa',
-    severity: 'KAWAIDA',
-    issueDescription: 'Kuingia shuleni na viatu vya rangi ya njano (sneakers) badala ya viatu vyeusi rasmi vya ngozi vya sare ya shule.',
-    actionTaken: 'Ameelezwa kanuni ya sare ya shule, alipewa viatu vya dharura vya shule kwa siku hiyo, na mzazi alitumwa ujumbe.',
-    recordedBy: 'Mwl. Emmanuel Lyimo (Mwalimu wa Nidhamu)',
-    status: 'RESOLVED',
-    parentName: 'Salum Rashid',
-    parentPhone: '0655 123 456',
-    parentNotified: true,
-    parentNotifiedAt: '2026-09-30 saa 08:15',
-    parentNotifiedVia: 'SMS',
-    headteacherApproved: true,
-    resolvedAt: '2026-09-30',
-  },
-];
+// Clean state: Incidents are dynamically added or synced
+const INITIAL_DISCIPLINE_INCIDENTS: ComprehensiveDisciplineIncident[] = [];
 
 function getTodayISO(): string {
   const now = new Date();
@@ -777,7 +664,20 @@ export default function DisciplineAndAttendancePage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
-                    {filteredIncidents.map((inc) => (
+                    {filteredIncidents.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-12 text-center text-slate-500">
+                          <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-2">
+                            <Shield className="w-10 h-10 text-slate-300 stroke-1" />
+                            <p className="font-bold text-slate-700 text-sm">Hakuna rekodi za makosa ya nidhamu</p>
+                            <p className="text-xs text-slate-500">
+                              Daftari la nidhamu liko safi. Tumia kitufe cha &quot;+ Sajili Kosa Jipya&quot; kurekodi tukio jipya.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredIncidents.map((inc) => (
                       <tr key={inc.id} className="hover:bg-emerald-50/30 transition-colors">
                         <td className="py-3 px-3">
                           <span className="font-mono font-bold text-slate-800 block">{inc.refNo}</span>
@@ -874,7 +774,7 @@ export default function DisciplineAndAttendancePage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    )))}
                   </tbody>
                 </table>
               </div>

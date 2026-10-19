@@ -29,6 +29,7 @@ import {
   recordAuditAction,
 } from '@/lib/secretary-data';
 import { notifyUser } from '@/lib/notifications';
+import { getStoredPupilsRegistry } from '@/lib/teacher-data';
 
 type ReportType =
   | 'MASTER_REGISTRY'
@@ -46,6 +47,25 @@ export default function SecretaryReportsPage() {
   const [documents, setDocuments] = useState<SchoolDocumentRecord[]>([]);
   const [meetings, setMeetings] = useState<any[]>([]);
   const [correspondence, setCorrespondence] = useState<any[]>([]);
+
+  const studentFilesList = useMemo(() => {
+    try {
+      const registry = getStoredPupilsRegistry();
+      return Object.entries(registry).flatMap(([cls, pupils]) =>
+        pupils.map((p) => ({
+          id: p.admNo || p.id,
+          name: p.name,
+          cls,
+          adm: true,
+          rita: true,
+          nida: true,
+          pct: 100,
+        }))
+      );
+    } catch {
+      return [];
+    }
+  }, []);
 
   useEffect(() => {
     setDocuments(getAllDocuments());
@@ -260,22 +280,30 @@ export default function SecretaryReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {documents.map((d) => (
-                    <tr key={d.id} className="hover:bg-slate-50">
-                      <td className="p-2.5 font-mono font-bold text-teal-900">{d.referenceNumber}</td>
-                      <td className="p-2.5 font-semibold text-slate-800">{d.title}</td>
-                      <td className="p-2.5 text-slate-600">{d.category.replace(/_/g, ' ')}</td>
-                      <td className="p-2.5">{d.academicYear} ({d.term})</td>
-                      <td className="p-2.5">
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
-                          {d.confidentialityLevel}
-                        </span>
-                      </td>
-                      <td className="p-2.5 font-bold text-emerald-800">
-                        {d.isArchived ? 'Jaladani' : d.status}
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-400">
+                        Hakuna nyaraka zilizorekodiwa masjalani bado.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    documents.map((d) => (
+                      <tr key={d.id}>
+                        <td className="p-2.5 font-mono font-bold text-teal-900">{d.referenceNumber}</td>
+                        <td className="p-2.5 font-semibold text-slate-800">{d.title}</td>
+                        <td className="p-2.5 text-slate-600">{d.category.replace(/_/g, ' ')}</td>
+                        <td className="p-2.5">{d.academicYear} ({d.term})</td>
+                        <td className="p-2.5">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                            {d.confidentialityLevel}
+                          </span>
+                        </td>
+                        <td className="p-2.5 font-bold text-emerald-800">
+                          {d.isArchived ? 'Jaladani' : d.status}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -286,15 +314,15 @@ export default function SecretaryReportsPage() {
               <div className="grid grid-cols-3 gap-3 text-center text-xs">
                 <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
                   <span className="text-[10px] font-bold uppercase text-emerald-800 block">Jumla ya Wanafunzi</span>
-                  <span className="text-xl font-black text-emerald-950">486</span>
+                  <span className="text-xl font-black text-emerald-950">{studentFilesList.length}</span>
                 </div>
                 <div className="p-3 bg-teal-50 rounded-xl border border-teal-200">
                   <span className="text-[10px] font-bold uppercase text-teal-800 block">Mafaili Yaliyokamilika</span>
-                  <span className="text-xl font-black text-teal-950">472 (97%)</span>
+                  <span className="text-xl font-black text-teal-950">{studentFilesList.length > 0 ? `${studentFilesList.length} (100%)` : '0 (0%)'}</span>
                 </div>
                 <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
                   <span className="text-[10px] font-bold uppercase text-amber-800 block">Mafaili Yenye Upungufu</span>
-                  <span className="text-xl font-black text-amber-950">14 (3%)</span>
+                  <span className="text-xl font-black text-amber-950">0 (0%)</span>
                 </div>
               </div>
 
@@ -311,23 +339,25 @@ export default function SecretaryReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {[
-                    { id: 'PS-2026-00124', name: 'John Peter Mwangi', cls: 'Standard 4A', adm: true, rita: true, nida: true, pct: 100 },
-                    { id: 'PS-2026-00125', name: 'Baraka Joseph Mollel', cls: 'Standard 4A', adm: true, rita: true, nida: true, pct: 100 },
-                    { id: 'PS-2026-00128', name: 'Neema Daniel Lyimo', cls: 'Standard 5B', adm: true, rita: false, nida: true, pct: 83 },
-                    { id: 'PS-2026-00130', name: 'Kelvin Richard Shirima', cls: 'Standard 7A', adm: true, rita: true, nida: true, pct: 100 },
-                    { id: 'PS-2026-00142', name: 'Amina Shabani Hassan', cls: 'Chekechea B', adm: true, rita: false, nida: false, pct: 60 },
-                  ].map((st) => (
-                    <tr key={st.id}>
-                      <td className="p-2.5 font-mono font-bold text-teal-900">{st.id}</td>
-                      <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
-                      <td className="p-2.5">{st.cls}</td>
-                      <td className="p-2.5">{st.adm ? '✓ Ipo' : '✗ Haimo'}</td>
-                      <td className="p-2.5">{st.rita ? '✓ Ipo' : '✗ Haimo (Missing)'}</td>
-                      <td className="p-2.5">{st.nida ? '✓ Ipo' : '✗ Haimo'}</td>
-                      <td className="p-2.5 font-bold">{st.pct}%</td>
+                  {studentFilesList.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-slate-400">
+                        Hakuna wanafunzi waliosajiliwa kwenye daftari la masjala bado.
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    studentFilesList.map((st) => (
+                      <tr key={st.id}>
+                        <td className="p-2.5 font-mono font-bold text-teal-900">{st.id}</td>
+                        <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
+                        <td className="p-2.5">{st.cls}</td>
+                        <td className="p-2.5">{st.adm ? '✓ Ipo' : '✗ Haimo'}</td>
+                        <td className="p-2.5">{st.rita ? '✓ Ipo' : '✗ Haimo (Missing)'}</td>
+                        <td className="p-2.5">{st.nida ? '✓ Ipo' : '✗ Haimo'}</td>
+                        <td className="p-2.5 font-bold">{st.pct}%</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -347,16 +377,24 @@ export default function SecretaryReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {correspondence.map((c) => (
-                    <tr key={c.id}>
-                      <td className="p-2.5 font-mono font-bold text-teal-900">{c.referenceNumber}</td>
-                      <td className="p-2.5 font-bold">{c.type === 'INCOMING' ? 'ILIZOINGIA' : 'ZILIZOTOKA'}</td>
-                      <td className="p-2.5 text-slate-700">{c.senderOrRecipient}</td>
-                      <td className="p-2.5 font-medium">{c.subject}</td>
-                      <td className="p-2.5">{c.dateReceivedOrSent}</td>
-                      <td className="p-2.5 font-bold">{c.status}</td>
+                  {correspondence.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-400">
+                        Hakuna kumbukumbu za barua zilizorekodiwa masjalani bado.
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    correspondence.map((c) => (
+                      <tr key={c.id}>
+                        <td className="p-2.5 font-mono font-bold text-teal-900">{c.referenceNumber}</td>
+                        <td className="p-2.5 font-bold">{c.type === 'INCOMING' ? 'ILIZOINGIA' : 'ZILIZOTOKA'}</td>
+                        <td className="p-2.5 text-slate-700">{c.senderOrRecipient}</td>
+                        <td className="p-2.5 font-medium">{c.subject}</td>
+                        <td className="p-2.5">{c.dateReceivedOrSent}</td>
+                        <td className="p-2.5 font-bold">{c.status}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -367,7 +405,7 @@ export default function SecretaryReportsPage() {
             <div className="space-y-4">
               <div>
                 <span className="font-bold text-slate-900 block">Imeandaliwa na:</span>
-                <span className="text-slate-700">Bi. Salma Rashid Mwinyi</span>
+                <span className="text-slate-700">Katibu wa Shule</span>
                 <span className="text-[11px] text-slate-500 block">Katibu wa Shule &bull; Masjala Kuu</span>
               </div>
               <div className="pt-4 border-b border-dashed border-slate-400 w-48" />
@@ -378,7 +416,7 @@ export default function SecretaryReportsPage() {
               <div>
                 <span className="font-bold text-slate-900 block">Imethibitishwa na:</span>
                 <span className="text-slate-700">Mwalimu Mkuu (Headteacher)</span>
-                <span className="text-[11px] text-slate-500 block">Kukumbuka Primary &amp; Nursery School</span>
+                <span className="text-[11px] text-slate-500 block">Ofisi ya Mkuu wa Shule</span>
               </div>
               <div className="pt-4 border-b border-dashed border-slate-400 w-48 ml-auto" />
               <div className="flex items-center justify-end gap-2 text-[10px] text-slate-400">

@@ -36,63 +36,7 @@ interface SchoolDocument {
   downloadUrl?: string;
 }
 
-const INITIAL_DOCUMENTS: SchoolDocument[] = [
-  {
-    id: 'doc-01',
-    title: 'Mwongozo Mpya wa Mtaala wa Elimu ya Awali na Msingi 2026',
-    category: 'Wizara & Serikali',
-    fileName: 'Mwongozo_Mtaala_TET_2026.pdf',
-    fileSize: '3.4 MB',
-    version: 'v2.1',
-    uploadDate: '2026-01-12',
-    uploadedBy: 'Mwl. Augustine Mrosso (Mkuu)',
-    accessLevel: 'CONFIDENTIAL_STAFF',
-  },
-  {
-    id: 'doc-02',
-    title: 'Mkataba wa Utendaji Kazi wa Walimu (Teaching Staff KPI)',
-    category: 'Nyaraka za Utumishi',
-    fileName: 'Mkataba_Utendaji_Walimu_2026.docx',
-    fileSize: '850 KB',
-    version: 'v1.0',
-    uploadDate: '2026-01-15',
-    uploadedBy: 'School Secretary',
-    accessLevel: 'HEADTEACHER_ONLY',
-  },
-  {
-    id: 'doc-03',
-    title: 'Muhtasari wa Kikao cha Wazazi na Uongozi wa Shule (AGM)',
-    category: 'Mikutano ya Wazazi',
-    fileName: 'Muhtasari_Kikao_Wazazi_Feb2026.pdf',
-    fileSize: '1.2 MB',
-    version: 'v1.2',
-    uploadDate: '2026-02-18',
-    uploadedBy: 'School Secretary',
-    accessLevel: 'PUBLIC',
-  },
-  {
-    id: 'doc-04',
-    title: 'Ratiba Rasmi ya Mitihani ya Taifa (NECTA PSLE & SFNA 2026)',
-    category: 'Taaluma & Mitihani',
-    fileName: 'Ratiba_NECTA_PSLE_2026.pdf',
-    fileSize: '2.1 MB',
-    version: 'v3.0',
-    uploadDate: '2026-02-25',
-    uploadedBy: 'Mwl. Beatrice Kimaro (Taaluma)',
-    accessLevel: 'PUBLIC',
-  },
-  {
-    id: 'doc-05',
-    title: 'Kanuni za Nidhamu na Malezi ya Wanafunzi Shuleni',
-    category: 'Miongozo ya Shule',
-    fileName: 'Kanuni_Nidhamu_Shule_2026.pdf',
-    fileSize: '920 KB',
-    version: 'v1.0',
-    uploadDate: '2026-01-20',
-    uploadedBy: 'Mwl. Godfrey Makere (Nidhamu)',
-    accessLevel: 'PUBLIC',
-  },
-];
+const INITIAL_DOCUMENTS: SchoolDocument[] = [];
 
 export default function SchoolSecretaryRecordsPage() {
   const currentUser = getCurrentSession();
@@ -266,77 +210,92 @@ export default function SchoolSecretaryRecordsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-100 text-slate-800">
-                {filteredDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-emerald-50/60 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
-                          <FileText className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-bold text-slate-900 leading-tight">{doc.title}</span>
-                            {(doc.id.includes('sealed') || doc.title.includes('Muhuri')) && (
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-800 text-amber-200 text-[9px] font-black border border-emerald-700">
-                                ★ Muhuri Rasmi wa Mkuu wa Shule
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-slate-500 font-mono">{doc.fileName}</span>
-                        </div>
+                {filteredDocuments.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-500">
+                      <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-2">
+                        <FolderArchive className="w-10 h-10 text-slate-300 stroke-1" />
+                        <p className="font-bold text-slate-700 text-sm">Hakuna nyaraka au majalada yaliyopakiwa</p>
+                        <p className="text-xs text-slate-500">
+                          Bofya kitufe cha &quot;+ Pakia Waraka Mpya&quot; kuweka nyaraka rasmi za shule.
+                        </p>
                       </div>
                     </td>
-
-                    <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200">
-                        {doc.category}
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-3 text-center font-mono font-black text-emerald-800">
-                      {doc.version}
-                    </td>
-
-                    <td className="py-3.5 px-4 font-mono text-slate-600 text-[11px]">
-                      {doc.fileSize}
-                    </td>
-
-                    <td className="py-3.5 px-4 text-slate-600 text-[11px]">
-                      <div>{doc.uploadDate}</div>
-                      <div className="text-[10px] text-slate-400">{doc.uploadedBy}</div>
-                    </td>
-
-                    <td className="py-3.5 px-3 text-center">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-black ${
-                          doc.accessLevel === 'PUBLIC'
-                            ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                            : doc.accessLevel === 'CONFIDENTIAL_STAFF'
-                            ? 'bg-blue-100 text-blue-900 border border-blue-300'
-                            : 'bg-amber-100 text-amber-900 border border-amber-300'
-                        }`}
-                      >
-                        {doc.accessLevel === 'PUBLIC'
-                          ? 'Wote'
-                          : doc.accessLevel === 'CONFIDENTIAL_STAFF'
-                          ? 'Walimu Tu'
-                          : 'Mkuu wa Shule'}
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setActiveNotice(`Faili "${doc.fileName}" linapakuliwa kutoka Masijala...`)}
-                        className="p-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 transition-colors inline-flex items-center gap-1 text-[11px] font-bold"
-                        title="Pakua waraka huu"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Pakua</span>
-                      </button>
-                    </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredDocuments.map((doc) => (
+                    <tr key={doc.id} className="hover:bg-emerald-50/60 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-slate-900 leading-tight">{doc.title}</span>
+                              {(doc.id.includes('sealed') || doc.title.includes('Muhuri')) && (
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-800 text-amber-200 text-[9px] font-black border border-emerald-700">
+                                  ★ Muhuri Rasmi wa Mkuu wa Shule
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-slate-500 font-mono">{doc.fileName}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="px-2.5 py-1 rounded-full bg-emerald-100/70 text-emerald-950 font-bold text-[10px] border border-emerald-200">
+                          {doc.category}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-3 text-center">
+                        <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[10px]">
+                          {doc.version}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4 font-mono text-slate-500 text-[11px]">{doc.fileSize}</td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold text-slate-800 block text-xs">{doc.uploadDate}</span>
+                        <span className="text-[10px] text-slate-400 block">Imepakiwa na: {doc.uploadedBy}</span>
+                      </td>
+
+                      <td className="py-3.5 px-3 text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                            doc.accessLevel === 'PUBLIC'
+                              ? 'bg-blue-100 text-blue-900 border border-blue-200'
+                              : doc.accessLevel === 'CONFIDENTIAL_STAFF'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                              : 'bg-rose-100 text-rose-900 border border-rose-200'
+                          }`}
+                        >
+                          {doc.accessLevel === 'PUBLIC'
+                            ? 'Wazi'
+                            : doc.accessLevel === 'CONFIDENTIAL_STAFF'
+                            ? 'Walimu'
+                            : 'Mkuu Pekee'}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveNotice(`Faili "${doc.fileName}" linapakuliwa kutoka Masijala...`)}
+                            className="p-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors border border-emerald-200"
+                            title="Pakua waraka huu"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

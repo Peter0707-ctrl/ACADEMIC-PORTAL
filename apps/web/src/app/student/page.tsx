@@ -53,63 +53,61 @@ export default function StudentPortal() {
   const [activeNotice, setActiveNotice] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Student Profile Data
+  // Load active session dynamically
+  const [session, setSession] = useState<any>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setSession(getCurrentSession());
+    }
+  }, []);
+
+  // Dynamic Student Profile Data (resolves to authenticated pupil or empty template)
   const student = {
-    fullName: 'Kelvin Shirima',
-    studentId: 'STU-2026-0001',
-    admNo: 'PSLE-2026-0428',
-    examIndexNo: 'PSLE-2026-0428/001',
-    class: 'Standard 7 (Grade 7)',
-    stream: 'Stream A (Watahiniwa wa Taifa)',
-    gender: 'Mvulana (Male)',
-    dob: '14 Mei 2013',
-    bloodGroup: 'O+',
-    homeAddress: 'Kibamba, Dar es Salaam',
-    parentName: 'Mzee Bakari Juma (Mzazi / Mlezi)',
-    parentPhone: '+255 755 123 456',
-    homeroomTeacher: 'Mwl. Beatrice Kimaro',
-    headteacher: 'Mwl. Augustine Mrosso',
-    average: 92.4,
-    rank: 'Nafasi ya 1 / 32',
-    attendanceRate: 98.2,
-    feeBalance: 150000,
-    controlNumber: '991234567890',
-    conduct: 'Mwenendo Mzuri Sana (Tabia Njema)',
+    fullName: session?.fullName || 'Mwanafunzi',
+    studentId: session?.studentId || session?.username || '—',
+    admNo: session?.admNo || session?.studentId || '—',
+    examIndexNo: session?.examIndexNo || '—',
+    class: session?.assignedClass || 'Standard 7 (Grade 7)',
+    stream: 'Stream A',
+    gender: session?.gender === 'F' ? 'Msichana (Female)' : 'Mvulana (Male)',
+    dob: '—',
+    bloodGroup: '—',
+    homeAddress: '—',
+    parentName: 'Mzazi / Mlezi',
+    parentPhone: '—',
+    homeroomTeacher: 'Mwalimu wa Darasa',
+    headteacher: 'Mwalimu Mkuu',
+    average: 0,
+    rank: '—',
+    attendanceRate: 100,
+    feeBalance: 0,
+    controlNumber: '—',
+    conduct: 'Mwenendo Mzuri',
   };
 
-  // Subjects & Marks
-  const subjects = [
-    { code: 'MATH-01', name: 'Mathematics (Hisabati)', teacher: 'Mwl. Beatrice Kimaro', monthly1: 94, monthly2: 96, midterm: 95, terminal: 98, average: 96, grade: 'A', remarks: 'Bora Sana' },
-    { code: 'SCI-02', name: 'Science & Technology (Sayansi)', teacher: 'Mwl. Emmanuel Swai', monthly1: 90, monthly2: 92, midterm: 91, terminal: 95, average: 92, grade: 'A', remarks: 'Bora Sana' },
-    { code: 'ENG-03', name: 'English Language', teacher: 'Mwl. Sarah Mollel', monthly1: 88, monthly2: 91, midterm: 90, terminal: 93, average: 91, grade: 'A', remarks: 'Bora Sana' },
-    { code: 'KISW-04', name: 'Kiswahili', teacher: 'Mwl. Juma Rashidi', monthly1: 92, monthly2: 94, midterm: 93, terminal: 96, average: 94, grade: 'A', remarks: 'Bora Sana' },
-    { code: 'CIV-05', name: 'Civic & Moral Education (Uraia)', teacher: 'Mwl. Augustine Mrosso (Mkuu)', monthly1: 89, monthly2: 93, midterm: 90, terminal: 94, average: 92, grade: 'A', remarks: 'Bora Sana' },
-    { code: 'SOC-06', name: 'Social Studies (Maarifa ya Jamii)', teacher: 'Mwl. Augustine Mrosso (Mkuu)', monthly1: 85, monthly2: 89, midterm: 88, terminal: 90, average: 88, grade: 'A', remarks: 'Mzuri' },
-  ];
+  const initials = (student.fullName || 'M')
+    .split(' ')
+    .map((w: string) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'ST';
 
-  // Timetable
-  const timetable = [
-    { day: 'Jumatatu', p1: 'Hisabati', p2: 'Hisabati', p3: 'English', p4: 'Sayansi', p5: 'Uraia', p6: 'Kiswahili', p7: 'Michezo' },
-    { day: 'Jumanne', p1: 'Sayansi', p2: 'Sayansi', p3: 'Kiswahili', p4: 'English', p5: 'Maarifa', p6: 'Hisabati', p7: 'Klabu' },
-    { day: 'Jumatano', p1: 'English', p2: 'English', p3: 'Hisabati', p4: 'Sayansi', p5: 'Kiswahili', p6: 'Uraia', p7: 'Maktaba' },
-    { day: 'Alhamisi', p1: 'Maarifa', p2: 'Maarifa', p3: 'Sayansi', p4: 'Hisabati', p5: 'English', p6: 'Kiswahili', p7: 'Sanaa' },
-    { day: 'Ijumaa', p1: 'Hisabati', p2: 'Kiswahili', p3: 'Uraia', p4: 'Sayansi', p5: 'English', p6: 'Maarifa', p7: 'Ibada / Malezi' },
-  ];
+  // Subjects & Marks (populated dynamically from school records)
+  const subjects: { code: string; name: string; teacher: string; monthly1: number; monthly2: number; midterm: number; terminal: number; average: number; grade: string; remarks: string }[] = [];
+
+  // Timetable (empty by default until school schedules periods)
+  const timetable: { day: string; p1: string; p2: string; p3: string; p4: string; p5: string; p6: string; p7: string }[] = [];
 
   // Homework Assignments
-  const assignments = [
-    { id: 'as-1', subject: 'Mathematics', title: 'Mazoezi ya Algebra & Geometri (Ukurasa 45)', dueDate: 'Kesho saa 2:00 Asubuhi', status: 'IMEKAMILIKA' },
-    { id: 'as-2', subject: 'Science', title: 'Mchoro wa Mfumo wa Upumuaji wa Binadamu', dueDate: 'Ijumaa hii', status: 'INASUBIRI' },
-    { id: 'as-3', subject: 'Civic & Moral', title: 'Insha: Wajibu wa Raia Mwema Katika Jamii', dueDate: 'Jumatatu ijayo', status: 'INASUBIRI' },
-  ];
+  const assignments: { id: string; subject: string; title: string; dueDate: string; status: string }[] = [];
 
   // Leave Request Form State
   const [requestReason, setRequestReason] = useState('Matibabu (Hospitali)');
   const [requestDays, setRequestDays] = useState('2');
   const [requestDate, setRequestDate] = useState('');
-  const [requestsList, setRequestsList] = useState([
-    { id: 'req-01', reason: 'Kuhudhuria Matibabu Muhimbili', dates: '12 Machi 2026 (Siku 2)', status: 'IMEIDHINISHWA NA MKUU WA SHULE' },
-  ]);
+  const [requestsList, setRequestsList] = useState<{ id: string; reason: string; dates: string; status: string }[]>([]);
 
   const handleRequestSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -462,7 +460,7 @@ export default function StudentPortal() {
               <span>Usajili Hai (Active)</span>
             </div>
             <div className="w-8 h-8 rounded-full bg-emerald-800 text-emerald-100 flex items-center justify-center font-bold text-xs ring-2 ring-emerald-500/20">
-              KS
+              {initials}
             </div>
           </div>
         </header>
@@ -495,7 +493,7 @@ export default function StudentPortal() {
               <div className="p-6 rounded-3xl bg-white/95 border border-emerald-200/90 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-3xl bg-emerald-800 text-emerald-100 flex items-center justify-center text-xl font-black shadow-md shadow-emerald-950/20 shrink-0">
-                    KS
+                    {initials}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -946,7 +944,7 @@ export default function StudentPortal() {
                 <GraduationCap className="w-16 h-16 text-emerald-800 mx-auto" />
                 <h3 className="text-base font-black text-slate-900">Safari ya Kuhitimu Elimu ya Msingi (Graduation 2026)</h3>
                 <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Kelvin Shirima ni mtahiniwa wa Darasa la 7 (PSLE). Hatua zote za masomo na usajili wa NECTA zimekamilika.
+                  {student.fullName} ni mwanafunzi aliyesajiliwa ({student.class}). Hatua zote za masomo na usajili zimekamilika.
                 </p>
                 <div className="w-full max-w-sm mx-auto bg-slate-100 h-3 rounded-full overflow-hidden">
                   <div className="w-4/5 h-full bg-emerald-600 rounded-full" />
