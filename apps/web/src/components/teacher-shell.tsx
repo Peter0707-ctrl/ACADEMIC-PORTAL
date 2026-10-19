@@ -763,15 +763,7 @@ export default function TeacherShell({
               &copy; {new Date().getFullYear()} PRIMARY &amp; NURSERY SCHOOL. All rights reserved.
             </p>
             <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-600 font-medium">
-              <span className="flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-emerald-700" />
-                <span>0779304500</span>
-              </span>
-              <span>&bull;</span>
-              <span className="flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-emerald-700" />
-                <span>pj0040280@gmail.com</span>
-              </span>
+              <span>Primary School Digital Academic Platform</span>
             </div>
           </div>
         </footer>

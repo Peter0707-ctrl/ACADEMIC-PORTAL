@@ -260,8 +260,8 @@ const DEFAULT_SCHOOL_DETAILS = {
   name: 'PRIMARY & NURSERY SCHOOL',
   regNo: 'EM.1428/TZ',
   address: 'S.L.P. 1428, Dar es Salaam, Tanzania',
-  phone: '0779304500',
-  email: 'pj0040280@gmail.com',
+  phone: '',
+  email: '',
 };
 
 // Initial Seed Fee Structures (empty initial state)

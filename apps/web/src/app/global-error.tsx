@@ -99,16 +99,7 @@ export default function GlobalError({
               </button>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
-              <div className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Simu: <strong>0779304500</strong></span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Barua Pepe: <strong>pj0040280@gmail.com</strong></span>
-              </div>
-            </div>
+
 
             {/* Collapsible Technical Details */}
             <div className="pt-2 border-t border-slate-100">

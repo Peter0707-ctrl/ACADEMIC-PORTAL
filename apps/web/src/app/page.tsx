@@ -55,8 +55,6 @@ export default function PrimaryPortalHomePage() {
     shortCode: 'PRIMARY-PORTAL',
     motto: 'Excellence, Integrity and Character',
     category: 'Official Primary School Academic Management Portal',
-    phone: '0779304500',
-    email: 'pj0040280@gmail.com',
     location: 'Dar es Salaam, Tanzania',
   };
 
@@ -406,12 +404,6 @@ export default function PrimaryPortalHomePage() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
-
-          {/* Contact summary */}
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-between w-full text-[11px] text-slate-500">
-            <span>Simu: {school.phone}</span>
-            <span>{school.email}</span>
-          </div>
         </div>
 
         {/* Footer for first page */}
@@ -448,15 +440,28 @@ export default function PrimaryPortalHomePage() {
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-4 text-xs text-slate-500 font-medium">
-            <span className="flex items-center gap-1">
-              <Phone className="w-3.5 h-3.5 text-emerald-700" />
-              {school.phone}
-            </span>
-            <span className="flex items-center gap-1">
-              <Mail className="w-3.5 h-3.5 text-emerald-700" />
-              {school.email}
-            </span>
+          {/* Header Action Buttons (Only Buttons, No Phone/Email) */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setPortalView('PARENT');
+                setParentMode('LOGIN');
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white text-emerald-800 text-xs font-bold border border-emerald-200 shadow-2xs transition-all cursor-pointer"
+            >
+              Parent Portal
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPortalView('TEACHER');
+                setStaffMode('LOGIN');
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+            >
+              Staff Portal
+            </button>
           </div>
         </div>
       </header>
@@ -1197,23 +1202,43 @@ export default function PrimaryPortalHomePage() {
               </ul>
             </div>
 
-            {/* Column 4: Contact & Verification */}
+            {/* Column 4: Quick Portals & Action Buttons (Only Buttons) */}
             <div className="space-y-2">
               <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                Support &amp; Verification
+                Quick Access
               </h4>
-              <div className="space-y-1.5 text-xs text-slate-800 font-bold">
-                <p className="flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
-                  <span>{school.phone}</span>
-                </p>
-                <p className="flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
-                  <span>{school.email}</span>
-                </p>
-                <p className="text-[11px] text-slate-700 font-medium pt-1">
-                  Primary Education Management Platform • Version 2.6.4
-                </p>
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPortalView('PARENT');
+                    setParentMode('LOGIN');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl bg-white/90 hover:bg-white border border-slate-200 text-xs font-bold text-slate-800 transition-all shadow-2xs"
+                >
+                  Parent Sign In &rarr;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPortalView('TEACHER');
+                    setStaffMode('LOGIN');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl bg-white/90 hover:bg-white border border-slate-200 text-xs font-bold text-slate-800 transition-all shadow-2xs"
+                >
+                  Staff Sign In &rarr;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    router.push('/admin');
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs"
+                >
+                  Admin Control &rarr;
+                </button>
               </div>
             </div>
           </div>

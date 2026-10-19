@@ -392,7 +392,7 @@ export const PARENT_TRANSLATIONS: Record<Language, ParentDictionary> = {
     scheduledResultsLockedDesc: 'Uongozi wa Shule unawataarifu wazazi kuwa matokeo ya Muhula wa 1 yamekamilika na yamekaguliwa na Mwalimu Mkuu. Ripoti rasmi zimepangwa kufunguliwa rasmi kwa wazazi wote siku ya kufunga shule:',
     officialResultsReleaseDate: 'Tarehe Rasmi ya Kufunguliwa Matokeo:',
     resultsSmsNotice: 'Wazazi wataarifiwa pia kupitia ujumbe wa SMS / WhatsApp mara baada ya kufunguliwa.',
-    emergencyEnquiryNote: 'Ikiwa unahitaji ufafanuzi wa dharura, unaweza kuwasiliana na Ofisi ya Mwalimu Mkuu kupitia namba 0779304500.',
+    emergencyEnquiryNote: 'Ikiwa unahitaji ufafanuzi wa dharura, unaweza kuwasiliana na Uongozi wa Shule kupitia dawati la huduma.',
 
     // Attendance Tab
     attendanceReportTitle: 'Ripoti Kamili ya Mahudhurio ya Shule',
@@ -688,7 +688,7 @@ export const PARENT_TRANSLATIONS: Record<Language, ParentDictionary> = {
     scheduledResultsLockedDesc: 'The School Administration informs parents that Term 1 examinations are complete and verified by the Headteacher. Official report cards will be released to all parents on the designated closing day:',
     officialResultsReleaseDate: 'Official Results Release Date:',
     resultsSmsNotice: 'Parents will also receive notification via SMS and WhatsApp upon immediate release.',
-    emergencyEnquiryNote: 'For urgent inquiries, please contact the Headteacher Office via 0779304500.',
+    emergencyEnquiryNote: 'For urgent inquiries, please contact the School Administration via the help desk.',
 
     // Attendance Tab
     attendanceReportTitle: 'Pupil School Attendance Report',
