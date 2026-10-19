@@ -37,6 +37,8 @@ import {
   Lock,
   Phone,
   Mail,
+  Menu,
+  X,
 } from 'lucide-react';
 import {
   UserAccount,
@@ -65,6 +67,11 @@ export default function AccountantShell({
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   // Submenu open states
   const [studentFeesDropdownOpen, setStudentFeesDropdownOpen] = useState<boolean>(true);
@@ -150,29 +157,52 @@ export default function AccountantShell({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-[#F1F5F9] to-[#E2E8F0] text-slate-800 font-sans flex flex-col lg:flex-row">
+      {/* Backdrop overlay for mobile drawer */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden animate-fade-in"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* ===================================================================== */}
-      {/* 1. LEFT SIDEBAR: STRICTLY SECTION 27 COMPLIANT */}
+      {/* 1. LEFT SIDEBAR: RESPONSIVE SLIDE-OVER DRAWER ON MOBILE, STICKY ON DESKTOP */}
       {/* ===================================================================== */}
-      <aside className="w-full lg:w-72 xl:w-80 bg-white/95 backdrop-blur-md border-r border-slate-200 shrink-0 flex flex-col justify-between shadow-xs lg:min-h-screen lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto z-30">
+      <aside
+        className={`fixed lg:sticky top-0 left-0 h-screen z-50 lg:z-30 w-72 sm:w-80 bg-white/98 backdrop-blur-md border-r border-slate-200 shrink-0 flex flex-col justify-between shadow-2xl lg:shadow-xs transition-transform duration-300 ease-in-out overflow-y-auto ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
         <div className="p-4 sm:p-5 space-y-4">
-          {/* Brand Header */}
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <Link
-              href="/accountant"
-              className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
-              title="Ofisi ya Mhasibu wa Shule"
-            >
-              <Wallet className="w-5 h-5 text-emerald-300" />
-              <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Fedha</span>
-            </Link>
-            <div>
-              <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
-                PRIMARY &amp; NURSERY
-              </h2>
-              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                Accounting &bull; Uhasibu wa Shule
-              </span>
+          {/* Brand Header + Mobile Close Button */}
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/accountant"
+                className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex flex-col items-center justify-center shadow-md shadow-emerald-950/20 shrink-0 hover:bg-emerald-900 transition-colors"
+                title="Ofisi ya Mhasibu wa Shule"
+              >
+                <Wallet className="w-5 h-5 text-emerald-300" />
+                <span className="text-[7px] font-black uppercase tracking-wider text-emerald-200">Fedha</span>
+              </Link>
+              <div>
+                <h2 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-tight">
+                  PRIMARY &amp; NURSERY
+                </h2>
+                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                  Accounting &bull; Uhasibu wa Shule
+                </span>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Funga Menyu"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* SIDEBAR NAVIGATION LIST (Section 27 Specification) */}
@@ -498,17 +528,17 @@ export default function AccountantShell({
             </div>
             <div className="overflow-hidden">
               <span className="font-bold text-xs text-slate-900 truncate block">
-                {currentUser?.fullName || 'Bw. Ramadhani Tembo'}
+                {currentUser?.fullName || 'Mhasibu wa Shule'}
               </span>
               <span className="text-[10px] text-emerald-800 font-semibold truncate block">
-                Mhasibu wa Shule &bull; ACC-2026-001
+                {currentUser?.identifier || 'Idara ya Fedha'}
               </span>
             </div>
           </div>
 
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold transition-all flex items-center justify-center gap-2"
+            className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Toka Kwenye Mfumo (Logout)</span>
@@ -521,14 +551,24 @@ export default function AccountantShell({
       {/* ===================================================================== */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
-          <div>
-            <h1 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
-              {pageTitle || 'Idara ya Fedha & Uhasibu'}
-            </h1>
-            <p className="text-[11px] text-slate-500 hidden sm:block">
-              {pageDescription || 'Usimamizi wa Ada, Ankara, Stakabadhi na Matumizi ya Shule'}
-            </p>
+        <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition-colors shrink-0 cursor-pointer"
+              aria-label="Fungua Menyu ya Uhasibu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">
+                {pageTitle || 'Idara ya Fedha & Uhasibu'}
+              </h1>
+              <p className="text-[11px] text-slate-500 hidden sm:block truncate">
+                {pageDescription || 'Usimamizi wa Ada, Ankara, Stakabadhi na Matumizi ya Shule'}
+              </p>
+            </div>
           </div>
 
           {/* Quick Actions, Currency, User Profile & Top Logout Button */}
@@ -562,7 +602,7 @@ export default function AccountantShell({
               </div>
               <div className="text-left hidden xl:block">
                 <span className="text-xs font-bold text-slate-800 block leading-tight truncate max-w-[140px]">
-                  {currentUser?.fullName || 'Bw. Ramadhani Tembo'}
+                  {currentUser?.fullName || 'Mhasibu wa Shule'}
                 </span>
                 <span className="text-[10px] text-emerald-800 font-semibold block">
                   Mhasibu wa Shule
