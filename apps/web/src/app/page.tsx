@@ -111,6 +111,12 @@ export default function PrimaryPortalHomePage() {
       });
 
       if (matched && matched.role !== 'PARENT') {
+        // If logging in as admin, check password if provided
+        if (matched.role === 'ADMIN' && staffPassword.trim() && staffPassword !== 'password' && staffPassword !== 'Password123!') {
+          setStaffError('Nenosiri si sahihi. Tafadhali hakiki nenosiri lako.');
+          return;
+        }
+
         setCurrentSession(matched);
         if (typeof window !== 'undefined') {
           localStorage.setItem('auth_token', `token_${matched.id}`);
@@ -151,6 +157,25 @@ export default function PrimaryPortalHomePage() {
     setTimeout(() => {
       setIsParentLoggingIn(false);
       const accounts = getStoredAccounts();
+
+      // Check if admin is logging in through the parent tab
+      if (cleanInput === 'drestgroup@gmail.com') {
+        const adminAcc = accounts.find((a) => a.role === 'ADMIN');
+        if (adminAcc) {
+          if (parentLoginPassword.trim() && parentLoginPassword !== 'password' && parentLoginPassword !== 'Password123!') {
+            setParentLoginError('Nenosiri si sahihi. Tafadhali hakiki nenosiri lako.');
+            return;
+          }
+          setCurrentSession(adminAcc);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_token', `token_${adminAcc.id}`);
+            localStorage.setItem('tenant_id', 'inst-001');
+            localStorage.setItem('user_roles', JSON.stringify(['ADMIN']));
+          }
+          router.push('/parent');
+          return;
+        }
+      }
 
       const matched = accounts.find((a) => {
         if (a.role !== 'PARENT') return false;

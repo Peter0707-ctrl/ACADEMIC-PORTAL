@@ -74,19 +74,19 @@ export interface UserAccount {
 export const INITIAL_BLUEPRINT_ACCOUNTS: UserAccount[] = [
   {
     id: 'ADMIN-001',
-    fullName: 'Msimamizi Mkuu (Admin)',
+    fullName: 'System Administrator',
     role: 'ADMIN',
     leadershipRole: 'HEADTEACHER',
-    identifier: 'admin@school.ac.tz',
-    email: 'admin@school.ac.tz',
+    identifier: 'drestgroup@gmail.com',
+    email: 'drestgroup@gmail.com',
     phone: '+255 700 000 000',
     status: 'ACTIVE',
     joinedDate: '2026-01-01',
   },
 ];
 
-const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v8';
-const SESSION_STORAGE_KEY = 'academic_portal_active_session_v8';
+const ACCOUNTS_STORAGE_KEY = 'academic_portal_accounts_v9';
+const SESSION_STORAGE_KEY = 'academic_portal_active_session_v9';
 
 export function getStoredAccounts(): UserAccount[] {
   if (typeof window === 'undefined') return INITIAL_BLUEPRINT_ACCOUNTS;
@@ -158,17 +158,19 @@ export function canAccessPortal(
   portalRole: 'TEACHER' | 'ADMIN' | 'PARENT' | 'STUDENT' | 'SECRETARY' | 'ACCOUNTANT'
 ): user is UserAccount {
   if (!user) return false;
+  // Super Administrator has universal access to inspect all school portals
+  if (user.role === 'ADMIN') return true;
   if (portalRole === 'TEACHER') {
-    return ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER', 'ADMIN'].includes(user.role);
+    return ['HEADTEACHER', 'ACADEMIC', 'DISCIPLINE', 'TEACHER'].includes(user.role);
   }
   if (portalRole === 'SECRETARY') {
-    return user.role === 'SECRETARY' || user.role === 'HEADTEACHER' || user.role === 'ADMIN';
+    return user.role === 'SECRETARY' || user.role === 'HEADTEACHER';
   }
   if (portalRole === 'ACCOUNTANT') {
-    return user.role === 'ACCOUNTANT' || user.role === 'HEADTEACHER' || user.role === 'ADMIN';
+    return user.role === 'ACCOUNTANT' || user.role === 'HEADTEACHER';
   }
   if (portalRole === 'ADMIN') {
-    return user.role === 'ADMIN' || user.role === 'HEADTEACHER';
+    return user.role === 'HEADTEACHER';
   }
   return user.role === portalRole;
 }
