@@ -61,15 +61,15 @@ export default function PrimaryPortalHomePage() {
   const [parentMode, setParentMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
   // Staff Login Form States
-  const [staffIdentifier, setStaffIdentifier] = useState('headteacher@primaryschool.ac.tz');
-  const [staffPassword, setStaffPassword] = useState('Password123!');
+  const [staffIdentifier, setStaffIdentifier] = useState('');
+  const [staffPassword, setStaffPassword] = useState('');
   const [showStaffPassword, setShowStaffPassword] = useState(false);
   const [isStaffLoggingIn, setIsStaffLoggingIn] = useState(false);
   const [staffError, setStaffError] = useState<string | null>(null);
 
   // Parent Login Form States
-  const [parentLoginPhone, setParentLoginPhone] = useState('+255 755 123 456');
-  const [parentLoginPassword, setParentLoginPassword] = useState('Password123!');
+  const [parentLoginPhone, setParentLoginPhone] = useState('');
+  const [parentLoginPassword, setParentLoginPassword] = useState('');
   const [showParentLoginPassword, setShowParentLoginPassword] = useState(false);
   const [isParentLoggingIn, setIsParentLoggingIn] = useState(false);
   const [parentLoginError, setParentLoginError] = useState<string | null>(null);
