@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -22,6 +23,10 @@ async function bootstrap() {
       xssFilter: true,
     }),
   );
+
+  // Body Size Limits to Prevent DoS Payload Flooding
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   // Hardened CORS Configuration
   const allowedOriginsEnv = process.env.CORS_ORIGIN;

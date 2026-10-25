@@ -11,6 +11,11 @@ import {
   UserRole,
   PRIMARY_CLASSES_LIST,
   PRIMARY_SUBJECTS_LIST,
+  checkBruteForceLockout,
+  recordFailedLoginAttempt,
+  resetFailedLoginAttempts,
+  recordSecurityAuditLog,
+  sanitizeInput,
 } from '@/lib/auth-session';
 import {
   School,
@@ -114,9 +119,18 @@ export default function PrimaryPortalHomePage() {
     e.preventDefault();
     setStaffError(null);
 
-    const cleanInput = staffIdentifier.trim().toLowerCase();
+    const cleanInput = sanitizeInput(staffIdentifier.trim().toLowerCase());
     if (!cleanInput) {
       setStaffError('Please enter your Staff ID or Email.');
+      return;
+    }
+
+    // Check Brute Force Lockout
+    const lockout = checkBruteForceLockout(cleanInput);
+    if (lockout.isLocked) {
+      const minutes = Math.ceil(lockout.remainingSeconds / 60);
+      setStaffError(`Akaunti imefungwa kwa muda kwa sababu ya majaribio mengi ya nenosiri yasiyo sahihi. Tafadhali subiri dakika ${minutes} kabla ya kujaribu tena.`);
+      recordSecurityAuditLog(`Brute-force lockout triggered for ${cleanInput}`, cleanInput, 'STAFF', 'BLOCKED');
       return;
     }
 
@@ -135,9 +149,19 @@ export default function PrimaryPortalHomePage() {
       if (matched && matched.role !== 'PARENT') {
         // If logging in as admin, check password if provided
         if (matched.role === 'ADMIN' && staffPassword.trim() && staffPassword !== 'password' && staffPassword !== 'Password123!') {
-          setStaffError('Nenosiri si sahihi. Tafadhali hakiki nenosiri lako.');
+          const attempts = recordFailedLoginAttempt(cleanInput);
+          recordSecurityAuditLog(`Nenosiri lisilo sahihi la Admin (${attempts}/5)`, cleanInput, 'ADMIN', 'WARNING');
+          if (attempts >= 5) {
+            setStaffError('Akaunti imefungwa kwa dakika 15 kwa sababu ya majaribio 5 yasiyo sahihi ya nenosiri.');
+          } else {
+            setStaffError(`Nenosiri si sahihi. Majaribio yaliyobaki: ${5 - attempts}`);
+          }
           return;
         }
+
+        // Reset failed attempts on success
+        resetFailedLoginAttempts(cleanInput);
+        recordSecurityAuditLog('Kuingia kwa Mtumishi kumefanikiwa', matched.fullName, matched.role, 'SUCCESS');
 
         setCurrentSession(matched);
         if (typeof window !== 'undefined') {
@@ -158,7 +182,13 @@ export default function PrimaryPortalHomePage() {
           router.push('/teacher');
         }
       } else {
-        setStaffError('Staff account not found. Please verify your Staff ID or Email.');
+        const attempts = recordFailedLoginAttempt(cleanInput);
+        recordSecurityAuditLog(`Jaribio lisilotambuliwa la mtumishi (${attempts}/5)`, cleanInput, 'UNKNOWN', 'WARNING');
+        if (attempts >= 5) {
+          setStaffError('Akaunti imefungwa kwa dakika 15 kwa sababu ya majaribio 5 yasiyo sahihi.');
+        } else {
+          setStaffError(`Akaunti ya mtumishi haijapatikana. Hakiki kitambulisho chako. (Majaribio: ${attempts}/5)`);
+        }
       }
     }, 350);
   };
@@ -247,9 +277,18 @@ export default function PrimaryPortalHomePage() {
     e.preventDefault();
     setParentLoginError(null);
 
-    const cleanInput = parentLoginPhone.trim().toLowerCase().replace(/\s+/g, '');
+    const cleanInput = sanitizeInput(parentLoginPhone.trim().toLowerCase().replace(/\s+/g, ''));
     if (!cleanInput) {
       setParentLoginError('Please enter your phone number.');
+      return;
+    }
+
+    // Check Brute Force Lockout
+    const lockout = checkBruteForceLockout(cleanInput);
+    if (lockout.isLocked) {
+      const minutes = Math.ceil(lockout.remainingSeconds / 60);
+      setParentLoginError(`Akaunti imefungwa kwa muda kwa sababu ya majaribio mengi ya nenosiri yasiyo sahihi. Subiri dakika ${minutes} kabla ya kujaribu tena.`);
+      recordSecurityAuditLog(`Brute-force lockout triggered for parent ${cleanInput}`, cleanInput, 'PARENT', 'BLOCKED');
       return;
     }
 
@@ -264,9 +303,13 @@ export default function PrimaryPortalHomePage() {
         const adminAcc = accounts.find((a) => a.role === 'ADMIN');
         if (adminAcc) {
           if (parentLoginPassword.trim() && parentLoginPassword !== 'password' && parentLoginPassword !== 'Password123!') {
-            setParentLoginError('Nenosiri si sahihi. Tafadhali hakiki nenosiri lako.');
+            const attempts = recordFailedLoginAttempt(cleanInput);
+            recordSecurityAuditLog(`Nenosiri lisilo sahihi la mzazi/admin (${attempts}/5)`, cleanInput, 'ADMIN', 'WARNING');
+            setParentLoginError(`Nenosiri si sahihi. Majaribio yaliyobaki: ${5 - attempts}`);
             return;
           }
+          resetFailedLoginAttempts(cleanInput);
+          recordSecurityAuditLog('Admin ameingia kupitia Parent view', adminAcc.fullName, 'ADMIN', 'SUCCESS');
           setCurrentSession(adminAcc);
           if (typeof window !== 'undefined') {
             localStorage.setItem('auth_token', `token_${adminAcc.id}`);
@@ -287,6 +330,8 @@ export default function PrimaryPortalHomePage() {
       });
 
       if (matched) {
+        resetFailedLoginAttempts(cleanInput);
+        recordSecurityAuditLog('Kuingia kwa Mzazi kumefanikiwa', matched.fullName, 'PARENT', 'SUCCESS');
         setCurrentSession(matched);
         if (typeof window !== 'undefined') {
           localStorage.setItem('auth_token', `token_${matched.id}`);
@@ -295,7 +340,13 @@ export default function PrimaryPortalHomePage() {
         }
         router.push('/parent');
       } else {
-        setParentLoginError('Parent account not found. Please verify your phone number or register a new account.');
+        const attempts = recordFailedLoginAttempt(cleanInput);
+        recordSecurityAuditLog(`Jaribio lisilotambuliwa la mzazi (${attempts}/5)`, cleanInput, 'PARENT', 'WARNING');
+        if (attempts >= 5) {
+          setParentLoginError('Akaunti imefungwa kwa dakika 15 kwa sababu ya majaribio 5 yasiyo sahihi.');
+        } else {
+          setParentLoginError(`Akaunti ya mzazi haijapatikana. Hakiki namba yako ya simu. (Majaribio: ${attempts}/5)`);
+        }
       }
     }, 350);
   };

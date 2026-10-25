@@ -178,3 +178,94 @@ export function canAccessPortal(
 export function isAuthenticated(): boolean {
   return getCurrentSession() !== null;
 }
+
+// =============================================================================
+// HARDENED SECURITY UTILITIES (BRUTE FORCE DEFENSE & AUDIT LOGGING)
+// =============================================================================
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const ATTEMPTS_PREFIX = 'academic_sec_attempts_';
+
+export function sanitizeInput(input: string): string {
+  if (!input) return '';
+  return input
+    .replace(/[<>]/g, '')
+    .trim();
+}
+
+export function checkBruteForceLockout(identifier: string): { isLocked: boolean; remainingSeconds: number } {
+  if (typeof window === 'undefined' || !identifier) return { isLocked: false, remainingSeconds: 0 };
+  try {
+    const raw = localStorage.getItem(`${ATTEMPTS_PREFIX}${identifier.toLowerCase()}`);
+    if (!raw) return { isLocked: false, remainingSeconds: 0 };
+    const { count, lastAttempt } = JSON.parse(raw);
+    if (count >= MAX_FAILED_ATTEMPTS) {
+      const elapsed = Date.now() - lastAttempt;
+      if (elapsed < LOCKOUT_DURATION_MS) {
+        const remainingSeconds = Math.ceil((LOCKOUT_DURATION_MS - elapsed) / 1000);
+        return { isLocked: true, remainingSeconds };
+      } else {
+        localStorage.removeItem(`${ATTEMPTS_PREFIX}${identifier.toLowerCase()}`);
+        return { isLocked: false, remainingSeconds: 0 };
+      }
+    }
+    return { isLocked: false, remainingSeconds: 0 };
+  } catch {
+    return { isLocked: false, remainingSeconds: 0 };
+  }
+}
+
+export function recordFailedLoginAttempt(identifier: string): number {
+  if (typeof window === 'undefined' || !identifier) return 1;
+  try {
+    const key = `${ATTEMPTS_PREFIX}${identifier.toLowerCase()}`;
+    const raw = localStorage.getItem(key);
+    let count = 1;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      count = (parsed.count || 0) + 1;
+    }
+    localStorage.setItem(key, JSON.stringify({ count, lastAttempt: Date.now() }));
+    return count;
+  } catch {
+    return 1;
+  }
+}
+
+export function resetFailedLoginAttempts(identifier: string): void {
+  if (typeof window === 'undefined' || !identifier) return;
+  try {
+    localStorage.removeItem(`${ATTEMPTS_PREFIX}${identifier.toLowerCase()}`);
+  } catch {
+    // pass
+  }
+}
+
+export function recordSecurityAuditLog(
+  action: string,
+  user: string,
+  role: string,
+  status: 'SUCCESS' | 'WARNING' | 'BLOCKED'
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const key = 'academic_portal_audit_logs_v1';
+    const raw = localStorage.getItem(key);
+    const logs = raw ? JSON.parse(raw) : [];
+    const newLog = {
+      id: `LOG-${Date.now().toString().slice(-5)}`,
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      user: user || 'Anonymous',
+      role: role || 'GUEST',
+      action,
+      device: typeof navigator !== 'undefined' ? `${navigator.userAgent.slice(0, 45)}...` : 'Web Browser',
+      ip: '127.0.0.1 (Client-Origin)',
+      status,
+    };
+    logs.unshift(newLog);
+    localStorage.setItem(key, JSON.stringify(logs.slice(0, 100)));
+  } catch {
+    // pass
+  }
+}
