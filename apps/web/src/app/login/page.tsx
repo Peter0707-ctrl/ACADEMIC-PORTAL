@@ -27,6 +27,10 @@ import {
   UserAccount,
   setCurrentSession,
   getStoredAccounts,
+  checkBruteForceLockout,
+  recordFailedLoginAttempt,
+  resetFailedLoginAttempts,
+  verifyAdminPasswordHash,
 } from '@/lib/auth-session';
 
 export default function LoginPage() {
@@ -40,12 +44,25 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const cleanInput = emailOrId.trim().toLowerCase();
+    if (!cleanInput) {
+      setError('Please enter your email or Staff ID.');
+      return;
+    }
+
+    const lockout = checkBruteForceLockout(cleanInput);
+    if (lockout.isLocked) {
+      const minutes = Math.ceil(lockout.remainingSeconds / 60);
+      setError(`Account temporarily locked due to failed login attempts. Try again in ${minutes} minute(s).`);
+      return;
+    }
+
     setLoading(true);
 
     setTimeout(() => {
       setLoading(false);
       const accounts = getStoredAccounts();
-      const cleanInput = emailOrId.trim().toLowerCase();
 
       const matched = accounts.find((a) => {
         const emailMatch = a.email && a.email.toLowerCase() === cleanInput;
@@ -55,6 +72,13 @@ export default function LoginPage() {
       });
 
       if (matched) {
+        if (matched.role === 'ADMIN' && !verifyAdminPasswordHash(password)) {
+          const attempts = recordFailedLoginAttempt(cleanInput);
+          setError(`Invalid administrator password. Remaining attempts: ${Math.max(0, 5 - attempts)}`);
+          return;
+        }
+
+        resetFailedLoginAttempts(cleanInput);
         setCurrentSession(matched);
         if (typeof window !== 'undefined') {
           localStorage.setItem('auth_token', `token_${matched.id}`);

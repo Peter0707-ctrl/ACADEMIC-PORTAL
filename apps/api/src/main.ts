@@ -70,8 +70,8 @@ async function bootstrap() {
     }),
   );
 
-  // OpenAPI / Swagger Documentation (conditional in production)
-  const isSwaggerEnabled = !isProduction || process.env.ENABLE_SWAGGER === 'true';
+  // OpenAPI / Swagger Documentation (strictly disabled by default; requires explicit ENABLE_SWAGGER=true)
+  const isSwaggerEnabled = process.env.ENABLE_SWAGGER === 'true';
   if (isSwaggerEnabled) {
     const config = new DocumentBuilder()
       .setTitle('Universal Education Management Platform API')

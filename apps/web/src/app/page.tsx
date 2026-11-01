@@ -16,6 +16,7 @@ import {
   resetFailedLoginAttempts,
   recordSecurityAuditLog,
   sanitizeInput,
+  verifyAdminPasswordHash,
 } from '@/lib/auth-session';
 import {
   School,
@@ -147,8 +148,8 @@ export default function PrimaryPortalHomePage() {
       });
 
       if (matched && matched.role !== 'PARENT') {
-        // If logging in as admin, check password if provided
-        if (matched.role === 'ADMIN' && staffPassword.trim() && staffPassword !== 'password' && staffPassword !== 'Password123!') {
+        // Strictly verify SHA-256 password hash when logging in as ADMIN
+        if (matched.role === 'ADMIN' && !verifyAdminPasswordHash(staffPassword)) {
           const attempts = recordFailedLoginAttempt(cleanInput);
           recordSecurityAuditLog(`Nenosiri lisilo sahihi la Admin (${attempts}/5)`, cleanInput, 'ADMIN', 'WARNING');
           if (attempts >= 5) {
@@ -302,7 +303,7 @@ export default function PrimaryPortalHomePage() {
       if (cleanInput === 'drestgroup@gmail.com') {
         const adminAcc = accounts.find((a) => a.role === 'ADMIN');
         if (adminAcc) {
-          if (parentLoginPassword.trim() && parentLoginPassword !== 'password' && parentLoginPassword !== 'Password123!') {
+          if (!verifyAdminPasswordHash(parentLoginPassword)) {
             const attempts = recordFailedLoginAttempt(cleanInput);
             recordSecurityAuditLog(`Nenosiri lisilo sahihi la mzazi/admin (${attempts}/5)`, cleanInput, 'ADMIN', 'WARNING');
             setParentLoginError(`Nenosiri si sahihi. Majaribio yaliyobaki: ${5 - attempts}`);

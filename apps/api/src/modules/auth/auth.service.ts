@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service';
@@ -86,6 +86,22 @@ export class AuthService {
   }
 
   async registerAdmin(dto: RegisterAdminDto) {
+    // Prevent unauthenticated takeover of an existing institution that already has an administrator
+    const existingAdminCount = await this.prisma.userRole.count({
+      where: {
+        role: {
+          institutionId: dto.institutionId,
+          code: 'INSTITUTION_ADMIN',
+        },
+      },
+    });
+
+    if (existingAdminCount > 0) {
+      throw new ForbiddenException(
+        'This institution already has an active administrator. Additional administrators must be provisioned by an authenticated administrator.',
+      );
+    }
+
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });

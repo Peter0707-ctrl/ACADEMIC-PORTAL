@@ -20,8 +20,8 @@ export class InstitutionsController {
     return this.institutionsService.create(dto);
   }
 
-  @Public()
   @Get()
+  @RequirePermissions(Permissions.SETTINGS_UPDATE)
   async list() {
     return this.institutionsService.listAll();
   }

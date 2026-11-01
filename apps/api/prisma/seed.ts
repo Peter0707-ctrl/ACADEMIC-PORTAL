@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('--- Commencing Database Seeding ---');
 
-  const defaultPassword = 'Password123!';
+  const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'ChangeMeOnFirstLogin!2026';
   const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
   // 1. Super Admin Account
